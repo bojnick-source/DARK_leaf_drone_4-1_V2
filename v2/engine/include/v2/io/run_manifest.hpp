@@ -6,6 +6,8 @@
 #include <locale>
 #include <map>
 #include <sstream>
+#include <utility>
+#include <vector>
 #include <string>
 #include <string_view>
 
@@ -64,8 +66,26 @@ inline std::string format_scalar(double value, int precision = 12) {
     return oss.str();
 }
 
-inline std::string canonicalize_inputs(const std::map<std::string, double>& scalars,
-                                       const std::map<std::string, std::string>& text = {}) {
+inline std::string format_array(const std::vector<double>& values, int precision = 12) {
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << "[";
+    for (std::size_t i = 0; i < values.size(); ++i) {
+        if (i != 0) {
+            oss << ",";
+        }
+        oss << format_scalar(values[i], precision);
+    }
+    oss << "]";
+    return oss.str();
+}
+
+inline std::string canonicalize_inputs(
+    const std::map<std::string, double>& scalars,
+    const std::map<std::string, std::string>& text = {},
+    const std::map<std::string, std::vector<double>>& arrays = {},
+    const std::map<std::string, std::pair<double, std::string>>& units = {},
+    int precision = 12) {
     std::ostringstream oss;
     oss.imbue(std::locale::classic());
     oss << "{";
@@ -75,7 +95,7 @@ inline std::string canonicalize_inputs(const std::map<std::string, double>& scal
             oss << ",";
         }
         first = false;
-        oss << "\"s:" << k << "\":" << "\"" << format_scalar(v) << "\"";
+        oss << "\"s:" << k << "\":" << "\"" << format_scalar(v, precision) << "\"";
     }
     for (const auto& [k, v] : text) {
         if (!first) {
@@ -84,13 +104,32 @@ inline std::string canonicalize_inputs(const std::map<std::string, double>& scal
         first = false;
         oss << "\"t:" << k << "\":\"" << v << "\"";
     }
+    for (const auto& [k, v] : arrays) {
+        if (!first) {
+            oss << ",";
+        }
+        first = false;
+        oss << "\"a:" << k << "\":\"" << format_array(v, precision) << "\"";
+    }
+    for (const auto& [k, v] : units) {
+        if (!first) {
+            oss << ",";
+        }
+        first = false;
+        oss << "\"u:" << k << "\":\"" << format_scalar(v.first, precision) << " " << v.second
+            << "\"";
+    }
     oss << "}";
     return oss.str();
 }
 
-inline std::string run_id_from_inputs(const std::map<std::string, double>& scalars,
-                                      const std::map<std::string, std::string>& text = {}) {
-    return run_id_from_seed(canonicalize_inputs(scalars, text));
+inline std::string run_id_from_inputs(
+    const std::map<std::string, double>& scalars,
+    const std::map<std::string, std::string>& text = {},
+    const std::map<std::string, std::vector<double>>& arrays = {},
+    const std::map<std::string, std::pair<double, std::string>>& units = {},
+    int precision = 12) {
+    return run_id_from_seed(canonicalize_inputs(scalars, text, arrays, units, precision));
 }
 
 }  // namespace v2::io
