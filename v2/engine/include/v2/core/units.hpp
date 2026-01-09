@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include "numeric.hpp"
 
 namespace v2::core {
@@ -53,7 +55,7 @@ template <typename Tag>
 
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator/(Quantity<Tag> q, double scalar) {
-    if (!is_finite(scalar) || near(scalar, 0.0)) {
+    if (!is_finite(scalar) || std::abs(scalar) < std::numeric_limits<double>::epsilon()) {
         return Quantity<Tag>(std::numeric_limits<double>::quiet_NaN());
     }
     return Quantity<Tag>(sanitize_nan(q.value() / scalar));
@@ -62,7 +64,7 @@ template <typename Tag>
 template <typename Tag>
 [[nodiscard]] constexpr double operator/(Quantity<Tag> num, Quantity<Tag> den) {
     // dimensionless ratio of like quantities
-    if (!den.finite() || near(den.value(), 0.0)) {
+    if (!den.finite() || std::abs(den.value()) < std::numeric_limits<double>::epsilon()) {
         return std::numeric_limits<double>::quiet_NaN();
     }
     return num.value() / den.value();
@@ -87,4 +89,3 @@ template <typename Tag>
 [[nodiscard]] constexpr Power watts(double v) { return Power(v); }
 
 }  // namespace v2::core
-#include <limits>
