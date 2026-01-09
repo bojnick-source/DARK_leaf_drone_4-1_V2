@@ -31,7 +31,7 @@ using Time = Quantity<TimeTag>;
 using Force = Quantity<ForceTag>;
 using Power = Quantity<PowerTag>;
 
-inline constexpr double kDivisionTol = 1e-15;
+inline constexpr double kDivisionTol = 1e-12;
 [[nodiscard]] inline constexpr bool is_safe_divisor(double v) {
     return is_finite(v) && !near(v, 0.0, kDivisionTol);
 }
@@ -84,6 +84,11 @@ template <typename Tag>
 template <typename Tag>
 [[nodiscard]] constexpr bool operator!=(Quantity<Tag> a, Quantity<Tag> b) {
     return !(a == b);
+}
+
+template <typename Tag>
+[[nodiscard]] constexpr bool almost_equal(Quantity<Tag> a, Quantity<Tag> b, double tol) {
+    return near(a.value(), b.value(), tol);
 }
 
 // Unit helpers (SI base)
