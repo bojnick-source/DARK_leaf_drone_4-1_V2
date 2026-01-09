@@ -32,6 +32,9 @@ using Force = Quantity<ForceTag>;
 using Power = Quantity<PowerTag>;
 
 inline constexpr double kDivisionTol = 1e-15;
+[[nodiscard]] inline constexpr bool is_safe_divisor(double v) {
+    return is_finite(v) && !near(v, 0.0, kDivisionTol);
+}
 
 // Basic arithmetic (same dimension)
 template <typename Tag>
@@ -57,7 +60,7 @@ template <typename Tag>
 
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator/(Quantity<Tag> q, double scalar) {
-    if (!is_finite(scalar) || std::abs(scalar) < kDivisionTol) {
+    if (!is_safe_divisor(scalar)) {
         return Quantity<Tag>(std::numeric_limits<double>::quiet_NaN());
     }
     return Quantity<Tag>(sanitize_nan(q.value() / scalar));
@@ -66,7 +69,7 @@ template <typename Tag>
 template <typename Tag>
 [[nodiscard]] constexpr double operator/(Quantity<Tag> num, Quantity<Tag> den) {
     // dimensionless ratio of like quantities
-    if (!den.finite() || std::abs(den.value()) < kDivisionTol) {
+    if (!is_safe_divisor(den.value())) {
         return std::numeric_limits<double>::quiet_NaN();
     }
     return sanitize_nan(num.value() / den.value());
