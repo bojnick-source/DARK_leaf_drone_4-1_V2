@@ -31,6 +31,8 @@ using Time = Quantity<TimeTag>;
 using Force = Quantity<ForceTag>;
 using Power = Quantity<PowerTag>;
 
+inline constexpr double kDivisionTol = 1e-15;
+
 // Basic arithmetic (same dimension)
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator+(Quantity<Tag> a, Quantity<Tag> b) {
@@ -55,7 +57,7 @@ template <typename Tag>
 
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator/(Quantity<Tag> q, double scalar) {
-    if (!is_finite(scalar) || std::abs(scalar) < std::numeric_limits<double>::epsilon()) {
+    if (!is_finite(scalar) || std::abs(scalar) < kDivisionTol) {
         return Quantity<Tag>(std::numeric_limits<double>::quiet_NaN());
     }
     return Quantity<Tag>(sanitize_nan(q.value() / scalar));
@@ -64,10 +66,10 @@ template <typename Tag>
 template <typename Tag>
 [[nodiscard]] constexpr double operator/(Quantity<Tag> num, Quantity<Tag> den) {
     // dimensionless ratio of like quantities
-    if (!den.finite() || std::abs(den.value()) < std::numeric_limits<double>::epsilon()) {
+    if (!den.finite() || std::abs(den.value()) < kDivisionTol) {
         return std::numeric_limits<double>::quiet_NaN();
     }
-    return num.value() / den.value();
+    return sanitize_nan(num.value() / den.value());
 }
 
 // Comparisons (same dimension)
