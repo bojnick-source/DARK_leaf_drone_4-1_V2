@@ -9,6 +9,9 @@
 
 int main() {
     using v2::io::run_id_from_inputs;
+    using v2::io::write_run_output;
+    using v2::io::load_run_output;
+    using v2::io::LoadError;
 
     std::map<std::string, double> scalars_a{{"mass", 1.0}, {"area", 0.5}};
     std::map<std::string, double> scalars_b{{"area", 0.5}, {"mass", 1.0}};
@@ -50,6 +53,84 @@ int main() {
     assert(content == expected);
 
     std::filesystem::remove_all("artifacts");
+
+    // IO.0.4: happy load
+    {
+        std::filesystem::remove_all("artifacts");
+        const auto inputs_json = v2::io::canonicalize_inputs(scalars_a, {}, arrays_a, units_a);
+        std::map<std::string, double> metrics{{"energy", 10.0}};
+        std::vector<std::string> paths{"file.dat"};
+        const bool ok = write_run_output(id1, inputs_json, metrics, true, std::nullopt, paths);
+        assert(ok);
+        auto res = load_run_output(id1);
+        assert(res.success);
+        assert(res.code == LoadError::NONE);
+        assert(res.output.run_id == id1);
+        assert(res.output.ok);
+        assert(res.output.metrics.at("energy") == 10.0);
+        assert(res.output.artifact_paths.size() == 1 && res.output.artifact_paths[0] == "file.dat");
+    }
+
+    // IO.0.4: run_id mismatch between dir and JSON
+    {
+        std::filesystem::remove_all("artifacts");
+        const std::string dir_id = "aaaaaaaaaaaaaaaa";
+        const std::string json_id = "bbbbbbbbbbbbbbbb";
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / dir_id);
+        std::ofstream out(std::filesystem::path("artifacts") / "runs" / dir_id / "run_output.json");
+        out << "{\"run_id\":\"" << json_id
+            << "\",\"ok\":true,\"label\":null,\"inputs\":{},\"metrics\":{},\"artifacts\":{\"root\":\"artifacts/runs/"
+            << dir_id << "\",\"paths\":[]}}\n";
+        out.close();
+        auto res = load_run_output(dir_id);
+        assert(!res.success);
+        assert(res.code == LoadError::RUN_ID_MISMATCH);
+    }
+
+    // IO.0.4: invalid label when ok==false
+    {
+        std::filesystem::remove_all("artifacts");
+        const std::string rid = "cccccccccccccccc";
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / rid);
+        std::ofstream out(std::filesystem::path("artifacts") / "runs" / rid / "run_output.json");
+        out << "{\"run_id\":\"" << rid
+            << "\",\"ok\":false,\"label\":\"BAD_LABEL\",\"inputs\":{},\"metrics\":{},\"artifacts\":{\"root\":\"artifacts/runs/"
+            << rid << "\",\"paths\":[]}}\n";
+        out.close();
+        auto res = load_run_output(rid);
+        assert(!res.success);
+        assert(res.code == LoadError::SCHEMA_VIOLATION);
+    }
+
+    // IO.0.4: reject non-finite metric
+    {
+        std::filesystem::remove_all("artifacts");
+        const std::string rid = "dddddddddddddddd";
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / rid);
+        std::ofstream out(std::filesystem::path("artifacts") / "runs" / rid / "run_output.json");
+        out << "{\"run_id\":\"" << rid
+            << "\",\"ok\":true,\"label\":null,\"inputs\":{},\"metrics\":{\"energy\":1e309},\"artifacts\":{\"root\":\"artifacts/runs/"
+            << rid << "\",\"paths\":[]}}\n";
+        out.close();
+        auto res = load_run_output(rid);
+        assert(!res.success);
+        assert(res.code == LoadError::INVALID_METRIC);
+    }
+
+    // IO.0.4: reject bad artifact path
+    {
+        std::filesystem::remove_all("artifacts");
+        const std::string rid = "eeeeeeeeeeeeeeee";
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / rid);
+        std::ofstream out(std::filesystem::path("artifacts") / "runs" / rid / "run_output.json");
+        out << "{\"run_id\":\"" << rid
+            << "\",\"ok\":true,\"label\":null,\"inputs\":{},\"metrics\":{},\"artifacts\":{\"root\":\"artifacts/runs/"
+            << rid << "\",\"paths\":[\"../bad\"]}}\n";
+        out.close();
+        auto res = load_run_output(rid);
+        assert(!res.success);
+        assert(res.code == LoadError::INVALID_ARTIFACT_PATH);
+    }
 
     return 0;
 }
