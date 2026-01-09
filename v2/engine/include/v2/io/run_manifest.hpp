@@ -2,14 +2,19 @@
 
 #include <cstdint>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <locale>
 #include <map>
+#include <optional>
 #include <sstream>
 #include <utility>
 #include <vector>
 #include <string>
 #include <string_view>
+
+#include "v2/core/fail_label.hpp"
 
 namespace v2::io {
 
@@ -18,6 +23,7 @@ inline constexpr std::string_view kArtifactsDir = "artifacts";
 inline constexpr std::string_view kManifestFile = "manifest.json";
 inline constexpr std::string_view kInputsFile = "inputs.json";
 inline constexpr std::string_view kMetricsFile = "metrics.json";
+inline constexpr std::string_view kRunOutputFile = "run_output.json";
 
 inline constexpr std::uint64_t fnv1a_64(std::string_view data) {
     std::uint64_t hash = 14695981039346656037ULL;
@@ -54,6 +60,16 @@ inline std::string artifact_dir(std::string_view run_id) {
     path.append(run_id).push_back('/');
     path.append(kArtifactsDir);
     return path;
+}
+
+inline std::string run_artifact_dir(std::string_view run_id) {
+    std::filesystem::path path = std::filesystem::path(kArtifactsDir) / kRunsDir / run_id;
+    return path.generic_string();
+}
+
+inline std::string run_output_path(std::string_view run_id) {
+    std::filesystem::path path = std::filesystem::path(kArtifactsDir) / kRunsDir / run_id / kRunOutputFile;
+    return path.generic_string();
 }
 
 inline std::string format_scalar(double value, int precision = 12) {
@@ -130,6 +146,75 @@ inline std::string run_id_from_inputs(
     const std::map<std::string, std::pair<double, std::string>>& units = {},
     int precision = 12) {
     return run_id_from_seed(canonicalize_inputs(scalars, text, arrays, units, precision));
+}
+
+inline bool write_run_output(
+    const std::string& run_id,
+    const std::string& inputs_json,
+    const std::map<std::string, double>& metrics,
+    bool ok,
+    std::optional<v2::core::FailLabel> label = std::nullopt,
+    const std::vector<std::string>& artifact_paths = {},
+    const std::string& artifact_root_override = "",
+    int precision = 12) {
+    namespace fs = std::filesystem;
+
+    const auto base_dir = run_artifact_dir(run_id);
+    fs::create_directories(base_dir);
+
+    const std::string artifact_root = artifact_root_override.empty() ? base_dir : artifact_root_override;
+    const auto output_path = run_output_path(run_id);
+    fs::path tmp_path = fs::path(output_path).concat(".tmp");
+
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << "{\"run_id\":\"" << run_id << "\",";
+    oss << "\"ok\":" << (ok ? "true" : "false") << ",";
+    oss << "\"label\":";
+    if (ok) {
+        oss << "null";
+    } else if (label.has_value()) {
+        oss << "\"" << v2::core::to_string(*label) << "\"";
+    } else {
+        oss << "null";
+    }
+    oss << ",\"inputs\":" << inputs_json << ",";
+
+    oss << "\"metrics\":{";
+    bool first_metric = true;
+    for (const auto& [k, v] : metrics) {
+        if (!first_metric) {
+            oss << ",";
+        }
+        first_metric = false;
+        oss << "\"" << k << "\":" << format_scalar(v, precision);
+    }
+    oss << "},";
+
+    oss << "\"artifacts\":{";
+    oss << "\"root\":\"" << artifact_root << "\",";
+    oss << "\"paths\":[";
+    for (std::size_t i = 0; i < artifact_paths.size(); ++i) {
+        if (i != 0) {
+            oss << ",";
+        }
+        oss << "\"" << artifact_paths[i] << "\"";
+    }
+    oss << "]";
+    oss << "}";
+
+    oss << "}";
+
+    {
+        std::ofstream out(tmp_path, std::ios::binary | std::ios::trunc);
+        if (!out.is_open()) {
+            return false;
+        }
+        out << oss.str() << "\n";
+    }
+
+    fs::rename(tmp_path, output_path);
+    return true;
 }
 
 }  // namespace v2::io
