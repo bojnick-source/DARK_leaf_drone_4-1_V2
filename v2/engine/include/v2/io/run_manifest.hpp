@@ -654,6 +654,7 @@ struct IngestError {
     std::string run_id;
     std::string code;
     std::string message;
+    std::string source_path;
 };
 
 struct IngestedRun {
@@ -664,6 +665,35 @@ struct IngestedRun {
 struct IngestResult {
     std::vector<IngestedRun> runs;
     std::vector<IngestError> errors;
+};
+
+struct SummaryCounts {
+    std::size_t total{0};
+    std::size_t passed{0};
+    std::size_t failed{0};
+    std::size_t invalid{0};
+};
+
+struct SummaryRun {
+    std::string run_id;
+    bool ok{false};
+    std::optional<std::string> label;
+    std::map<std::string, double> metrics;
+    std::string source_path;
+    std::optional<IngestError> error;
+};
+
+struct SummaryResult {
+    std::string json;
+    SummaryCounts counts;
+    std::vector<IngestError> errors;
+    std::vector<SummaryRun> runs;
+};
+
+struct SummaryOptions {
+    IngestOptions ingest_opts{};
+    std::string schema = "dark/v2/io/run_summary/1.1";
+    std::string generated_at = "1970-01-01T00:00:00Z";
 };
 
 inline IngestResult ingest_runs(const IngestOptions& opts = {}) {
@@ -687,7 +717,8 @@ inline IngestResult ingest_runs(const IngestOptions& opts = {}) {
                 continue;
             }
             if (!is_lower_hex_run_id(name)) {
-                result.errors.push_back({name, "INVALID_RUN_ID_DIR", "run_id directory invalid"});
+                result.errors.push_back(
+                    {name, "INVALID_RUN_ID_DIR", "run_id directory invalid", entry.path().generic_string()});
                 continue;
             }
             candidates.push_back(name);
@@ -703,12 +734,13 @@ inline IngestResult ingest_runs(const IngestOptions& opts = {}) {
         const fs::path run_dir = fs::path(opts.artifact_root) / run_id;
         const fs::path manifest_path = run_dir / kRunOutputFile;
         if (!fs::exists(manifest_path)) {
-            result.errors.push_back({run_id, "MISSING_MANIFEST", "run_output.json missing"});
+            result.errors.push_back(
+                {run_id, "MISSING_MANIFEST", "run_output.json missing", manifest_path.generic_string()});
             continue;
         }
         auto load = load_run_output(run_id, run_dir.generic_string(), opts.strict);
         if (!load.success) {
-            result.errors.push_back({run_id, "VALIDATION_FAILED", load.message});
+            result.errors.push_back({run_id, "VALIDATION_FAILED", load.message, manifest_path.generic_string()});
             continue;
         }
         IngestedRun ing;
@@ -718,6 +750,228 @@ inline IngestResult ingest_runs(const IngestOptions& opts = {}) {
     }
 
     return result;
+}
+
+inline SummaryResult aggregate_runs(const SummaryOptions& opts = {}) {
+    namespace fs = std::filesystem;
+
+    SummaryResult summary;
+    SummaryCounts counts{};
+
+    struct Candidate {
+        std::string run_id;
+        fs::path manifest_path;
+        fs::file_time_type mtime;
+    };
+
+    std::vector<Candidate> candidates;
+    std::vector<IngestError> errors;
+
+    std::vector<std::string> run_filter;
+    if (!opts.ingest_opts.run_ids.empty()) {
+        run_filter = opts.ingest_opts.run_ids;
+        std::sort(run_filter.begin(), run_filter.end());
+    }
+
+    if (fs::exists(opts.ingest_opts.artifact_root)) {
+        for (const auto& entry : fs::directory_iterator(opts.ingest_opts.artifact_root)) {
+            if (!entry.is_directory()) continue;
+            const std::string dir_name = entry.path().filename().string();
+            if (!opts.ingest_opts.prefix.empty() &&
+                dir_name.rfind(opts.ingest_opts.prefix, 0) != 0) {
+                continue;
+            }
+            if (!run_filter.empty() &&
+                !std::binary_search(run_filter.begin(), run_filter.end(), dir_name)) {
+                continue;
+            }
+
+            if (!is_lower_hex_run_id(dir_name)) {
+                counts.total++;
+                counts.invalid++;
+                errors.push_back(
+                    {dir_name, "INVALID_RUN_ID_DIR", "run_id directory invalid", entry.path().generic_string()});
+                continue;
+            }
+
+            fs::path manifest_path = entry.path() / kRunOutputFile;
+            if (!fs::exists(manifest_path)) {
+                counts.total++;
+                counts.invalid++;
+                errors.push_back(
+                    {dir_name, "MISSING_MANIFEST", "run_output.json missing", manifest_path.generic_string()});
+                continue;
+            }
+
+            fs::file_time_type mtime = fs::last_write_time(manifest_path);
+            candidates.push_back({dir_name, manifest_path, mtime});
+        }
+    }
+
+    // Deduplicate by run_id using mtime then path lexicographic.
+    std::map<std::string, Candidate> chosen;
+    for (const auto& cand : candidates) {
+        auto it = chosen.find(cand.run_id);
+        if (it == chosen.end()) {
+            chosen.emplace(cand.run_id, cand);
+            continue;
+        }
+        const auto& cur = it->second;
+        bool replace = false;
+        if (cand.mtime > cur.mtime) {
+            replace = true;
+        } else if (cand.mtime == cur.mtime &&
+                   cand.manifest_path.generic_string() < cur.manifest_path.generic_string()) {
+            replace = true;
+        }
+        if (replace) {
+            counts.invalid++;
+            errors.push_back(
+                {cur.run_id, "DUPLICATE_RUN_ID", "duplicate manifest excluded", cur.manifest_path.generic_string()});
+            it->second = cand;
+        } else {
+            counts.invalid++;
+            errors.push_back(
+                {cand.run_id, "DUPLICATE_RUN_ID", "duplicate manifest excluded", cand.manifest_path.generic_string()});
+        }
+    }
+
+    // Apply max_runs after sorting run_ids.
+    std::vector<std::string> run_ids;
+    run_ids.reserve(chosen.size());
+    for (const auto& [rid, _] : chosen) run_ids.push_back(rid);
+    std::sort(run_ids.begin(), run_ids.end());
+    if (opts.ingest_opts.max_runs < run_ids.size()) {
+        run_ids.resize(opts.ingest_opts.max_runs);
+    }
+
+    std::vector<SummaryRun> runs;
+    runs.reserve(run_ids.size());
+
+    for (const auto& run_id : run_ids) {
+        const auto& cand = chosen.at(run_id);
+        auto load = load_run_output(
+            run_id, cand.manifest_path.parent_path().generic_string(), opts.ingest_opts.strict);
+        counts.total++;
+        if (!load.success) {
+            counts.invalid++;
+            errors.push_back(
+                {run_id, "VALIDATION_FAILED", load.message, cand.manifest_path.generic_string()});
+            continue;
+        }
+
+        SummaryRun sr;
+        sr.run_id = run_id;
+        sr.ok = load.output.ok;
+        if (load.output.label.has_value()) {
+            sr.label = v2::core::to_string(*load.output.label);
+        }
+        if (sr.ok) {
+            sr.metrics = load.output.metrics;
+            counts.passed++;
+        } else {
+            counts.failed++;
+            sr.error = IngestError{run_id, "FAILED", sr.label.value_or("run failed"), cand.manifest_path.generic_string()};
+        }
+        sr.source_path = cand.manifest_path.generic_string();
+        runs.push_back(std::move(sr));
+    }
+
+    // Build label tally (only for ok and label present).
+    std::map<std::string, std::size_t> label_tally;
+    for (const auto& r : runs) {
+        if (r.ok && r.label.has_value()) {
+            label_tally[*r.label]++;
+        }
+    }
+
+    // Sort errors deterministically by run_id then code then message.
+    std::sort(errors.begin(), errors.end(), [](const IngestError& a, const IngestError& b) {
+        if (a.run_id != b.run_id) return a.run_id < b.run_id;
+        if (a.code != b.code) return a.code < b.code;
+        return a.message < b.message;
+    });
+
+    // Build JSON deterministically.
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << "{";
+    oss << "\"schema\":\"" << opts.schema << "\",";
+    oss << "\"artifact_root\":\"" << opts.ingest_opts.artifact_root << "\",";
+    oss << "\"generated_at\":\"" << opts.generated_at << "\",";
+
+    oss << "\"runs\":[";
+    for (std::size_t i = 0; i < runs.size(); ++i) {
+        if (i != 0) oss << ",";
+        const auto& r = runs[i];
+        oss << "{";
+        oss << "\"run_id\":\"" << r.run_id << "\",";
+        oss << "\"ok\":" << (r.ok ? "true" : "false") << ",";
+        oss << "\"source_path\":\"" << r.source_path << "\"";
+        if (r.label.has_value()) {
+            oss << ",\"label\":\"" << *r.label << "\"";
+        }
+        if (r.ok && !r.metrics.empty()) {
+            oss << ",\"metrics\":{";
+            bool first = true;
+            for (const auto& [k, v] : r.metrics) {
+                if (!first) oss << ",";
+                first = false;
+                oss << "\"" << k << "\":" << format_scalar(v);
+            }
+            oss << "}";
+        }
+        if (!r.ok && r.error.has_value()) {
+            oss << ",\"error\":{";
+            oss << "\"code\":\"" << r.error->code << "\",";
+            oss << "\"message\":\"" << r.error->message << "\"";
+            oss << "}";
+        }
+        oss << "}";
+    }
+    oss << "],";
+
+    oss << "\"counts\":{";
+    oss << "\"total\":" << counts.total << ",";
+    oss << "\"passed\":" << counts.passed << ",";
+    oss << "\"failed\":" << counts.failed << ",";
+    oss << "\"invalid\":" << counts.invalid;
+    oss << "},";
+
+    if (!label_tally.empty()) {
+        oss << "\"label_tally\":{";
+        bool first = true;
+        for (const auto& [k, v] : label_tally) {
+            if (!first) oss << ",";
+            first = false;
+            oss << "\"" << k << "\":" << v;
+        }
+        oss << "},";
+    } else {
+        oss << "\"label_tally\":{},";
+    }
+
+    oss << "\"errors\":[";
+    for (std::size_t i = 0; i < errors.size(); ++i) {
+        if (i != 0) oss << ",";
+        const auto& e = errors[i];
+        oss << "{";
+        oss << "\"run_id\":\"" << e.run_id << "\",";
+        oss << "\"code\":\"" << e.code << "\",";
+        oss << "\"message\":\"" << e.message << "\"";
+        if (!e.source_path.empty()) {
+            oss << ",\"source_path\":\"" << e.source_path << "\"";
+        }
+        oss << "}";
+    }
+    oss << "]";
+    oss << "}";
+
+    summary.json = oss.str();
+    summary.counts = counts;
+    summary.errors = std::move(errors);
+    summary.runs = std::move(runs);
+    return summary;
 }
 
 }  // namespace v2::io

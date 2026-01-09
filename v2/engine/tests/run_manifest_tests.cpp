@@ -188,5 +188,53 @@ int main() {
         assert(ingest_filtered.runs[0].output.run_id == r2);
     }
 
+    // IO.1.1: aggregation summary with partial failures
+    {
+        using v2::io::aggregate_runs;
+        using v2::io::SummaryOptions;
+        std::filesystem::remove_all("artifacts");
+
+        const std::string r1 = "aaaaaaaaaaaaaaaa";
+        const std::string r2 = "bbbbbbbbbbbbbbbb";
+        const std::string r3 = "cccccccccccccccc";
+        const std::string r4 = "dddddddddddddddd";
+
+        const std::string inputs_json = "{}";
+        write_run_output(r1, inputs_json, {{"energy", 5.0}}, true);
+        write_run_output(r2, inputs_json, {}, false, v2::core::FailLabel::SYS_NAN_FAIL);
+
+        // missing manifest r3
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / r3);
+
+        // invalid metric r4
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / r4);
+        {
+            std::ofstream out(std::filesystem::path("artifacts") / "runs" / r4 / "run_output.json");
+            out << "{\"run_id\":\"" << r4
+                << "\",\"ok\":true,\"label\":null,\"inputs\":{},\"metrics\":{\"energy\":1e309},"
+                   "\"artifacts\":{\"root\":\"artifacts/runs/"
+                << r4 << "\",\"paths\":[]}}\n";
+        }
+
+        SummaryOptions sopts;
+        sopts.generated_at = "2024-01-01T00:00:00Z";
+        auto summary = aggregate_runs(sopts);
+
+        assert(summary.counts.total == 4);
+        assert(summary.counts.passed == 1);
+        assert(summary.counts.failed == 1);
+        assert(summary.counts.invalid == 2);
+        assert(summary.runs.size() == 2);
+        assert(summary.runs[0].run_id == r1);
+        assert(summary.runs[0].ok);
+        assert(summary.runs[1].run_id == r2);
+        assert(!summary.runs[1].ok && summary.runs[1].error.has_value());
+        assert(summary.errors.size() == 2);
+
+        // Deterministic JSON contains schema and generated_at
+        assert(summary.json.find("\"schema\":\"dark/v2/io/run_summary/1.1\"") != std::string::npos);
+        assert(summary.json.find("\"generated_at\":\"2024-01-01T00:00:00Z\"") != std::string::npos);
+    }
+
     return 0;
 }
