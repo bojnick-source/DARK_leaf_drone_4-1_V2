@@ -52,11 +52,17 @@ template <typename Tag>
 
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator/(Quantity<Tag> q, double scalar) {
+    if (!is_finite(scalar) || near(scalar, 0.0)) {
+        return Quantity<Tag>(0.0);
+    }
     return Quantity<Tag>(q.value() / scalar);
 }
 
 template <typename Tag>
 [[nodiscard]] constexpr double operator/(Quantity<Tag> num, Quantity<Tag> den) {
+    if (!den.finite() || near(den.value(), 0.0)) {
+        return 0.0;
+    }
     return num.value() / den.value();
 }
 
