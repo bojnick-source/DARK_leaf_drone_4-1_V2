@@ -1,7 +1,7 @@
 # FRAGMENT IO.1.2 — Aggregation Signing & Lineage (SPEC ONLY)
 
-Status: DRAFT (spec-only)  
-Code: MUST NOT be implemented until explicitly approved.
+Status: FINAL (spec-only, LOCKED)  
+Code: MUST NOT be implemented or modified without explicit approval.
 
 ## Scope
 - Add a deterministic signing/lineage layer on top of IO.1.1 aggregation outputs.
