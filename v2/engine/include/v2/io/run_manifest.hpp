@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <charconv>
 #include <fstream>
+#include <algorithm>
 #include <iomanip>
 #include <locale>
 #include <map>
@@ -639,6 +640,84 @@ inline bool write_run_output(
 
     fs::rename(tmp_path, output_path);
     return true;
+}
+
+struct IngestOptions {
+    std::string artifact_root = (std::filesystem::path(kArtifactsDir) / kRunsDir).generic_string();
+    std::vector<std::string> run_ids;
+    std::string prefix;
+    std::size_t max_runs = std::numeric_limits<std::size_t>::max();
+    bool strict = true;
+};
+
+struct IngestError {
+    std::string run_id;
+    std::string code;
+    std::string message;
+};
+
+struct IngestedRun {
+    RunOutput output;
+    std::string source_path;
+};
+
+struct IngestResult {
+    std::vector<IngestedRun> runs;
+    std::vector<IngestError> errors;
+};
+
+inline IngestResult ingest_runs(const IngestOptions& opts = {}) {
+    namespace fs = std::filesystem;
+    IngestResult result;
+
+    std::vector<std::string> run_filter;
+    if (!opts.run_ids.empty()) {
+        run_filter = opts.run_ids;
+        std::sort(run_filter.begin(), run_filter.end());
+    }
+
+    std::vector<std::string> candidates;
+    if (fs::exists(opts.artifact_root)) {
+        for (const auto& entry : fs::directory_iterator(opts.artifact_root)) {
+            if (!entry.is_directory()) continue;
+            const std::string name = entry.path().filename().string();
+            if (!opts.prefix.empty() && name.rfind(opts.prefix, 0) != 0) continue;
+            if (!run_filter.empty() &&
+                !std::binary_search(run_filter.begin(), run_filter.end(), name)) {
+                continue;
+            }
+            if (!is_lower_hex_run_id(name)) {
+                result.errors.push_back({name, "INVALID_RUN_ID_DIR", "run_id directory invalid"});
+                continue;
+            }
+            candidates.push_back(name);
+        }
+    }
+
+    std::sort(candidates.begin(), candidates.end());
+    if (opts.max_runs < candidates.size()) {
+        candidates.resize(opts.max_runs);
+    }
+
+    for (const auto& run_id : candidates) {
+        const fs::path run_dir = fs::path(opts.artifact_root) / run_id;
+        const fs::path manifest_path = run_dir / kRunOutputFile;
+        if (!fs::exists(manifest_path)) {
+            result.errors.push_back({run_id, "MISSING_MANIFEST", "run_output.json missing"});
+            continue;
+        }
+        auto load = load_run_output(run_id, run_dir.generic_string(), opts.strict);
+        if (!load.success) {
+            result.errors.push_back({run_id, "VALIDATION_FAILED", load.message});
+            continue;
+        }
+        IngestedRun ing;
+        ing.output = std::move(load.output);
+        ing.source_path = manifest_path.generic_string();
+        result.runs.push_back(std::move(ing));
+    }
+
+    return result;
 }
 
 }  // namespace v2::io

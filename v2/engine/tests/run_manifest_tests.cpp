@@ -132,5 +132,61 @@ int main() {
         assert(res.code == LoadError::INVALID_ARTIFACT_PATH);
     }
 
+    // IO.1.0: ingest multiple runs with ordering and mixed validity
+    {
+        using v2::io::ingest_runs;
+        using v2::io::IngestOptions;
+        using v2::io::LoadError;
+        std::filesystem::remove_all("artifacts");
+
+        // valid runs
+        const std::string r1 = "1111111111111111";
+        const std::string r2 = "2222222222222222";
+        const auto inputs_json = "{}";
+        write_run_output(r1, inputs_json, {{"energy", 1.0}}, true);
+        write_run_output(r2, inputs_json, {{"energy", 2.0}}, true);
+
+        // invalid directory name
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / "bad_dir");
+
+        // missing manifest
+        const std::string r3 = "3333333333333333";
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / r3);
+
+        // invalid metric
+        const std::string r4 = "4444444444444444";
+        std::filesystem::create_directories(std::filesystem::path("artifacts") / "runs" / r4);
+        {
+            std::ofstream out(std::filesystem::path("artifacts") / "runs" / r4 / "run_output.json");
+            out << "{\"run_id\":\"" << r4
+                << "\",\"ok\":true,\"label\":null,\"inputs\":{},\"metrics\":{\"energy\":1e309},"
+                   "\"artifacts\":{\"root\":\"artifacts/runs/"
+                << r4 << "\",\"paths\":[]}}\n";
+        }
+
+        auto ingest = ingest_runs();
+        assert(ingest.runs.size() == 2);
+        assert(ingest.runs[0].output.run_id == r1);
+        assert(ingest.runs[1].output.run_id == r2);
+        assert(!ingest.errors.empty());
+        bool saw_invalid_dir = false;
+        bool saw_missing = false;
+        bool saw_validation = false;
+        for (const auto& err : ingest.errors) {
+            if (err.code == "INVALID_RUN_ID_DIR") saw_invalid_dir = true;
+            if (err.code == "MISSING_MANIFEST") saw_missing = true;
+            if (err.code == "VALIDATION_FAILED") saw_validation = true;
+        }
+        assert(saw_invalid_dir && saw_missing && saw_validation);
+
+        // Filters: run_ids allowlist and max_runs
+        IngestOptions opts;
+        opts.run_ids = {r2};
+        opts.max_runs = 1;
+        auto ingest_filtered = ingest_runs(opts);
+        assert(ingest_filtered.runs.size() == 1);
+        assert(ingest_filtered.runs[0].output.run_id == r2);
+    }
+
     return 0;
 }
