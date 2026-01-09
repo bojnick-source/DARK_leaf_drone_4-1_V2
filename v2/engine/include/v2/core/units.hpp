@@ -32,36 +32,38 @@ using Power = Quantity<PowerTag>;
 // Basic arithmetic (same dimension)
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator+(Quantity<Tag> a, Quantity<Tag> b) {
-    return Quantity<Tag>(a.value() + b.value());
+    return Quantity<Tag>(sanitize_nan(a.value() + b.value()));
 }
 
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator-(Quantity<Tag> a, Quantity<Tag> b) {
-    return Quantity<Tag>(a.value() - b.value());
+    return Quantity<Tag>(sanitize_nan(a.value() - b.value()));
 }
 
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator*(Quantity<Tag> q, double scalar) {
-    return Quantity<Tag>(q.value() * scalar);
+    const double s = sanitize_nan(scalar);
+    return Quantity<Tag>(sanitize_nan(q.value() * s));
 }
 
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator*(double scalar, Quantity<Tag> q) {
-    return Quantity<Tag>(scalar * q.value());
+    return q * scalar;
 }
 
 template <typename Tag>
 [[nodiscard]] constexpr Quantity<Tag> operator/(Quantity<Tag> q, double scalar) {
     if (!is_finite(scalar) || near(scalar, 0.0)) {
-        return Quantity<Tag>(0.0);
+        return Quantity<Tag>(std::numeric_limits<double>::quiet_NaN());
     }
-    return Quantity<Tag>(q.value() / scalar);
+    return Quantity<Tag>(sanitize_nan(q.value() / scalar));
 }
 
 template <typename Tag>
 [[nodiscard]] constexpr double operator/(Quantity<Tag> num, Quantity<Tag> den) {
+    // dimensionless ratio of like quantities
     if (!den.finite() || near(den.value(), 0.0)) {
-        return 0.0;
+        return std::numeric_limits<double>::quiet_NaN();
     }
     return num.value() / den.value();
 }
@@ -85,3 +87,4 @@ template <typename Tag>
 [[nodiscard]] constexpr Power watts(double v) { return Power(v); }
 
 }  // namespace v2::core
+#include <limits>
