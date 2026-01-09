@@ -1,6 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <cmath>
+#include <iomanip>
+#include <locale>
+#include <map>
+#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -47,6 +52,45 @@ inline std::string artifact_dir(std::string_view run_id) {
     path.append(run_id).push_back('/');
     path.append(kArtifactsDir);
     return path;
+}
+
+inline std::string format_scalar(double value, int precision = 12) {
+    if (!std::isfinite(value)) {
+        return "nan";
+    }
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << std::fixed << std::setprecision(precision) << value;
+    return oss.str();
+}
+
+inline std::string canonicalize_inputs(const std::map<std::string, double>& scalars,
+                                       const std::map<std::string, std::string>& text = {}) {
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << "{";
+    bool first = true;
+    for (const auto& [k, v] : scalars) {
+        if (!first) {
+            oss << ",";
+        }
+        first = false;
+        oss << "\"s:" << k << "\":" << "\"" << format_scalar(v) << "\"";
+    }
+    for (const auto& [k, v] : text) {
+        if (!first) {
+            oss << ",";
+        }
+        first = false;
+        oss << "\"t:" << k << "\":\"" << v << "\"";
+    }
+    oss << "}";
+    return oss.str();
+}
+
+inline std::string run_id_from_inputs(const std::map<std::string, double>& scalars,
+                                      const std::map<std::string, std::string>& text = {}) {
+    return run_id_from_seed(canonicalize_inputs(scalars, text));
 }
 
 }  // namespace v2::io
