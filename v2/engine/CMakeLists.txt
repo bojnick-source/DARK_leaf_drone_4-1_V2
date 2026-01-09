@@ -20,3 +20,5 @@ add_executable(v2_engine_tests
 )
 
 target_link_libraries(v2_engine_tests PRIVATE v2_engine)
+
+add_test(NAME v2_engine_tests COMMAND v2_engine_tests)
