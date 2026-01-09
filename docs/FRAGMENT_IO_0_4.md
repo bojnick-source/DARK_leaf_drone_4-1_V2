@@ -45,3 +45,12 @@ Provide deterministic loading and validation of a completed run’s artifacts wr
 - No new artifact files are written in IO.0.4.
 - No changes to IO.0.3 writer behavior beyond validation compatibility.
 - No CLI or solver integration.
+
+## Normative Clarifications (Final)
+1. The `run_id` **MUST** be exactly 16 lowercase hexadecimal characters; any deviation (length, casing, non-hex glyphs) **SHALL** be rejected before file I/O.
+2. The loader **MUST** resolve the manifest path strictly as `<artifact_root>/run_output.json`; it **SHALL NOT** search alternate locations or fall back to other filenames.
+3. Schema validation **MUST** use the repository-local `schemas/run_output.schema.json`; remote or embedded schemas **SHALL NOT** be substituted, and validation **MUST** reject unknown top-level fields.
+4. When `strict == true`, artifact path entries **MUST** be rejected if absolute or containing `..`; when `strict == false`, the same normalization **SHALL** still occur, but offending entries **MUST** be reported while the remainder **MAY** be retained for inspection.
+5. Metrics values **MUST** be JSON numbers representable as finite double precision; integers are allowed, but any NaN/Inf sentinel or non-numeric type **SHALL** fail validation.
+6. Re-serialization of loaded inputs/metrics for testing or downstream use **MUST** reuse the IO.0.2 canonical ordering and formatting; array element order **SHALL NOT** be altered.
+7. Each distinct failure condition **MUST** map to a stable, machine-consumable error code (e.g., MISSING_FILE, JSON_PARSE_ERROR, SCHEMA_VIOLATION, RUN_ID_MISMATCH, INVALID_METRIC, INVALID_ARTIFACT_PATH) and **SHALL** include a human-readable message.
