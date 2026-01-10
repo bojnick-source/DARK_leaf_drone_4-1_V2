@@ -1,4 +1,4 @@
-# FRAGMENT EXECUTION_1.3 — Resource-Aware Scheduling & Admission (SPEC ONLY)
+# FRAGMENT EXECUTION_1.3 — Resource-Aware Scheduling & Admission (SPEC ONLY, FINAL & LOCKED)
 
 ## Scope
 - Extends EXECUTION_1.x with deterministic resource-aware scheduling, admission control (quotas, priority, fairness), placement lineage, and preemption policy.
@@ -48,4 +48,3 @@
 - Every admission, deferral, rejection, placement, preemption, and resumption MUST be logged with execution_id, run_id, decision reason, and lineage ID (if any).
 - Audit logs MUST align in order with scheduling ledger emission for deterministic replay.
 - Resource policy digests (capacity, quotas, fairness, preemption) MUST be included in audit entries for traceability.
-
