@@ -41,3 +41,25 @@ add_executable(cpp_commit_gate_tests
 
 target_link_libraries(cpp_commit_gate_tests PRIVATE cpp_commit_gate)
 add_test(NAME cpp_commit_gate_tests COMMAND cpp_commit_gate_tests)
+
+add_library(cpp_lineage_stamper STATIC
+    analysis/lineage_stamper.cpp
+)
+
+target_include_directories(cpp_lineage_stamper
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/analysis
+)
+
+target_link_libraries(cpp_lineage_stamper
+    PUBLIC
+        v2_engine
+)
+
+add_executable(cpp_lineage_stamper_tests
+    tests/test_lineage_stamper.cpp
+)
+
+target_link_libraries(cpp_lineage_stamper_tests PRIVATE cpp_lineage_stamper)
+add_test(NAME cpp_lineage_stamper_tests COMMAND cpp_lineage_stamper_tests)
