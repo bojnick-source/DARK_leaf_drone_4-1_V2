@@ -13,9 +13,31 @@ target_link_libraries(cpp_accuracy_gate
         v2_engine
 )
 
+add_library(cpp_commit_gate STATIC
+    analysis/commit_gate.cpp
+)
+
+target_include_directories(cpp_commit_gate
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/analysis
+)
+
+target_link_libraries(cpp_commit_gate
+    PUBLIC
+        v2_engine
+)
+
 add_executable(cpp_accuracy_gate_tests
     tests/test_accuracy_gate.cpp
 )
 
 target_link_libraries(cpp_accuracy_gate_tests PRIVATE cpp_accuracy_gate)
 add_test(NAME cpp_accuracy_gate_tests COMMAND cpp_accuracy_gate_tests)
+
+add_executable(cpp_commit_gate_tests
+    tests/test_commit_gate.cpp
+)
+
+target_link_libraries(cpp_commit_gate_tests PRIVATE cpp_commit_gate)
+add_test(NAME cpp_commit_gate_tests COMMAND cpp_commit_gate_tests)
