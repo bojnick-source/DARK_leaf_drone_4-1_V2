@@ -1,4 +1,4 @@
-# FRAGMENT EXECUTION_1.4 — Cross-Workflow Coordination & Backpressure (SPEC ONLY, DRAFT)
+# FRAGMENT EXECUTION_1.4 — Cross-Workflow Coordination & Backpressure (SPEC ONLY, FINAL, LOCKED)
 
 ## Scope
 - Extends EXECUTION_1.x with deterministic cross-workflow coordination, global fairness across schedulers, starvation avoidance guarantees, and deterministic backpressure signaling.
