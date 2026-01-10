@@ -9,3 +9,4 @@ enable_testing()
 
 add_subdirectory(v2/engine)
 add_subdirectory(v2/studio)
+add_subdirectory(cpp/engine)
