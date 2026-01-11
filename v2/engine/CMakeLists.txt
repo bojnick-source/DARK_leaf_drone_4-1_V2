@@ -24,6 +24,8 @@ add_library(v2_engine STATIC
   src/physics/adapters/legacy_4_1/disk_area_adapter.cpp
   src/physics/adapters/legacy_4_1/hover_power_adapter.cpp
   src/core/run_config.cpp
+  src/uncertainty/types.cpp
+  src/uncertainty/monte_carlo_evaluator.cpp
 )
 
 target_include_directories(v2_engine PUBLIC

@@ -39,3 +39,13 @@ target_link_libraries(run_config_test PRIVATE v2_engine)
 
 # Register the test with CTest
 add_test(NAME run_config_test COMMAND run_config_test)
+
+# ---- Test: uncertainty_test ----
+add_executable(uncertainty_test
+  uncertainty/uncertainty_test.cpp
+)
+
+target_link_libraries(uncertainty_test PRIVATE v2_engine)
+
+# Register the test with CTest
+add_test(NAME uncertainty_test COMMAND uncertainty_test)
