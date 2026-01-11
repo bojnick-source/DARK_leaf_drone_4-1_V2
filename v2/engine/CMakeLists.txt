@@ -33,6 +33,8 @@ add_library(v2_engine STATIC
   src/calibration/types.cpp
   src/calibration/calibration_fitter.cpp
   src/calibration/calibrated_evaluator.cpp
+  src/validity/types.cpp
+  src/validity/conservative_ood_detector.cpp
 )
 
 target_include_directories(v2_engine PUBLIC
