@@ -29,3 +29,13 @@ target_link_libraries(hover_power_test PRIVATE v2_engine)
 
 # Register the test with CTest
 add_test(NAME hover_power_test COMMAND hover_power_test)
+
+# ---- Test: run_config_test ----
+add_executable(run_config_test
+  core/run_config_test.cpp
+)
+
+target_link_libraries(run_config_test PRIVATE v2_engine)
+
+# Register the test with CTest
+add_test(NAME run_config_test COMMAND run_config_test)
