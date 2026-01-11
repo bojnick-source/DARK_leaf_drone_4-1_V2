@@ -59,3 +59,13 @@ target_link_libraries(sampling_test PRIVATE v2_engine)
 
 # Register the test with CTest
 add_test(NAME sampling_test COMMAND sampling_test)
+
+# ---- Test: safety_test ----
+add_executable(safety_test
+  safety/safety_test.cpp
+)
+
+target_link_libraries(safety_test PRIVATE v2_engine)
+
+# Register the test with CTest
+add_test(NAME safety_test COMMAND safety_test)

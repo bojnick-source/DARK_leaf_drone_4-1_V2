@@ -28,6 +28,8 @@ add_library(v2_engine STATIC
   src/uncertainty/monte_carlo_evaluator.cpp
   src/sampling/types.cpp
   src/sampling/uncertainty_driven_policy.cpp
+  src/safety/types.cpp
+  src/safety/probabilistic_gate.cpp
 )
 
 target_include_directories(v2_engine PUBLIC
