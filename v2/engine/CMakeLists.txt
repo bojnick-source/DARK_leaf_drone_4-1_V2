@@ -26,6 +26,8 @@ add_library(v2_engine STATIC
   src/core/run_config.cpp
   src/uncertainty/types.cpp
   src/uncertainty/monte_carlo_evaluator.cpp
+  src/sampling/types.cpp
+  src/sampling/uncertainty_driven_policy.cpp
 )
 
 target_include_directories(v2_engine PUBLIC

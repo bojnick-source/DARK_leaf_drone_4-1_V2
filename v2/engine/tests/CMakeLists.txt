@@ -49,3 +49,13 @@ target_link_libraries(uncertainty_test PRIVATE v2_engine)
 
 # Register the test with CTest
 add_test(NAME uncertainty_test COMMAND uncertainty_test)
+
+# ---- Test: sampling_test ----
+add_executable(sampling_test
+  sampling/sampling_test.cpp
+)
+
+target_link_libraries(sampling_test PRIVATE v2_engine)
+
+# Register the test with CTest
+add_test(NAME sampling_test COMMAND sampling_test)
