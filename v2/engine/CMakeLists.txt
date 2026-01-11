@@ -30,6 +30,9 @@ add_library(v2_engine STATIC
   src/sampling/uncertainty_driven_policy.cpp
   src/safety/types.cpp
   src/safety/probabilistic_gate.cpp
+  src/calibration/types.cpp
+  src/calibration/calibration_fitter.cpp
+  src/calibration/calibrated_evaluator.cpp
 )
 
 target_include_directories(v2_engine PUBLIC

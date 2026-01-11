@@ -69,3 +69,13 @@ target_link_libraries(safety_test PRIVATE v2_engine)
 
 # Register the test with CTest
 add_test(NAME safety_test COMMAND safety_test)
+
+# ---- Test: calibration_test ----
+add_executable(calibration_test
+  calibration/calibration_test.cpp
+)
+
+target_link_libraries(calibration_test PRIVATE v2_engine)
+
+# Register the test with CTest
+add_test(NAME calibration_test COMMAND calibration_test)
