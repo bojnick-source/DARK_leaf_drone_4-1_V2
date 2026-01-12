@@ -1,0 +1,98 @@
+[
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine.dir/src/engine.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/engine.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/engine.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine.dir/src/engine.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine.dir/src/core/error.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/core/error.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/core/error.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine.dir/src/core/error.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine.dir/src/io/run_id.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/io/run_id.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/io/run_id.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine.dir/src/io/run_id.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine.dir/src/io/artifacts.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/io/artifacts.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/io/artifacts.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine.dir/src/io/artifacts.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine.dir/src/io/json_emit.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/io/json_emit.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/io/json_emit.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine.dir/src/io/json_emit.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine_cli.dir/src/cli/v2_cli.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/cli/v2_cli.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/src/cli/v2_cli.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine_cli.dir/src/cli/v2_cli.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine_tests.dir/tests/run_manifest_tests.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/tests/run_manifest_tests.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/tests/run_manifest_tests.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine_tests.dir/tests/run_manifest_tests.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine_test_run_id.dir/tests/test_run_id_determinism.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/tests/test_run_id_determinism.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/tests/test_run_id_determinism.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine_test_run_id.dir/tests/test_run_id_determinism.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/v2_engine_test_json_emit.dir/tests/test_json_emit_smoke.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/tests/test_json_emit_smoke.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/tests/test_json_emit_smoke.cpp",
+  "output": "v2/engine/CMakeFiles/v2_engine_test_json_emit.dir/tests/test_json_emit_smoke.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/v2/studio",
+  "command": "/usr/bin/c++   -std=gnu++20 -o CMakeFiles/v2_studio.dir/app/main_stub.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/studio/app/main_stub.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/studio/app/main_stub.cpp",
+  "output": "v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/cpp/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/cpp_accuracy_gate.dir/analysis/accuracy_gate.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis/accuracy_gate.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis/accuracy_gate.cpp",
+  "output": "cpp/engine/CMakeFiles/cpp_accuracy_gate.dir/analysis/accuracy_gate.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/cpp/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/cpp_commit_gate.dir/analysis/commit_gate.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis/commit_gate.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis/commit_gate.cpp",
+  "output": "cpp/engine/CMakeFiles/cpp_commit_gate.dir/analysis/commit_gate.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/cpp/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/cpp_accuracy_gate_tests.dir/tests/test_accuracy_gate.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/tests/test_accuracy_gate.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/tests/test_accuracy_gate.cpp",
+  "output": "cpp/engine/CMakeFiles/cpp_accuracy_gate_tests.dir/tests/test_accuracy_gate.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/cpp/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/cpp_commit_gate_tests.dir/tests/test_commit_gate.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/tests/test_commit_gate.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/tests/test_commit_gate.cpp",
+  "output": "cpp/engine/CMakeFiles/cpp_commit_gate_tests.dir/tests/test_commit_gate.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/cpp/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/cpp_lineage_stamper.dir/analysis/lineage_stamper.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis/lineage_stamper.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis/lineage_stamper.cpp",
+  "output": "cpp/engine/CMakeFiles/cpp_lineage_stamper.dir/analysis/lineage_stamper.cpp.o"
+},
+{
+  "directory": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/build-on/cpp/engine",
+  "command": "/usr/bin/c++  -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/analysis -I/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/v2/engine/include -std=gnu++20 -o CMakeFiles/cpp_lineage_stamper_tests.dir/tests/test_lineage_stamper.cpp.o -c /home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/tests/test_lineage_stamper.cpp",
+  "file": "/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/cpp/engine/tests/test_lineage_stamper.cpp",
+  "output": "cpp/engine/CMakeFiles/cpp_lineage_stamper_tests.dir/tests/test_lineage_stamper.cpp.o"
+}
+]
