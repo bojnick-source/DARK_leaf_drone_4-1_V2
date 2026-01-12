@@ -1,3 +1,5 @@
 build/
+off_build/
+on_build/
 _codeql_build_dir/
 Testing/
