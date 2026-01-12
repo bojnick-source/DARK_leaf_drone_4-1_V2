@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcpp_commit_gate.a CMakeFiles/cpp_commit_gate.dir/analysis/commit_gate.cpp.o
+/usr/bin/ranlib libcpp_commit_gate.a
