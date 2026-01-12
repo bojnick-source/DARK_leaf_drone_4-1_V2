@@ -1,6 +1,8 @@
 #include <cassert>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <iterator>
 #include <map>
 #include <string>
 #include <vector>
@@ -26,11 +28,15 @@ int main() {
     record.artifact_paths = {"out.dat"};
 
     const auto json = v2::io::emit_run_output_json(record, 6);
-    const std::string expected_prefix = "{\"schema\":\"dark/v2/io/run_output/2.0\",\"run_id\":\"" + run_id +
-                                        "\",\"ok\":true,\"label\":null,\"inputs\":" + canonical_inputs +
-                                        ",\"metrics\":{\"energy\":42.000000},\"artifacts\":{\"root\":\"" +
-                                        root.generic_string() + "\",\"paths\":[\"out.dat\"]}}\n";
-    assert(json == expected_prefix);
+    const auto fixture = std::filesystem::path(__FILE__).parent_path() / "fixtures" / "run_output_golden.json";
+    std::ifstream fixture_in(fixture, std::ios::binary);
+    std::string expected((std::istreambuf_iterator<char>(fixture_in)), std::istreambuf_iterator<char>());
+    if (json != expected) {
+        std::cerr << "Expected fixture mismatch\n";
+        std::cerr << "Fixture path: " << fixture << "\n";
+        std::cerr << "Expected:\n" << expected << "\nActual:\n" << json << "\n";
+        return 1;
+    }
 
     const bool wrote = v2::io::write_run_output_file(record, 6);
     assert(wrote);

@@ -15,7 +15,9 @@ int main() {
 
     const auto id1 = v2::io::compute_run_id(canon_a);
     const auto id2 = v2::io::compute_run_id(canon_b);
-    assert(id1 == id2);
+    const std::string expected_id = "a2db5ca6668e8382";
+    assert(id1 == expected_id);
+    assert(id2 == expected_id);
 
     scalars_b["mass"] = 2.0;
     const auto canon_c = v2::io::canonicalize_kv(scalars_b, 6);

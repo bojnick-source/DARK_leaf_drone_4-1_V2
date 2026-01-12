@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_testing()
 
-add_subdirectory(v2/engine)
-add_subdirectory(v2/studio)
-add_subdirectory(cpp/engine)
+option(ENABLE_V2_ENGINE "Build v2 engine/tooling" OFF)
+
+if(ENABLE_V2_ENGINE)
+    add_subdirectory(v2/engine)
+    add_subdirectory(v2/studio)
+    add_subdirectory(cpp/engine)
+endif()
