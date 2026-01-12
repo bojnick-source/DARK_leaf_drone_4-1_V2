@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+    branches: [ main, copilot/implement-computational-engineering-system ]
+  pull_request:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        enable_v2: [ "OFF", "ON" ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -S . -B build-${{ matrix.enable_v2 }} -DENABLE_V2_ENGINE=${{ matrix.enable_v2 }}
+
+      - name: Build
+        run: |
+          cmake --build build-${{ matrix.enable_v2 }}
+
+      - name: Test
+        run: |
+          ctest --test-dir build-${{ matrix.enable_v2 }}
