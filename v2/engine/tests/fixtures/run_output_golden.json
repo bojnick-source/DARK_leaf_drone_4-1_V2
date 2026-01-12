@@ -1,0 +1,1 @@
+{"schema":"dark/v2/io/run_output/2.0","run_id":"5e893b8847d4209c","ok":true,"label":null,"inputs":{"alpha":"1.250000","beta":"2.500000"},"metrics":{"energy":42.000000},"artifacts":{"root":"artifacts/runs/5e893b8847d4209c","paths":["out.dat"]}}

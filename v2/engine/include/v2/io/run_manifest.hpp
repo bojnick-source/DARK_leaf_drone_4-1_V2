@@ -1,0 +1,977 @@
+#pragma once
+
+#include <cstdint>
+#include <cmath>
+#include <filesystem>
+#include <charconv>
+#include <fstream>
+#include <algorithm>
+#include <iomanip>
+#include <locale>
+#include <map>
+#include <limits>
+#include <optional>
+#include <sstream>
+#include <utility>
+#include <vector>
+#include <string>
+#include <string_view>
+
+#include "v2/core/fail_label.hpp"
+
+namespace v2::io {
+
+inline constexpr std::string_view kRunsDir = "runs";
+inline constexpr std::string_view kArtifactsDir = "artifacts";
+inline constexpr std::string_view kManifestFile = "manifest.json";
+inline constexpr std::string_view kInputsFile = "inputs.json";
+inline constexpr std::string_view kMetricsFile = "metrics.json";
+inline constexpr std::string_view kRunOutputFile = "run_output.json";
+inline constexpr std::string_view kRunIdCharset = "0123456789abcdef";
+
+inline constexpr std::uint64_t fnv1a_64(std::string_view data) {
+    std::uint64_t hash = 14695981039346656037ULL;
+    for (unsigned char c : data) {
+        hash ^= static_cast<std::uint64_t>(c);
+        hash *= 1099511628211ULL;
+    }
+    return hash;
+}
+
+inline std::string run_id_from_seed(std::string_view seed) {
+    const std::uint64_t h = fnv1a_64(seed);
+    std::string out(16, '0');
+    for (int i = 0; i < 16; ++i) {
+        const auto nibble = static_cast<int>((h >> ((15 - i) * 4)) & 0xF);
+        out[i] = static_cast<char>(nibble < 10 ? ('0' + nibble) : ('a' + (nibble - 10)));
+    }
+    return out;
+}
+
+inline std::string manifest_path(std::string_view run_id) {
+    std::string path;
+    path.reserve(kRunsDir.size() + 1 + run_id.size() + 1 + kManifestFile.size());
+    path.append(kRunsDir).push_back('/');
+    path.append(run_id).push_back('/');
+    path.append(kManifestFile);
+    return path;
+}
+
+inline std::string artifact_dir(std::string_view run_id) {
+    std::string path;
+    path.reserve(kRunsDir.size() + 1 + run_id.size() + 1 + kArtifactsDir.size());
+    path.append(kRunsDir).push_back('/');
+    path.append(run_id).push_back('/');
+    path.append(kArtifactsDir);
+    return path;
+}
+
+inline std::string run_artifact_dir(std::string_view run_id) {
+    std::filesystem::path path = std::filesystem::path(kArtifactsDir) / kRunsDir / run_id;
+    return path.generic_string();
+}
+
+inline std::string run_output_path(std::string_view run_id) {
+    std::filesystem::path path = std::filesystem::path(kArtifactsDir) / kRunsDir / run_id / kRunOutputFile;
+    return path.generic_string();
+}
+
+inline std::string format_scalar(double value, int precision = 12) {
+    if (!std::isfinite(value)) {
+        return "nan";
+    }
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << std::fixed << std::setprecision(precision) << value;
+    return oss.str();
+}
+
+inline std::string format_array(const std::vector<double>& values, int precision = 12) {
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << "[";
+    for (std::size_t i = 0; i < values.size(); ++i) {
+        if (i != 0) {
+            oss << ",";
+        }
+        oss << format_scalar(values[i], precision);
+    }
+    oss << "]";
+    return oss.str();
+}
+
+inline std::string canonicalize_inputs(
+    const std::map<std::string, double>& scalars,
+    const std::map<std::string, std::string>& text = {},
+    const std::map<std::string, std::vector<double>>& arrays = {},
+    const std::map<std::string, std::pair<double, std::string>>& units = {},
+    int precision = 12) {
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << "{";
+    bool first = true;
+    for (const auto& [k, v] : scalars) {
+        if (!first) {
+            oss << ",";
+        }
+        first = false;
+        oss << "\"s:" << k << "\":" << "\"" << format_scalar(v, precision) << "\"";
+    }
+    for (const auto& [k, v] : text) {
+        if (!first) {
+            oss << ",";
+        }
+        first = false;
+        oss << "\"t:" << k << "\":\"" << v << "\"";
+    }
+    for (const auto& [k, v] : arrays) {
+        if (!first) {
+            oss << ",";
+        }
+        first = false;
+        oss << "\"a:" << k << "\":\"" << format_array(v, precision) << "\"";
+    }
+    for (const auto& [k, v] : units) {
+        if (!first) {
+            oss << ",";
+        }
+        first = false;
+        oss << "\"u:" << k << "\":\"" << format_scalar(v.first, precision) << " " << v.second
+            << "\"";
+    }
+    oss << "}";
+    return oss.str();
+}
+
+inline std::string run_id_from_inputs(
+    const std::map<std::string, double>& scalars,
+    const std::map<std::string, std::string>& text = {},
+    const std::map<std::string, std::vector<double>>& arrays = {},
+    const std::map<std::string, std::pair<double, std::string>>& units = {},
+    int precision = 12) {
+    return run_id_from_seed(canonicalize_inputs(scalars, text, arrays, units, precision));
+}
+
+enum class LoadError {
+    NONE,
+    MISSING_FILE,
+    JSON_PARSE_ERROR,
+    SCHEMA_VIOLATION,
+    RUN_ID_MISMATCH,
+    INVALID_METRIC,
+    INVALID_ARTIFACT_PATH
+};
+
+struct JsonValue {
+    enum class Type { Null, Bool, Number, String, Object, Array } type{Type::Null};
+    bool b{false};
+    double number{0.0};
+    std::string str;
+    std::vector<std::pair<std::string, JsonValue>> object;
+    std::vector<JsonValue> array;
+};
+
+struct RunOutput {
+    std::string run_id;
+    bool ok{false};
+    std::optional<v2::core::FailLabel> label;
+    JsonValue inputs;
+    std::map<std::string, double> metrics;
+    std::string artifact_root;
+    std::vector<std::string> artifact_paths;
+};
+
+struct LoadResult {
+    bool success{false};
+    LoadError code{LoadError::NONE};
+    std::string message;
+    RunOutput output;
+};
+
+inline bool is_lower_hex_run_id(std::string_view run_id) {
+    if (run_id.size() != 16) return false;
+    for (char c : run_id) {
+        if (kRunIdCharset.find(c) == std::string_view::npos) return false;
+    }
+    return true;
+}
+
+inline std::optional<v2::core::FailLabel> fail_label_from_string(std::string_view s) {
+    for (auto label : v2::core::kFailLabels) {
+        if (v2::core::to_string(label) == s) {
+            return label;
+        }
+    }
+    return std::nullopt;
+}
+
+class JsonParser {
+   public:
+    explicit JsonParser(std::string_view src) : s_(src) {}
+
+    std::optional<JsonValue> parse() {
+        skip_ws();
+        auto v = parse_value();
+        if (!v.has_value()) return std::nullopt;
+        skip_ws();
+        if (pos_ != s_.size()) return std::nullopt;
+        return v;
+    }
+
+   private:
+    std::optional<JsonValue> parse_value() {
+        skip_ws();
+        if (pos_ >= s_.size()) return std::nullopt;
+        char c = s_[pos_];
+        if (c == 'n') return parse_null();
+        if (c == 't' || c == 'f') return parse_bool();
+        if (c == '"') return parse_string();
+        if (c == '{') return parse_object();
+        if (c == '[') return parse_array();
+        if (c == '-' || (c >= '0' && c <= '9')) return parse_number();
+        return std::nullopt;
+    }
+
+    std::optional<JsonValue> parse_null() {
+        if (s_.substr(pos_, 4) != "null") return std::nullopt;
+        pos_ += 4;
+        return JsonValue{};
+    }
+
+    std::optional<JsonValue> parse_bool() {
+        if (s_.substr(pos_, 4) == "true") {
+            pos_ += 4;
+            JsonValue v;
+            v.type = JsonValue::Type::Bool;
+            v.b = true;
+            return v;
+        }
+        if (s_.substr(pos_, 5) == "false") {
+            pos_ += 5;
+            JsonValue v;
+            v.type = JsonValue::Type::Bool;
+            v.b = false;
+            return v;
+        }
+        return std::nullopt;
+    }
+
+    std::optional<JsonValue> parse_string() {
+        if (s_[pos_] != '"') return std::nullopt;
+        ++pos_;
+        std::string out;
+        while (pos_ < s_.size()) {
+            char c = s_[pos_++];
+            if (c == '"') {
+                JsonValue v;
+                v.type = JsonValue::Type::String;
+                v.str = std::move(out);
+                return v;
+            }
+            if (c == '\\') {
+                if (pos_ >= s_.size()) return std::nullopt;
+                char esc = s_[pos_++];
+                switch (esc) {
+                    case '"': out.push_back('"'); break;
+                    case '\\': out.push_back('\\'); break;
+                    case '/': out.push_back('/'); break;
+                    case 'b': out.push_back('\b'); break;
+                    case 'f': out.push_back('\f'); break;
+                    case 'n': out.push_back('\n'); break;
+                    case 'r': out.push_back('\r'); break;
+                    case 't': out.push_back('\t'); break;
+                    default: return std::nullopt;
+                }
+            } else {
+                out.push_back(c);
+            }
+        }
+        return std::nullopt;
+    }
+
+    std::optional<JsonValue> parse_number() {
+        std::size_t start = pos_;
+        if (s_[pos_] == '-') ++pos_;
+        while (pos_ < s_.size() && std::isdigit(static_cast<unsigned char>(s_[pos_]))) ++pos_;
+        if (pos_ < s_.size() && s_[pos_] == '.') {
+            ++pos_;
+            while (pos_ < s_.size() && std::isdigit(static_cast<unsigned char>(s_[pos_]))) ++pos_;
+        }
+        if (pos_ < s_.size() && (s_[pos_] == 'e' || s_[pos_] == 'E')) {
+            ++pos_;
+            if (pos_ < s_.size() && (s_[pos_] == '+' || s_[pos_] == '-')) ++pos_;
+            while (pos_ < s_.size() && std::isdigit(static_cast<unsigned char>(s_[pos_]))) ++pos_;
+        }
+        std::string_view num_sv = s_.substr(start, pos_ - start);
+        double value{};
+        auto res = std::from_chars(num_sv.data(), num_sv.data() + num_sv.size(), value);
+        if (res.ec == std::errc::result_out_of_range) {
+            value = std::numeric_limits<double>::infinity();
+        } else if (res.ec != std::errc()) {
+            return std::nullopt;
+        }
+        JsonValue v;
+        v.type = JsonValue::Type::Number;
+        v.number = value;
+        return v;
+    }
+
+    std::optional<JsonValue> parse_object() {
+        if (s_[pos_] != '{') return std::nullopt;
+        ++pos_;
+        JsonValue v;
+        v.type = JsonValue::Type::Object;
+        skip_ws();
+        if (pos_ < s_.size() && s_[pos_] == '}') {
+            ++pos_;
+            return v;
+        }
+        while (true) {
+            auto key = parse_string();
+            if (!key.has_value() || key->type != JsonValue::Type::String) return std::nullopt;
+            skip_ws();
+            if (pos_ >= s_.size() || s_[pos_] != ':') return std::nullopt;
+            ++pos_;
+            auto val = parse_value();
+            if (!val.has_value()) return std::nullopt;
+            v.object.emplace_back(std::move(key->str), std::move(*val));
+            skip_ws();
+            if (pos_ >= s_.size()) return std::nullopt;
+            if (s_[pos_] == '}') {
+                ++pos_;
+                break;
+            }
+            if (s_[pos_] != ',') return std::nullopt;
+            ++pos_;
+            skip_ws();
+        }
+        return v;
+    }
+
+    std::optional<JsonValue> parse_array() {
+        if (s_[pos_] != '[') return std::nullopt;
+        ++pos_;
+        JsonValue v;
+        v.type = JsonValue::Type::Array;
+        skip_ws();
+        if (pos_ < s_.size() && s_[pos_] == ']') {
+            ++pos_;
+            return v;
+        }
+        while (true) {
+            auto elem = parse_value();
+            if (!elem.has_value()) return std::nullopt;
+            v.array.emplace_back(std::move(*elem));
+            skip_ws();
+            if (pos_ >= s_.size()) return std::nullopt;
+            if (s_[pos_] == ']') {
+                ++pos_;
+                break;
+            }
+            if (s_[pos_] != ',') return std::nullopt;
+            ++pos_;
+            skip_ws();
+        }
+        return v;
+    }
+
+    void skip_ws() {
+        while (pos_ < s_.size()) {
+            char c = s_[pos_];
+            if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                ++pos_;
+            } else {
+                break;
+            }
+        }
+    }
+
+    std::string_view s_;
+    std::size_t pos_{0};
+};
+
+inline bool is_relative_clean_path(const std::string& path) {
+    namespace fs = std::filesystem;
+    if (path.empty()) return false;
+    if (!path.empty() && fs::path(path).is_absolute()) return false;
+    fs::path p(path);
+    for (const auto& part : p) {
+        if (part == "..") return false;
+    }
+    return true;
+}
+
+inline LoadResult load_run_output(
+    const std::string& run_id,
+    const std::string& artifact_root_override = "",
+    bool strict = true) {
+    LoadResult result;
+    if (!is_lower_hex_run_id(run_id)) {
+        result.code = LoadError::RUN_ID_MISMATCH;
+        result.message = "run_id format invalid";
+        return result;
+    }
+
+    const std::string artifact_root =
+        artifact_root_override.empty() ? run_artifact_dir(run_id) : artifact_root_override;
+    const auto manifest_path = (std::filesystem::path(artifact_root) / kRunOutputFile).generic_string();
+
+    std::ifstream in(manifest_path, std::ios::binary);
+    if (!in.is_open()) {
+        result.code = LoadError::MISSING_FILE;
+        result.message = "run_output.json missing";
+        return result;
+    }
+    std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+
+    JsonParser parser(content);
+    auto root_opt = parser.parse();
+    if (!root_opt.has_value() || root_opt->type != JsonValue::Type::Object) {
+        result.code = LoadError::JSON_PARSE_ERROR;
+        result.message = "invalid JSON";
+        return result;
+    }
+
+    const auto& root = *root_opt;
+    std::map<std::string, JsonValue> fields;
+    for (const auto& [k, v] : root.object) {
+        if (fields.count(k)) {
+            result.code = LoadError::SCHEMA_VIOLATION;
+            result.message = "duplicate field";
+            return result;
+        }
+        fields.emplace(k, v);
+    }
+
+    auto require_field = [&](const std::string& key, JsonValue::Type t) -> std::optional<JsonValue> {
+        auto it = fields.find(key);
+        if (it == fields.end() || it->second.type != t) return std::nullopt;
+        return it->second;
+    };
+
+    auto run_id_field = require_field("run_id", JsonValue::Type::String);
+    auto ok_field = require_field("ok", JsonValue::Type::Bool);
+    auto label_field_it = fields.find("label");
+    auto inputs_field = require_field("inputs", JsonValue::Type::Object);
+    auto metrics_field = require_field("metrics", JsonValue::Type::Object);
+
+    if (!run_id_field || !ok_field || label_field_it == fields.end() || !inputs_field || !metrics_field) {
+        result.code = LoadError::SCHEMA_VIOLATION;
+        result.message = "missing required fields";
+        return result;
+    }
+
+    if (!is_lower_hex_run_id(run_id_field->str) || run_id_field->str != run_id) {
+        result.code = LoadError::RUN_ID_MISMATCH;
+        result.message = "run_id mismatch";
+        return result;
+    }
+
+    const JsonValue& label_value = label_field_it->second;
+
+    bool ok = ok_field->b;
+    std::optional<v2::core::FailLabel> label;
+    if (ok) {
+        if (label_value.type != JsonValue::Type::Null) {
+            result.code = LoadError::SCHEMA_VIOLATION;
+            result.message = "label must be null when ok";
+            return result;
+        }
+    } else {
+        if (label_value.type != JsonValue::Type::String) {
+            result.code = LoadError::SCHEMA_VIOLATION;
+            result.message = "label must be string when !ok";
+            return result;
+        }
+        auto fl = fail_label_from_string(label_value.str);
+        if (!fl.has_value()) {
+            result.code = LoadError::SCHEMA_VIOLATION;
+            result.message = "invalid fail label";
+            return result;
+        }
+        label = fl;
+    }
+
+    RunOutput out;
+    out.run_id = run_id;
+    out.ok = ok;
+    out.label = label;
+    out.inputs = *inputs_field;
+
+    for (const auto& [k, v] : metrics_field->object) {
+        if (v.type != JsonValue::Type::Number || !std::isfinite(v.number)) {
+            result.code = LoadError::INVALID_METRIC;
+            result.message = "metric invalid";
+            return result;
+        }
+        out.metrics[k] = v.number;
+    }
+
+    std::string artifacts_root = artifact_root;
+    std::vector<std::string> artifacts_paths;
+    auto artifacts_it = fields.find("artifacts");
+    if (artifacts_it != fields.end()) {
+        if (artifacts_it->second.type != JsonValue::Type::Object) {
+            result.code = LoadError::SCHEMA_VIOLATION;
+            result.message = "artifacts must be object";
+            return result;
+        }
+        std::map<std::string, JsonValue> art_fields;
+        for (const auto& [k, v] : artifacts_it->second.object) {
+            art_fields.emplace(k, v);
+        }
+        auto root_it = art_fields.find("root");
+        if (root_it != art_fields.end()) {
+            if (root_it->second.type != JsonValue::Type::String) {
+                result.code = LoadError::SCHEMA_VIOLATION;
+                result.message = "artifacts.root must be string";
+                return result;
+            }
+            artifacts_root = root_it->second.str;
+        }
+        auto paths_it = art_fields.find("paths");
+        if (paths_it != art_fields.end()) {
+            if (paths_it->second.type != JsonValue::Type::Array) {
+                result.code = LoadError::SCHEMA_VIOLATION;
+                result.message = "artifacts.paths must be array";
+                return result;
+            }
+            for (const auto& elem : paths_it->second.array) {
+                if (elem.type != JsonValue::Type::String) {
+                    result.code = LoadError::SCHEMA_VIOLATION;
+                    result.message = "artifact path must be string";
+                    return result;
+                }
+                const auto& p = elem.str;
+                bool valid = is_relative_clean_path(p);
+                if (!valid) {
+                    if (strict) {
+                        result.code = LoadError::INVALID_ARTIFACT_PATH;
+                        result.message = "artifact path invalid";
+                        return result;
+                    }
+                }
+                artifacts_paths.push_back(p);
+            }
+        }
+    }
+    out.artifact_root = artifacts_root;
+    out.artifact_paths = std::move(artifacts_paths);
+
+    for (const auto& [k, _] : fields) {
+        if (k != "run_id" && k != "ok" && k != "label" && k != "inputs" && k != "metrics" &&
+            k != "artifacts") {
+            result.code = LoadError::SCHEMA_VIOLATION;
+            result.message = "unknown top-level field";
+            return result;
+        }
+    }
+
+    result.success = true;
+    result.code = LoadError::NONE;
+    result.output = std::move(out);
+    return result;
+}
+
+inline bool write_run_output(
+    const std::string& run_id,
+    const std::string& inputs_json,
+    const std::map<std::string, double>& metrics,
+    bool ok,
+    std::optional<v2::core::FailLabel> label = std::nullopt,
+    const std::vector<std::string>& artifact_paths = {},
+    const std::string& artifact_root_override = "",
+    int precision = 12) {
+    namespace fs = std::filesystem;
+
+    const auto base_dir = run_artifact_dir(run_id);
+    fs::create_directories(base_dir);
+
+    const std::string artifact_root = artifact_root_override.empty() ? base_dir : artifact_root_override;
+    const auto output_path = run_output_path(run_id);
+    fs::path tmp_path = fs::path(output_path).concat(".tmp");
+
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << "{\"run_id\":\"" << run_id << "\",";
+    oss << "\"ok\":" << (ok ? "true" : "false") << ",";
+    oss << "\"label\":";
+    if (ok) {
+        oss << "null";
+    } else if (label.has_value()) {
+        oss << "\"" << v2::core::to_string(*label) << "\"";
+    } else {
+        oss << "null";
+    }
+    oss << ",\"inputs\":" << inputs_json << ",";
+
+    oss << "\"metrics\":{";
+    bool first_metric = true;
+    for (const auto& [k, v] : metrics) {
+        if (!first_metric) {
+            oss << ",";
+        }
+        first_metric = false;
+        oss << "\"" << k << "\":" << format_scalar(v, precision);
+    }
+    oss << "},";
+
+    oss << "\"artifacts\":{";
+    oss << "\"root\":\"" << artifact_root << "\",";
+    oss << "\"paths\":[";
+    for (std::size_t i = 0; i < artifact_paths.size(); ++i) {
+        if (i != 0) {
+            oss << ",";
+        }
+        oss << "\"" << artifact_paths[i] << "\"";
+    }
+    oss << "]";
+    oss << "}";
+
+    oss << "}";
+
+    {
+        std::ofstream out(tmp_path, std::ios::binary | std::ios::trunc);
+        if (!out.is_open()) {
+            return false;
+        }
+        out << oss.str() << "\n";
+    }
+
+    fs::rename(tmp_path, output_path);
+    return true;
+}
+
+struct IngestOptions {
+    std::string artifact_root = (std::filesystem::path(kArtifactsDir) / kRunsDir).generic_string();
+    std::vector<std::string> run_ids;
+    std::string prefix;
+    std::size_t max_runs = std::numeric_limits<std::size_t>::max();
+    bool strict = true;
+};
+
+struct IngestError {
+    std::string run_id;
+    std::string code;
+    std::string message;
+    std::string source_path;
+};
+
+struct IngestedRun {
+    RunOutput output;
+    std::string source_path;
+};
+
+struct IngestResult {
+    std::vector<IngestedRun> runs;
+    std::vector<IngestError> errors;
+};
+
+struct SummaryCounts {
+    std::size_t total{0};
+    std::size_t passed{0};
+    std::size_t failed{0};
+    std::size_t invalid{0};
+};
+
+struct SummaryRun {
+    std::string run_id;
+    bool ok{false};
+    std::optional<std::string> label;
+    std::map<std::string, double> metrics;
+    std::string source_path;
+    std::optional<IngestError> error;
+};
+
+struct SummaryResult {
+    std::string json;
+    SummaryCounts counts;
+    std::vector<IngestError> errors;
+    std::vector<SummaryRun> runs;
+};
+
+struct SummaryOptions {
+    IngestOptions ingest_opts{};
+    std::string schema = "dark/v2/io/run_summary/1.1";
+    std::string generated_at = "1970-01-01T00:00:00Z";
+};
+
+inline IngestResult ingest_runs(const IngestOptions& opts = {}) {
+    namespace fs = std::filesystem;
+    IngestResult result;
+
+    std::vector<std::string> run_filter;
+    if (!opts.run_ids.empty()) {
+        run_filter = opts.run_ids;
+        std::sort(run_filter.begin(), run_filter.end());
+    }
+
+    std::vector<std::string> candidates;
+    if (fs::exists(opts.artifact_root)) {
+        for (const auto& entry : fs::directory_iterator(opts.artifact_root)) {
+            if (!entry.is_directory()) continue;
+            const std::string name = entry.path().filename().string();
+            if (!opts.prefix.empty() && name.rfind(opts.prefix, 0) != 0) continue;
+            if (!run_filter.empty() &&
+                !std::binary_search(run_filter.begin(), run_filter.end(), name)) {
+                continue;
+            }
+            if (!is_lower_hex_run_id(name)) {
+                result.errors.push_back(
+                    {name, "INVALID_RUN_ID_DIR", "run_id directory invalid", entry.path().generic_string()});
+                continue;
+            }
+            candidates.push_back(name);
+        }
+    }
+
+    std::sort(candidates.begin(), candidates.end());
+    if (opts.max_runs < candidates.size()) {
+        candidates.resize(opts.max_runs);
+    }
+
+    for (const auto& run_id : candidates) {
+        const fs::path run_dir = fs::path(opts.artifact_root) / run_id;
+        const fs::path manifest_path = run_dir / kRunOutputFile;
+        if (!fs::exists(manifest_path)) {
+            result.errors.push_back(
+                {run_id, "MISSING_MANIFEST", "run_output.json missing", manifest_path.generic_string()});
+            continue;
+        }
+        auto load = load_run_output(run_id, run_dir.generic_string(), opts.strict);
+        if (!load.success) {
+            result.errors.push_back({run_id, "VALIDATION_FAILED", load.message, manifest_path.generic_string()});
+            continue;
+        }
+        IngestedRun ing;
+        ing.output = std::move(load.output);
+        ing.source_path = manifest_path.generic_string();
+        result.runs.push_back(std::move(ing));
+    }
+
+    return result;
+}
+
+inline SummaryResult aggregate_runs(const SummaryOptions& opts = {}) {
+    namespace fs = std::filesystem;
+
+    SummaryResult summary;
+    SummaryCounts counts{};
+
+    struct Candidate {
+        std::string run_id;
+        fs::path manifest_path;
+        fs::file_time_type mtime;
+    };
+
+    std::vector<Candidate> candidates;
+    std::vector<IngestError> errors;
+
+    std::vector<std::string> run_filter;
+    if (!opts.ingest_opts.run_ids.empty()) {
+        run_filter = opts.ingest_opts.run_ids;
+        std::sort(run_filter.begin(), run_filter.end());
+    }
+
+    if (fs::exists(opts.ingest_opts.artifact_root)) {
+        for (const auto& entry : fs::directory_iterator(opts.ingest_opts.artifact_root)) {
+            if (!entry.is_directory()) continue;
+            const std::string dir_name = entry.path().filename().string();
+            if (!opts.ingest_opts.prefix.empty() &&
+                dir_name.rfind(opts.ingest_opts.prefix, 0) != 0) {
+                continue;
+            }
+            if (!run_filter.empty() &&
+                !std::binary_search(run_filter.begin(), run_filter.end(), dir_name)) {
+                continue;
+            }
+
+            if (!is_lower_hex_run_id(dir_name)) {
+                counts.total++;
+                counts.invalid++;
+                errors.push_back(
+                    {dir_name, "INVALID_RUN_ID_DIR", "run_id directory invalid", entry.path().generic_string()});
+                continue;
+            }
+
+            fs::path manifest_path = entry.path() / kRunOutputFile;
+            if (!fs::exists(manifest_path)) {
+                counts.total++;
+                counts.invalid++;
+                errors.push_back(
+                    {dir_name, "MISSING_MANIFEST", "run_output.json missing", manifest_path.generic_string()});
+                continue;
+            }
+
+            fs::file_time_type mtime = fs::last_write_time(manifest_path);
+            candidates.push_back({dir_name, manifest_path, mtime});
+        }
+    }
+
+    // Deduplicate by run_id using mtime then path lexicographic.
+    std::map<std::string, Candidate> chosen;
+    for (const auto& cand : candidates) {
+        auto it = chosen.find(cand.run_id);
+        if (it == chosen.end()) {
+            chosen.emplace(cand.run_id, cand);
+            continue;
+        }
+        const auto& cur = it->second;
+        bool replace = false;
+        if (cand.mtime > cur.mtime) {
+            replace = true;
+        } else if (cand.mtime == cur.mtime &&
+                   cand.manifest_path.generic_string() < cur.manifest_path.generic_string()) {
+            replace = true;
+        }
+        if (replace) {
+            counts.invalid++;
+            errors.push_back(
+                {cur.run_id, "DUPLICATE_RUN_ID", "duplicate manifest excluded", cur.manifest_path.generic_string()});
+            it->second = cand;
+        } else {
+            counts.invalid++;
+            errors.push_back(
+                {cand.run_id, "DUPLICATE_RUN_ID", "duplicate manifest excluded", cand.manifest_path.generic_string()});
+        }
+    }
+
+    // Apply max_runs after sorting run_ids.
+    std::vector<std::string> run_ids;
+    run_ids.reserve(chosen.size());
+    for (const auto& [rid, _] : chosen) run_ids.push_back(rid);
+    std::sort(run_ids.begin(), run_ids.end());
+    if (opts.ingest_opts.max_runs < run_ids.size()) {
+        run_ids.resize(opts.ingest_opts.max_runs);
+    }
+
+    std::vector<SummaryRun> runs;
+    runs.reserve(run_ids.size());
+
+    for (const auto& run_id : run_ids) {
+        const auto& cand = chosen.at(run_id);
+        auto load = load_run_output(
+            run_id, cand.manifest_path.parent_path().generic_string(), opts.ingest_opts.strict);
+        counts.total++;
+        if (!load.success) {
+            counts.invalid++;
+            errors.push_back(
+                {run_id, "VALIDATION_FAILED", load.message, cand.manifest_path.generic_string()});
+            continue;
+        }
+
+        SummaryRun sr;
+        sr.run_id = run_id;
+        sr.ok = load.output.ok;
+        if (load.output.label.has_value()) {
+            sr.label = v2::core::to_string(*load.output.label);
+        }
+        if (sr.ok) {
+            sr.metrics = load.output.metrics;
+            counts.passed++;
+        } else {
+            counts.failed++;
+            sr.error = IngestError{run_id, "FAILED", sr.label.value_or("run failed"), cand.manifest_path.generic_string()};
+        }
+        sr.source_path = cand.manifest_path.generic_string();
+        runs.push_back(std::move(sr));
+    }
+
+    // Build label tally (only for ok and label present).
+    std::map<std::string, std::size_t> label_tally;
+    for (const auto& r : runs) {
+        if (r.ok && r.label.has_value()) {
+            label_tally[*r.label]++;
+        }
+    }
+
+    // Sort errors deterministically by run_id then code then message.
+    std::sort(errors.begin(), errors.end(), [](const IngestError& a, const IngestError& b) {
+        if (a.run_id != b.run_id) return a.run_id < b.run_id;
+        if (a.code != b.code) return a.code < b.code;
+        return a.message < b.message;
+    });
+
+    // Build JSON deterministically.
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << "{";
+    oss << "\"schema\":\"" << opts.schema << "\",";
+    oss << "\"artifact_root\":\"" << opts.ingest_opts.artifact_root << "\",";
+    oss << "\"generated_at\":\"" << opts.generated_at << "\",";
+
+    oss << "\"runs\":[";
+    for (std::size_t i = 0; i < runs.size(); ++i) {
+        if (i != 0) oss << ",";
+        const auto& r = runs[i];
+        oss << "{";
+        oss << "\"run_id\":\"" << r.run_id << "\",";
+        oss << "\"ok\":" << (r.ok ? "true" : "false") << ",";
+        oss << "\"source_path\":\"" << r.source_path << "\"";
+        if (r.label.has_value()) {
+            oss << ",\"label\":\"" << *r.label << "\"";
+        }
+        if (r.ok && !r.metrics.empty()) {
+            oss << ",\"metrics\":{";
+            bool first = true;
+            for (const auto& [k, v] : r.metrics) {
+                if (!first) oss << ",";
+                first = false;
+                oss << "\"" << k << "\":" << format_scalar(v);
+            }
+            oss << "}";
+        }
+        if (!r.ok && r.error.has_value()) {
+            oss << ",\"error\":{";
+            oss << "\"code\":\"" << r.error->code << "\",";
+            oss << "\"message\":\"" << r.error->message << "\"";
+            oss << "}";
+        }
+        oss << "}";
+    }
+    oss << "],";
+
+    oss << "\"counts\":{";
+    oss << "\"total\":" << counts.total << ",";
+    oss << "\"passed\":" << counts.passed << ",";
+    oss << "\"failed\":" << counts.failed << ",";
+    oss << "\"invalid\":" << counts.invalid;
+    oss << "},";
+
+    if (!label_tally.empty()) {
+        oss << "\"label_tally\":{";
+        bool first = true;
+        for (const auto& [k, v] : label_tally) {
+            if (!first) oss << ",";
+            first = false;
+            oss << "\"" << k << "\":" << v;
+        }
+        oss << "},";
+    } else {
+        oss << "\"label_tally\":{},";
+    }
+
+    oss << "\"errors\":[";
+    for (std::size_t i = 0; i < errors.size(); ++i) {
+        if (i != 0) oss << ",";
+        const auto& e = errors[i];
+        oss << "{";
+        oss << "\"run_id\":\"" << e.run_id << "\",";
+        oss << "\"code\":\"" << e.code << "\",";
+        oss << "\"message\":\"" << e.message << "\"";
+        if (!e.source_path.empty()) {
+            oss << ",\"source_path\":\"" << e.source_path << "\"";
+        }
+        oss << "}";
+    }
+    oss << "]";
+    oss << "}";
+
+    summary.json = oss.str();
+    summary.counts = counts;
+    summary.errors = std::move(errors);
+    summary.runs = std::move(runs);
+    return summary;
+}
+
+}  // namespace v2::io
