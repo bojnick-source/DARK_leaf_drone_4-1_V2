@@ -34,6 +34,7 @@ add_executable(cpp_accuracy_gate_tests
 
 target_link_libraries(cpp_accuracy_gate_tests PRIVATE cpp_accuracy_gate)
 add_test(NAME cpp_accuracy_gate_tests COMMAND cpp_accuracy_gate_tests)
+set_tests_properties(cpp_accuracy_gate_tests PROPERTIES LABELS "determinism")
 
 add_executable(cpp_commit_gate_tests
     tests/test_commit_gate.cpp
@@ -41,6 +42,7 @@ add_executable(cpp_commit_gate_tests
 
 target_link_libraries(cpp_commit_gate_tests PRIVATE cpp_commit_gate)
 add_test(NAME cpp_commit_gate_tests COMMAND cpp_commit_gate_tests)
+set_tests_properties(cpp_commit_gate_tests PROPERTIES LABELS "determinism")
 
 add_library(cpp_lineage_stamper STATIC
     analysis/lineage_stamper.cpp
@@ -63,3 +65,4 @@ add_executable(cpp_lineage_stamper_tests
 
 target_link_libraries(cpp_lineage_stamper_tests PRIVATE cpp_lineage_stamper)
 add_test(NAME cpp_lineage_stamper_tests COMMAND cpp_lineage_stamper_tests)
+set_tests_properties(cpp_lineage_stamper_tests PROPERTIES LABELS "determinism")

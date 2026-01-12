@@ -30,6 +30,16 @@ jobs:
             --compile-db build-${{ matrix.enable_v2 }}/compile_commands.json \
             ${{ matrix.enable_v2 == 'OFF' && '--require-absent v2/engine --require-absent cpp/engine/analysis --require-absent v2/studio' || '--require-present v2/engine --require-present cpp/engine/analysis' }}
 
+      - name: Determinism test listing
+        run: |
+          ctest --test-dir build-${{ matrix.enable_v2 }} -N -L determinism
+
+      - name: Determinism run-twice tripwire
+        if: matrix.enable_v2 == 'ON'
+        run: |
+          ctest --test-dir build-${{ matrix.enable_v2 }} -L determinism --output-on-failure
+          ctest --test-dir build-${{ matrix.enable_v2 }} -L determinism --output-on-failure
+
       - name: Test
         run: |
           ctest --test-dir build-${{ matrix.enable_v2 }}

@@ -25,15 +25,18 @@ add_executable(v2_engine_tests
 
 target_link_libraries(v2_engine_tests PRIVATE v2_engine)
 add_test(NAME v2_engine_tests COMMAND v2_engine_tests)
+set_tests_properties(v2_engine_tests PROPERTIES LABELS "determinism")
 
 add_executable(v2_engine_test_run_id
     tests/test_run_id_determinism.cpp
 )
 target_link_libraries(v2_engine_test_run_id PRIVATE v2_engine)
 add_test(NAME v2_engine_test_run_id COMMAND v2_engine_test_run_id)
+set_tests_properties(v2_engine_test_run_id PROPERTIES LABELS "determinism")
 
 add_executable(v2_engine_test_json_emit
     tests/test_json_emit_smoke.cpp
 )
 target_link_libraries(v2_engine_test_json_emit PRIVATE v2_engine)
 add_test(NAME v2_engine_test_json_emit COMMAND v2_engine_test_json_emit)
+set_tests_properties(v2_engine_test_json_emit PROPERTIES LABELS "determinism")
