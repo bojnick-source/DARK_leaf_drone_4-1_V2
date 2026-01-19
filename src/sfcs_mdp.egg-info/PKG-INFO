@@ -1,3 +1,16 @@
+Metadata-Version: 2.4
+Name: sfcs-mdp
+Version: 0.1.0
+Summary: SFCS manufacturing digital thread traveler runner
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic==2.7.4
+Requires-Dist: PyYAML==6.0.2
+Provides-Extra: dev
+Requires-Dist: pytest==8.3.0; extra == "dev"
+Requires-Dist: ruff==0.5.6; extra == "dev"
+Requires-Dist: mypy==1.11.1; extra == "dev"
+
 # DARK_leaf_drone_4-1_V2
 impoved drone computational engineering software
 
