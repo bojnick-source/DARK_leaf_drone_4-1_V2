@@ -26,7 +26,7 @@ def resolve_spec_path(spec_path: Path | None) -> Path:
         if default_path.is_file():
             return default_path
         raise FileNotFoundError(
-            "Spec path not provided and default manufacturing/sfcs_drone_mdp_v0.yaml not found."
+            f"Spec path not provided and default {DEFAULT_SPEC_PATH.as_posix()} not found."
         )
     resolved = spec_path
     if not resolved.is_absolute():
@@ -109,7 +109,10 @@ def main() -> int:
         except FileNotFoundError as exc:
             print(str(exc))
             return 1
-        print(f"RUN OK: {build_dir.as_posix()}")
+        if args.simulate:
+            print(f"SIMULATION OK: {build_dir.as_posix()}")
+        else:
+            print(f"RUN OK: {build_dir.as_posix()}")
         return 0
 
     if args.command == "simulate":
@@ -125,12 +128,12 @@ def main() -> int:
                 ncr_id=args.ncr_id,
             )
         except (SpecValidationError, ValueError, RuntimeError) as exc:
-            print(f"RUN FAILED: {exc}")
+            print(f"SIMULATION FAILED: {exc}")
             return 1
         except FileNotFoundError as exc:
             print(str(exc))
             return 1
-        print(f"RUN OK: {build_dir.as_posix()}")
+        print(f"SIMULATION OK: {build_dir.as_posix()}")
         return 0
 
     if args.command == "status":
