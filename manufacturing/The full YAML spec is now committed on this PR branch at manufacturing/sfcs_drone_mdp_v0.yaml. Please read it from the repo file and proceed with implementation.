@@ -1,0 +1,272 @@
+meta:
+  program: "Additive Manufacturing (AM) Digital Thread"
+  owner: "OLYTHI.EONS"
+  scope: "Auditable AM process routes (metal and polymer) with deterministic gating, evidence, and artifact hashing."
+  exclusions:
+    - "No weapon integration"
+    - "No targeting/fire-control"
+    - "No payload optimization guidance"
+    - "No operational deployment guidance"
+
+digital_thread:
+  single_source_of_truth:
+    parameter_registry: "db/parameters/am_params.yaml"
+    requirements_db: "requirements/am_srd.yaml"
+    cad_revision: "cad/release/<REV_TAG>"
+    build_files:
+      build_job_files: "mfg/am/<REV_TAG>/jobs/"
+      scan_strategies: "mfg/am/<REV_TAG>/scan_strategies/"
+      supports: "mfg/am/<REV_TAG>/supports/"
+    process_parameter_sets:
+      lpbf: "mfg/process_params/am_lpbf.yaml"
+      ebm: "mfg/process_params/am_ebm.yaml"
+      ded: "mfg/process_params/am_ded.yaml"
+      waam: "mfg/process_params/am_waam.yaml"
+      binder_jet: "mfg/process_params/am_binder_jet.yaml"
+      polymer_fdm: "mfg/process_params/am_polymer_fdm.yaml"
+      polymer_vat: "mfg/process_params/am_polymer_vat.yaml"
+      heat_treat: "mfg/process_params/heat_treat.yaml"
+      hip: "mfg/process_params/hip.yaml"
+      surface_finish: "mfg/process_params/surface_finish.yaml"
+      ndi_plan: "quality/ndi/am_ndi_plan.yaml"
+      metrology_plan: "quality/metrology/am_metrology_plan.yaml"
+
+  build_manifest:
+    fields_required:
+      - build_id
+      - route_id
+      - cad_rev
+      - build_job_hash
+      - materials_lot_ids
+      - operator_ids
+      - machine_ids
+      - calibration_set_ids
+      - environment_log (temp, humidity)
+      - qc_gate_results
+    fields_optional_by_route:
+      METAL_LPBF_V0:
+        - powder_lot_ids
+        - recoater_log_hash
+        - layerwise_monitoring_hashes
+        - gas_chemistry_log_hash
+        - stress_relief_profile_hash
+        - hip_profile_hash
+        - ct_report_hash
+      METAL_DED_V0:
+        - wire_lot_ids
+        - shielding_gas_log_hash
+        - bead_geometry_monitoring_hashes
+        - interpass_temperature_log_hash
+        - heat_treat_profile_hash
+      BINDER_JET_V0:
+        - powder_lot_ids
+        - binder_lot_ids
+        - depowder_log_hash
+        - sinter_profile_hash
+        - density_report_hash
+    output: "records/builds/<build_id>/manifest.json"
+
+routes:
+  METAL_LPBF_V0:
+    description: "Laser Powder Bed Fusion (LPBF) route with in-situ monitoring + postprocess gates."
+    steps:
+      - "AM-000"
+      - "AM-010"
+      - "AM-020"
+      - "AM-030"
+      - "AM-040"
+      - "AM-050"
+      - "AM-060"
+      - "AM-070"
+
+  METAL_DED_V0:
+    description: "Directed Energy Deposition (DED/WAAM) route with bead monitoring + NDT gates."
+    steps:
+      - "AM-000"
+      - "AM-011"
+      - "AM-021"
+      - "AM-031"
+      - "AM-051"
+      - "AM-061"
+      - "AM-070"
+
+  BINDER_JET_V0:
+    description: "Binder jet route with sinter/density gates."
+    steps:
+      - "AM-000"
+      - "AM-012"
+      - "AM-022"
+      - "AM-032"
+      - "AM-062"
+      - "AM-070"
+
+quality_system:
+  configuration_management:
+    policy:
+      - "No build proceeds without frozen manifest and traveler signoff."
+      - "All deviations require NCR + MRB disposition."
+  nonconformance:
+    ncr_record: "quality/ncr/<ncr_id>.yaml"
+    mrb_disposition:
+      options: ["use_as_is", "rework", "repair", "scrap"]
+
+process_flow:
+  - step_id: "AM-000"
+    name: "Program Gate: Route selection + requirements freeze"
+    type: "GATE"
+    inputs:
+      - "requirements/am_srd.yaml"
+      - "db/parameters/am_params.yaml"
+    outputs:
+      - "records/builds/<build_id>/manifest.json"
+      - "records/builds/<build_id>/traveler.yaml"
+    acceptance:
+      criteria:
+        - "SRD baseline frozen for this build_id"
+        - "Parameter registry locked (hash recorded)"
+        - "Route declared (route_id)"
+    evidence:
+      required:
+        - "manifest.json"
+        - "hashes.txt"
+
+  - step_id: "AM-010"
+    name: "LPBF: Powder qualification + machine readiness"
+    type: "PROCESS"
+    prerequisites: ["AM-000"]
+    inputs:
+      - "mfg/process_params/am_lpbf.yaml"
+    outputs:
+      - "records/builds/<build_id>/powder_qualification.json"
+      - "records/builds/<build_id>/machine_readiness.json"
+    acceptance:
+      criteria:
+        - "Powder lot verified + logged"
+        - "Machine calibration set verified"
+    evidence:
+      required:
+        - "powder_certificates/"
+        - "calibration_report.pdf"
+
+  - step_id: "AM-020"
+    name: "LPBF: Build execution + in-situ monitoring capture"
+    type: "PROCESS"
+    prerequisites: ["AM-010"]
+    outputs:
+      - "records/builds/<build_id>/build_log.json"
+      - "records/builds/<build_id>/monitoring_manifest.json"
+    acceptance:
+      criteria:
+        - "Build completed without critical alarms"
+        - "Monitoring artifacts captured and hashed"
+    evidence:
+      required:
+        - "layerwise_monitoring/"
+        - "gas_chemistry_log.csv"
+
+  - step_id: "AM-030"
+    name: "LPBF: Depowder + stress relief (post-process logging)"
+    type: "PROCESS"
+    prerequisites: ["AM-020"]
+    inputs:
+      - "mfg/process_params/heat_treat.yaml"
+    outputs:
+      - "records/builds/<build_id>/postprocess_log.json"
+    acceptance:
+      criteria:
+        - "Stress relief profile within allowable band"
+    evidence:
+      required:
+        - "heat_treat_log.csv"
+
+  - step_id: "AM-040"
+    name: "LPBF: HIP (optional)"
+    type: "PROCESS"
+    prerequisites: ["AM-030"]
+    when:
+      enabled: true
+    inputs:
+      - "mfg/process_params/hip.yaml"
+    outputs:
+      - "records/builds/<build_id>/hip_log.json"
+    acceptance:
+      criteria:
+        - "HIP profile within allowable band"
+    evidence:
+      required:
+        - "hip_cycle_log.csv"
+
+  - step_id: "AM-050"
+    name: "AM: Support removal + machining/finishing"
+    type: "PROCESS"
+    prerequisites: ["AM-030"]
+    outputs:
+      - "records/builds/<build_id>/machining_log.json"
+    acceptance:
+      criteria:
+        - "Critical datums within tolerance envelope (parameterized)"
+    evidence:
+      required:
+        - "cmm_report_post_machine.pdf"
+
+  - step_id: "AM-060"
+    name: "AM: NDI + metrology gate"
+    type: "GATE"
+    prerequisites: ["AM-050"]
+    inputs:
+      - "quality/ndi/am_ndi_plan.yaml"
+      - "quality/metrology/am_metrology_plan.yaml"
+    outputs:
+      - "records/builds/<build_id>/ndi_report.pdf"
+      - "records/builds/<build_id>/metrology_report.pdf"
+    acceptance:
+      criteria:
+        - "Indications below reject threshold (parameterized)"
+        - "Geometry within tolerance envelope (parameterized)"
+    evidence:
+      required:
+        - "ct_or_ut_raw/"
+        - "laser_scan_pointcloud.pcd"
+
+  - step_id: "AM-070"
+    name: "Release gate: Acceptance package generation"
+    type: "GATE"
+    prerequisites: ["AM-060"]
+    outputs:
+      - "records/builds/<build_id>/acceptance_data_package.zip"
+      - "records/builds/<build_id>/as_built_digital_twin.json"
+    acceptance:
+      criteria:
+        - "All required evidence present"
+        - "All NCRs closed or dispositioned by MRB"
+    evidence:
+      required:
+        - "manifest.json"
+        - "traveler.yaml"
+        - "ndi_report.pdf"
+        - "metrology_report.pdf"
+
+instrumentation_minimum:
+  metal_am:
+    - "Machine logs (laser/beam, recoater/feed, alarms)"
+    - "In-situ monitoring (layerwise images/meltpool where available)"
+    - "Gas chemistry logs (where applicable)"
+    - "Post-process logs (heat treat/HIP) with time-series"
+    - "NDI raw + report (CT/UT as specified)"
+    - "Metrology (CMM/scan) reports"
+  polymer_am:
+    - "Extrusion/UV exposure logs"
+    - "Chamber/environment logs"
+    - "Post-cure/anneal logs"
+    - "Dimensional + mechanical coupon evidence (where required)"
+
+risk_register_top:
+  - id: "AM-R-001"
+    risk: "Powder variability causing density/porosity drift."
+    mitigation: ["powder qualification gate", "lot traceability", "CT/UT gating", "parameter freeze per build_id"]
+  - id: "AM-R-002"
+    risk: "Residual stress distortion and cracking."
+    mitigation: ["stress relief", "support strategy validation", "metrology gate", "process window enforcement"]
+  - id: "AM-R-003"
+    risk: "In-situ monitoring gaps or missing artifacts."
+    mitigation: ["monitoring manifest required", "artifact hashing", "build halt on missing evidence"]
