@@ -17,25 +17,52 @@ def _parse_block_level(value: str) -> BlockLevel:
         raise argparse.ArgumentTypeError(str(exc)) from exc
 
 
+DEFAULT_SPEC_PATH = Path("manufacturing/sfcs_drone_mdp_v0.yaml")
+
+
+def resolve_spec_path(spec_path: Path | None) -> Path:
+    if spec_path is None:
+        default_path = Path.cwd() / DEFAULT_SPEC_PATH
+        if default_path.is_file():
+            return default_path
+        raise FileNotFoundError(
+            "Spec path not provided and default manufacturing/sfcs_drone_mdp_v0.yaml not found."
+        )
+    resolved = spec_path
+    if not resolved.is_absolute():
+        resolved = Path.cwd() / resolved
+    if not resolved.is_file():
+        raise FileNotFoundError(f"Spec file not found or unreadable: {resolved}")
+    return resolved
+
+
+def _add_run_args(parser: argparse.ArgumentParser, include_simulate_flag: bool) -> None:
+    parser.add_argument("--spec", type=Path)
+    parser.add_argument("--build-id", required=True)
+    parser.add_argument("--rev-tag", required=True)
+    parser.add_argument(
+        "--block-level",
+        type=_parse_block_level,
+        default=BlockLevel.BLOCK_0_STRUCTURE_ONLY,
+    )
+    parser.add_argument("--lot-id")
+    parser.add_argument("--ncr-id")
+    if include_simulate_flag:
+        parser.add_argument("--simulate", action="store_true")
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sfcs-mdp")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     validate_parser = subparsers.add_parser("validate", help="Validate a manufacturing spec")
-    validate_parser.add_argument("--spec", required=True, type=Path)
+    validate_parser.add_argument("--spec", type=Path)
 
     run_parser = subparsers.add_parser("run", help="Run the traveler")
-    run_parser.add_argument("--spec", required=True, type=Path)
-    run_parser.add_argument("--build-id", required=True)
-    run_parser.add_argument("--rev-tag", required=True)
-    run_parser.add_argument(
-        "--block-level",
-        type=_parse_block_level,
-        default=BlockLevel.BLOCK_0_STRUCTURE_ONLY,
-    )
-    run_parser.add_argument("--simulate", action="store_true")
-    run_parser.add_argument("--lot-id")
-    run_parser.add_argument("--ncr-id")
+    _add_run_args(run_parser, include_simulate_flag=True)
+
+    simulate_parser = subparsers.add_parser("simulate", help="Run a simulated traveler")
+    _add_run_args(simulate_parser, include_simulate_flag=False)
 
     status_parser = subparsers.add_parser("status", help="Show build status")
     status_parser.add_argument("--build-id", required=True)
@@ -52,18 +79,23 @@ def main() -> int:
 
     if args.command == "validate":
         try:
-            spec = load_spec(args.spec)
+            spec_path = resolve_spec_path(args.spec)
+            spec = load_spec(spec_path)
             validate_spec(spec)
         except (SpecValidationError, ValueError) as exc:
             print(f"VALIDATION FAILED: {exc}")
+            return 1
+        except FileNotFoundError as exc:
+            print(str(exc))
             return 1
         print("VALIDATION OK")
         return 0
 
     if args.command == "run":
         try:
+            spec_path = resolve_spec_path(args.spec)
             build_dir = run_traveler(
-                spec_path=args.spec,
+                spec_path=spec_path,
                 build_id=args.build_id,
                 rev_tag=args.rev_tag,
                 block_level=args.block_level,
@@ -73,6 +105,30 @@ def main() -> int:
             )
         except (SpecValidationError, ValueError, RuntimeError) as exc:
             print(f"RUN FAILED: {exc}")
+            return 1
+        except FileNotFoundError as exc:
+            print(str(exc))
+            return 1
+        print(f"RUN OK: {build_dir.as_posix()}")
+        return 0
+
+    if args.command == "simulate":
+        try:
+            spec_path = resolve_spec_path(args.spec)
+            build_dir = run_traveler(
+                spec_path=spec_path,
+                build_id=args.build_id,
+                rev_tag=args.rev_tag,
+                block_level=args.block_level,
+                simulate=True,
+                lot_id=args.lot_id,
+                ncr_id=args.ncr_id,
+            )
+        except (SpecValidationError, ValueError, RuntimeError) as exc:
+            print(f"RUN FAILED: {exc}")
+            return 1
+        except FileNotFoundError as exc:
+            print(str(exc))
             return 1
         print(f"RUN OK: {build_dir.as_posix()}")
         return 0

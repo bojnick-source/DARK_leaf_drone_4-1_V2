@@ -12,6 +12,9 @@ auditable pipeline. String-based acceptance criteria require a manual signoff ar
 sfcs-mdp validate --spec manufacturing/sfcs_drone_mdp_v0.yaml
 ```
 
+If `--spec` is omitted, the CLI defaults to `manufacturing/sfcs_drone_mdp_v0.yaml` when it
+exists; otherwise it exits with a clear error.
+
 ### Run the traveler
 
 ```bash
@@ -24,6 +27,10 @@ If `--block-level` is omitted, the runner defaults to `BLOCK_0_STRUCTURE_ONLY`.
 
 ```bash
 sfcs-mdp run --spec manufacturing/sfcs_drone_mdp_v0.yaml --build-id BUILD_0001 --rev-tag REV_A --simulate
+```
+
+```bash
+sfcs-mdp simulate --spec manufacturing/sfcs_drone_mdp_v0.yaml --build-id BUILD_0001 --rev-tag REV_A
 ```
 
 Simulated runs create dummy evidence and signoffs and write a `SIMULATION_NOTICE.txt` file
