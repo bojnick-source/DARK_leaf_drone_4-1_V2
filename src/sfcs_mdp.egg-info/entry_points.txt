@@ -1,2 +1,0 @@
-[console_scripts]
-sfcs-mdp = sfcs_mdp.cli:main
