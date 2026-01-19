@@ -281,6 +281,11 @@ def run_traveler(
     build_dir = _build_dir(config)
     build_dir.mkdir(parents=True, exist_ok=True)
     runner_log = build_dir / "runner.log"
+    if simulate:
+        simulation_notice = build_dir / "SIMULATION_NOTICE.txt"
+        create_placeholder_file(
+            simulation_notice, "SIMULATED BUILD - NOT FOR PRODUCTION ACCEPTANCE\n"
+        )
 
     run_id = _compute_run_id(config, spec_text)
     placeholders = _build_placeholders(config)
@@ -301,12 +306,6 @@ def run_traveler(
                 "status": "SIMULATED",
                 "disposition": "use_as_is",
             },
-        )
-
-    if simulate:
-        simulation_notice = build_dir / "SIMULATION_NOTICE.txt"
-        create_placeholder_file(
-            simulation_notice, "SIMULATED BUILD - NOT FOR PRODUCTION ACCEPTANCE\n"
         )
 
     ledger: dict[str, Any] = {

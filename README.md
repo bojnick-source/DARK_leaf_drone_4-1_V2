@@ -18,6 +18,8 @@ sfcs-mdp validate --spec manufacturing/sfcs_drone_mdp_v0.yaml
 sfcs-mdp run --spec manufacturing/sfcs_drone_mdp_v0.yaml --build-id BUILD_0001 --rev-tag REV_A
 ```
 
+If `--block-level` is omitted, the runner defaults to `BLOCK_0_STRUCTURE_ONLY`.
+
 ### Simulated build mode (development/testing only)
 
 ```bash
