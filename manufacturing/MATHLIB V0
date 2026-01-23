@@ -6246,3 +6246,2162 @@ tripwires:
     - { id: "NUMERIC_SANITY", intent: "Forbid NaN/Inf, forbid non-finite intermediates, and canonicalize negative zero.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
     - { id: "CALIBRATION_REQUIRED", intent: "Empirical templates must declare calibration with explicit requirements and storage_path; non-empirical models must not declare calibration.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
     - { id: "DETERMINISM_CANON", intent: "Determinism rules must be explicit and hashing must exclude meta.build while covering all other sections.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }3
+meta:
+  title: "MANUFACTURING MATHLIB V0"
+  schema: { id: "manufacturing.mathlib", version: "0" }
+  scope:
+    program: "Manufacturing math library (auditable, deterministic, safety-guarded)"
+    intent: "Reusable, unit-safe variables + models for manufacturing engineering domains"
+    exclusions:
+      - "No acceptance thresholds in this file (belongs in process specs / calibration artifacts)"
+      - "No hard-coded empirical coefficients without explicit calibration requirements + storage_path"
+      - "No media-derived coefficients or thresholds"
+  build: { chunk: 9, name: "Research sources", state: "COMPLETE" }
+
+units:
+  system: "SI"
+  base_dimensions:
+    L: "length"
+    M: "mass"
+    T: "time"
+    I: "electric_current"
+    TH: "thermodynamic_temperature"
+    N: "amount_of_substance"
+    J: "luminous_intensity"
+  prefixes:
+    - { id: "nano", name: "nano", symbol: "n", factor: 1.0e-9 }
+    - { id: "micro", name: "micro", symbol: "u", factor: 1.0e-6 }
+    - { id: "milli", name: "milli", symbol: "m", factor: 1.0e-3 }
+    - { id: "centi", name: "centi", symbol: "c", factor: 1.0e-2 }
+    - { id: "deci", name: "deci", symbol: "d", factor: 1.0e-1 }
+    - { id: "deka", name: "deka", symbol: "da", factor: 1.0e1 }
+    - { id: "hecto", name: "hecto", symbol: "h", factor: 1.0e2 }
+    - { id: "kilo", name: "kilo", symbol: "k", factor: 1.0e3 }
+    - { id: "mega", name: "mega", symbol: "M", factor: 1.0e6 }
+    - { id: "giga", name: "giga", symbol: "G", factor: 1.0e9 }
+  base_units:
+    - { id: "m", name: "meter", symbol: "m", quantity: "length", dimension: { L: 1, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg", name: "kilogram", symbol: "kg", quantity: "mass", dimension: { L: 0, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "s", name: "second", symbol: "s", quantity: "time", dimension: { L: 0, M: 0, T: 1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "A", name: "ampere", symbol: "A", quantity: "electric_current", dimension: { L: 0, M: 0, T: 0, I: 1, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "K", name: "kelvin", symbol: "K", quantity: "thermodynamic_temperature", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 1, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "mol", name: "mole", symbol: "mol", quantity: "amount_of_substance", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 1, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "cd", name: "candela", symbol: "cd", quantity: "luminous_intensity", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 1 }, to_SI: { scale: 1.0, offset: 0.0 } }
+  derived_units:
+    - { id: "1", name: "dimensionless", symbol: "1", quantity: "dimensionless", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "rad", name: "radian", symbol: "rad", quantity: "plane_angle", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "deg", name: "degree", symbol: "deg", quantity: "plane_angle", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 0.017453292519943295, offset: 0.0 } }
+    - { id: "Hz", name: "hertz", symbol: "Hz", quantity: "frequency", dimension: { L: 0, M: 0, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "N", name: "newton", symbol: "N", quantity: "force", dimension: { L: 1, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "Pa", name: "pascal", symbol: "Pa", quantity: "pressure", dimension: { L: -1, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "J", name: "joule", symbol: "J", quantity: "energy", dimension: { L: 2, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "W", name: "watt", symbol: "W", quantity: "power", dimension: { L: 2, M: 1, T: -3, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "V", name: "volt", symbol: "V", quantity: "electric_potential", dimension: { L: 2, M: 1, T: -3, I: -1, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m/s", name: "meters_per_second", symbol: "m/s", quantity: "speed", dimension: { L: 1, M: 0, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m^2", name: "square_meter", symbol: "m^2", quantity: "area", dimension: { L: 2, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m^3", name: "cubic_meter", symbol: "m^3", quantity: "volume", dimension: { L: 3, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m^4", name: "meter_to_fourth", symbol: "m^4", quantity: "second_moment_area", dimension: { L: 4, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "N*m", name: "newton_meter", symbol: "N*m", quantity: "moment", dimension: { L: 2, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "J/m", name: "joules_per_meter", symbol: "J/m", quantity: "energy_per_length", dimension: { L: 1, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "J/m^2", name: "joules_per_square_meter", symbol: "J/m^2", quantity: "energy_per_area", dimension: { L: 0, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "J/m^3", name: "joules_per_cubic_meter", symbol: "J/m^3", quantity: "energy_per_volume", dimension: { L: -1, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "W/m^2", name: "watts_per_square_meter", symbol: "W/m^2", quantity: "power_per_area", dimension: { L: 0, M: 1, T: -3, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg/s", name: "kilograms_per_second", symbol: "kg/s", quantity: "mass_flow", dimension: { L: 0, M: 1, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m^3/s", name: "cubic_meters_per_second", symbol: "m^3/s", quantity: "volumetric_flow", dimension: { L: 3, M: 0, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg/m", name: "kilograms_per_meter", symbol: "kg/m", quantity: "linear_mass_density", dimension: { L: -1, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg/m^2", name: "kilograms_per_square_meter", symbol: "kg/m^2", quantity: "areal_mass_density", dimension: { L: -2, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg/m^3", name: "kilograms_per_cubic_meter", symbol: "kg/m^3", quantity: "density", dimension: { L: -3, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "1/m", name: "per_meter", symbol: "1/m", quantity: "linear_number_density", dimension: { L: -1, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "1/m^2", name: "per_square_meter", symbol: "1/m^2", quantity: "areal_number_density", dimension: { L: -2, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m/N", name: "meters_per_newton", symbol: "m/N", quantity: "compliance", dimension: { L: 0, M: -1, T: 2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "B", name: "byte", symbol: "B", quantity: "information", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "B/s", name: "bytes_per_second", symbol: "B/s", quantity: "data_rate", dimension: { L: 0, M: 0, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "tex", name: "tex", symbol: "tex", quantity: "linear_mass_density", dimension: { L: -1, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 0.000001, offset: 0.0 } }
+  formatting:
+    canonical_unit_id_case: "preserve"
+    preferred_micro_symbol: "u"
+    forbid_implicit_units: true
+    unit_expression: { multiplication: "*", division: "/", exponent: "^", parentheses: "()", whitespace: "forbidden" }
+
+conventions:
+  identifiers:
+    variable_id_pattern: "^[a-z][a-z0-9_]{2,63}$"
+    model_id_pattern: "^[a-z][a-z0-9_]{2,63}$"
+    source_id_pattern: "^[a-z][a-z0-9_\\-]{2,63}$"
+    reserved_prefixes: ["sys_", "internal_"]
+  domains:
+    allowed_domains: ["risf", "additive", "subtractive", "metrology", "composites_3d_woven", "structures"]
+  paths:
+    calibration_storage_root: "manufacturing/calibration"
+    empirical_model_storage_hint: "manufacturing/calibration/<model_id>/calibration.yaml"
+    hashes_storage_hint: "manufacturing/calibration/<model_id>/hashes.json"
+  determinism:
+    numeric_type: "float64"
+    nan_policy: "forbidden"
+    inf_policy: "forbidden"
+    signed_zero_policy: "canonicalize_to_plus_zero"
+    rounding: { mode: "HALF_EVEN", decimals_default: 12, clamp_negative_zero: true }
+    canonical_number_format:
+      style: "decimal_or_scientific"
+      scientific_when_abs_ge: 1000000000.0
+      scientific_when_abs_lt: 0.000001
+      max_decimals: 12
+    canonicalization:
+      map_key_order: "lexicographic"
+      list_order: "preserve_declared"
+      string_normalization: "NFC"
+      forbid_yaml_anchors: true
+      forbid_non_finite_numbers: true
+      line_endings: "LF"
+    hashing:
+      algorithm: "SHA-256"
+      canonical_input: "canonical-json-from-yaml"
+      include_sections: ["meta", "units", "conventions", "variable_registry", "models", "research_sources", "tripwires"]
+      exclude_paths: ["meta.build"]
+  expression_language:
+    id: "mathlib_expr_v1"
+    allowlist:
+      operators: ["+", "-", "*", "/", "^", "<", "<=", ">", ">=", "==", "!=", "and", "or", "not"]
+      functions: ["abs", "min", "max", "clamp", "sqrt", "exp", "ln", "log10", "pow", "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "floor", "ceil", "round", "isfinite"]
+      constants: ["pi", "e"]
+      literals: { allow_integers: true, allow_decimals: true, allow_scientific_notation: true }
+    denylist:
+      tokens: ["__", "import", "eval", "exec", "lambda", "while", "for", "class", "def", "globals", "locals", "open", "read", "write", "system", "os", "subprocess", "socket", "http", "https", "file:", "data:", "javascript:"]
+      patterns: ["(?i)\\b(system|subprocess|os\\.|socket|requests|http)\\b"]
+    safety_guards:
+      forbid_divide_by_zero: true
+      forbid_sqrt_of_negative: true
+      forbid_ln_of_nonpositive: true
+      forbid_log10_of_nonpositive: true
+      forbid_non_finite_intermediates: true
+      require_domain_guards: true
+      require_exp_bounded_argument: false
+
+variable_registry:
+  - { id: "c_light", name: "speed_of_light", unit: "m/s", kind: "constant", domains: ["metrology"], description: "Speed of light in vacuum (exact by SI definition).", domain_constraints: ["isfinite(c_light)", "c_light>0"] }
+  - { id: "t_initial", name: "initial_thickness", unit: "m", kind: "input", domains: ["risf", "structures", "composites_3d_woven"], description: "Initial thickness.", domain_constraints: ["t_initial>0", "isfinite(t_initial)"] }
+  - { id: "t_final", name: "final_thickness", unit: "m", kind: "output", domains: ["risf"], description: "Predicted final thickness.", domain_constraints: ["t_final>0", "isfinite(t_final)"] }
+  - { id: "wall_angle", name: "wall_angle", unit: "rad", kind: "input", domains: ["risf"], description: "RISF wall angle.", domain_constraints: ["wall_angle>0", "wall_angle<pi/2", "isfinite(wall_angle)"] }
+  - { id: "thinning_ratio", name: "thinning_ratio", unit: "1", kind: "output", domains: ["risf"], description: "t_final/t_initial.", domain_constraints: ["thinning_ratio>0", "isfinite(thinning_ratio)"] }
+  - { id: "tool_radius", name: "tool_radius", unit: "m", kind: "input", domains: ["risf"], description: "Tool radius.", domain_constraints: ["tool_radius>0", "isfinite(tool_radius)"] }
+  - { id: "tool_stepover", name: "tool_stepover", unit: "m", kind: "input", domains: ["risf", "metrology", "composites_3d_woven"], description: "Lateral stepover / scan line step / generic pitch for line spacing.", domain_constraints: ["tool_stepover>=0", "isfinite(tool_stepover)"] }
+  - { id: "tool_stepdown", name: "tool_stepdown", unit: "m", kind: "input", domains: ["risf"], description: "Axial stepdown.", domain_constraints: ["tool_stepdown>0", "isfinite(tool_stepdown)"] }
+  - { id: "scallop_height", name: "scallop_height", unit: "m", kind: "output", domains: ["risf"], description: "Scallop height (exact).", domain_constraints: ["scallop_height>=0", "isfinite(scallop_height)"] }
+  - { id: "scallop_height_small_step", name: "scallop_height_small_step", unit: "m", kind: "output", domains: ["risf"], description: "Scallop height (approx).", domain_constraints: ["scallop_height_small_step>=0", "isfinite(scallop_height_small_step)"] }
+  - { id: "target_scallop_height", name: "target_scallop_height", unit: "m", kind: "input", domains: ["risf"], description: "Target scallop height.", domain_constraints: ["target_scallop_height>=0", "isfinite(target_scallop_height)"] }
+  - { id: "stepdown_from_scallop", name: "stepdown_from_scallop", unit: "m", kind: "output", domains: ["risf"], description: "Inverse-solved step from target scallop.", domain_constraints: ["stepdown_from_scallop>=0", "isfinite(stepdown_from_scallop)"] }
+  - { id: "axial_force", name: "axial_force", unit: "N", kind: "output", domains: ["risf"], description: "Axial forming force.", domain_constraints: ["axial_force>=0", "isfinite(axial_force)"] }
+  - { id: "aerens_force_scale", name: "aerens_force_scale", unit: "N", kind: "parameter", domains: ["risf"], description: "Aerens template force scale.", domain_constraints: ["aerens_force_scale>0", "isfinite(aerens_force_scale)"] }
+  - { id: "aerens_k0", name: "aerens_k0", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k0)"] }
+  - { id: "aerens_k1", name: "aerens_k1", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k1)"] }
+  - { id: "aerens_k2", name: "aerens_k2", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k2)"] }
+  - { id: "aerens_k3", name: "aerens_k3", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k3)"] }
+  - { id: "aerens_k4", name: "aerens_k4", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k4)"] }
+  - { id: "aerens_k5", name: "aerens_k5", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k5)"] }
+  - { id: "aerens_k6", name: "aerens_k6", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k6)"] }
+  - { id: "aerens_t_ref", name: "aerens_thickness_reference", unit: "m", kind: "parameter", domains: ["risf"], description: "Aerens thickness reference.", domain_constraints: ["aerens_t_ref>0", "isfinite(aerens_t_ref)"] }
+  - { id: "aerens_r_ref", name: "aerens_radius_reference", unit: "m", kind: "parameter", domains: ["risf"], description: "Aerens radius reference.", domain_constraints: ["aerens_r_ref>0", "isfinite(aerens_r_ref)"] }
+  - { id: "aerens_s_ref", name: "aerens_stepover_reference", unit: "m", kind: "parameter", domains: ["risf"], description: "Aerens stepover reference.", domain_constraints: ["aerens_s_ref>0", "isfinite(aerens_s_ref)"] }
+  - { id: "aerens_dz_ref", name: "aerens_stepdown_reference", unit: "m", kind: "parameter", domains: ["risf"], description: "Aerens stepdown reference.", domain_constraints: ["aerens_dz_ref>0", "isfinite(aerens_dz_ref)"] }
+  - { id: "robot_linear_compliance", name: "robot_linear_compliance", unit: "m/N", kind: "parameter", domains: ["risf"], description: "Linear compliance.", domain_constraints: ["robot_linear_compliance>=0", "isfinite(robot_linear_compliance)"] }
+  - { id: "robot_deflection", name: "robot_deflection", unit: "m", kind: "output", domains: ["risf"], description: "Predicted deflection.", domain_constraints: ["robot_deflection>=0", "isfinite(robot_deflection)"] }
+  - { id: "laser_power", name: "laser_power", unit: "W", kind: "input", domains: ["additive", "subtractive"], description: "Laser power.", domain_constraints: ["laser_power>0", "isfinite(laser_power)"] }
+  - { id: "process_efficiency", name: "process_efficiency", unit: "1", kind: "input", domains: ["additive", "subtractive"], description: "Energy coupling efficiency.", domain_constraints: ["process_efficiency>=0", "process_efficiency<=1", "isfinite(process_efficiency)"] }
+  - { id: "scan_speed", name: "scan_speed", unit: "m/s", kind: "input", domains: ["additive", "metrology"], description: "Scan speed.", domain_constraints: ["scan_speed>0", "isfinite(scan_speed)"] }
+  - { id: "travel_speed", name: "travel_speed", unit: "m/s", kind: "input", domains: ["additive", "subtractive", "metrology"], description: "Travel speed.", domain_constraints: ["travel_speed>0", "isfinite(travel_speed)"] }
+  - { id: "layer_thickness", name: "layer_thickness", unit: "m", kind: "input", domains: ["additive"], description: "Layer thickness.", domain_constraints: ["layer_thickness>0", "isfinite(layer_thickness)"] }
+  - { id: "hatch_spacing", name: "hatch_spacing", unit: "m", kind: "input", domains: ["additive"], description: "Hatch spacing.", domain_constraints: ["hatch_spacing>0", "isfinite(hatch_spacing)"] }
+  - { id: "energy_line", name: "energy_line", unit: "J/m", kind: "output", domains: ["additive"], description: "Line energy.", domain_constraints: ["energy_line>=0", "isfinite(energy_line)"] }
+  - { id: "energy_area", name: "energy_area", unit: "J/m^2", kind: "output", domains: ["additive"], description: "Areal energy.", domain_constraints: ["energy_area>=0", "isfinite(energy_area)"] }
+  - { id: "energy_volume", name: "energy_volume", unit: "J/m^3", kind: "output", domains: ["additive"], description: "Volumetric energy.", domain_constraints: ["energy_volume>=0", "isfinite(energy_volume)"] }
+  - { id: "arc_voltage", name: "arc_voltage", unit: "V", kind: "input", domains: ["additive"], description: "Arc voltage.", domain_constraints: ["arc_voltage>0", "isfinite(arc_voltage)"] }
+  - { id: "arc_current", name: "arc_current", unit: "A", kind: "input", domains: ["additive"], description: "Arc current.", domain_constraints: ["arc_current>0", "isfinite(arc_current)"] }
+  - { id: "heat_input_per_length", name: "heat_input_per_length", unit: "J/m", kind: "output", domains: ["additive", "subtractive"], description: "Heat input per length.", domain_constraints: ["heat_input_per_length>=0", "isfinite(heat_input_per_length)"] }
+  - { id: "exposure_energy", name: "exposure_energy", unit: "J/m^2", kind: "input", domains: ["additive"], description: "Exposure energy dose.", domain_constraints: ["exposure_energy>0", "isfinite(exposure_energy)"] }
+  - { id: "critical_energy", name: "critical_energy", unit: "J/m^2", kind: "parameter", domains: ["additive"], description: "Critical energy Ec (cal).", domain_constraints: ["critical_energy>0", "isfinite(critical_energy)"] }
+  - { id: "penetration_depth", name: "penetration_depth", unit: "m", kind: "parameter", domains: ["additive"], description: "Penetration depth Dp (cal).", domain_constraints: ["penetration_depth>0", "isfinite(penetration_depth)"] }
+  - { id: "cure_depth", name: "cure_depth", unit: "m", kind: "output", domains: ["additive"], description: "Predicted cure depth.", domain_constraints: ["cure_depth>=0", "isfinite(cure_depth)"] }
+  - { id: "linear_shrinkage", name: "linear_shrinkage", unit: "1", kind: "parameter", domains: ["additive"], description: "Linear shrinkage (cal).", domain_constraints: ["linear_shrinkage>=0", "linear_shrinkage<1", "isfinite(linear_shrinkage)"] }
+  - { id: "scale_compensation", name: "scale_compensation", unit: "1", kind: "output", domains: ["additive"], description: "Scale compensation.", domain_constraints: ["scale_compensation>0", "isfinite(scale_compensation)"] }
+  - { id: "beam_spot_diameter", name: "beam_spot_diameter", unit: "m", kind: "input", domains: ["subtractive"], description: "Laser spot diameter.", domain_constraints: ["beam_spot_diameter>0", "isfinite(beam_spot_diameter)"] }
+  - { id: "beam_area", name: "beam_area", unit: "m^2", kind: "output", domains: ["subtractive"], description: "Laser spot area.", domain_constraints: ["beam_area>0", "isfinite(beam_area)"] }
+  - { id: "power_density", name: "power_density", unit: "W/m^2", kind: "output", domains: ["subtractive"], description: "Laser power density.", domain_constraints: ["power_density>=0", "isfinite(power_density)"] }
+  - { id: "absorptivity", name: "absorptivity", unit: "1", kind: "input", domains: ["subtractive"], description: "Absorptivity.", domain_constraints: ["absorptivity>=0", "absorptivity<=1", "isfinite(absorptivity)"] }
+  - { id: "absorbed_heat_per_length", name: "absorbed_heat_per_length", unit: "J/m", kind: "output", domains: ["subtractive"], description: "Absorbed heat per length.", domain_constraints: ["absorbed_heat_per_length>=0", "isfinite(absorbed_heat_per_length)"] }
+  - { id: "haz_width", name: "haz_width", unit: "m", kind: "output", domains: ["subtractive"], description: "HAZ width (template).", domain_constraints: ["haz_width>=0", "isfinite(haz_width)"] }
+  - { id: "kerf_width", name: "kerf_width", unit: "m", kind: "output", domains: ["subtractive"], description: "Kerf width (template).", domain_constraints: ["kerf_width>=0", "isfinite(kerf_width)"] }
+  - { id: "laser_haz_scale", name: "laser_haz_scale", unit: "m", kind: "parameter", domains: ["subtractive"], description: "HAZ scale (cal).", domain_constraints: ["laser_haz_scale>0", "isfinite(laser_haz_scale)"] }
+  - { id: "laser_haz_k0", name: "laser_haz_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "HAZ coeff (cal).", domain_constraints: ["isfinite(laser_haz_k0)"] }
+  - { id: "laser_haz_k1", name: "laser_haz_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "HAZ coeff (cal).", domain_constraints: ["isfinite(laser_haz_k1)"] }
+  - { id: "laser_haz_k2", name: "laser_haz_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "HAZ coeff (cal).", domain_constraints: ["isfinite(laser_haz_k2)"] }
+  - { id: "laser_haz_q_ref", name: "laser_haz_q_ref", unit: "J/m", kind: "parameter", domains: ["subtractive"], description: "HAZ heat/len reference (cal).", domain_constraints: ["laser_haz_q_ref>0", "isfinite(laser_haz_q_ref)"] }
+  - { id: "laser_haz_v_ref", name: "laser_haz_v_ref", unit: "m/s", kind: "parameter", domains: ["subtractive"], description: "HAZ speed reference (cal).", domain_constraints: ["laser_haz_v_ref>0", "isfinite(laser_haz_v_ref)"] }
+  - { id: "laser_kerf_scale", name: "laser_kerf_scale", unit: "m", kind: "parameter", domains: ["subtractive"], description: "Kerf scale (cal).", domain_constraints: ["laser_kerf_scale>0", "isfinite(laser_kerf_scale)"] }
+  - { id: "laser_kerf_k0", name: "laser_kerf_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(laser_kerf_k0)"] }
+  - { id: "laser_kerf_k1", name: "laser_kerf_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(laser_kerf_k1)"] }
+  - { id: "laser_kerf_k2", name: "laser_kerf_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(laser_kerf_k2)"] }
+  - { id: "laser_kerf_p_ref", name: "laser_kerf_p_ref", unit: "W", kind: "parameter", domains: ["subtractive"], description: "Kerf power reference (cal).", domain_constraints: ["laser_kerf_p_ref>0", "isfinite(laser_kerf_p_ref)"] }
+  - { id: "laser_kerf_v_ref", name: "laser_kerf_v_ref", unit: "m/s", kind: "parameter", domains: ["subtractive"], description: "Kerf speed reference (cal).", domain_constraints: ["laser_kerf_v_ref>0", "isfinite(laser_kerf_v_ref)"] }
+  - { id: "waterjet_pressure", name: "waterjet_pressure", unit: "Pa", kind: "input", domains: ["subtractive"], description: "Waterjet pressure.", domain_constraints: ["waterjet_pressure>0", "isfinite(waterjet_pressure)"] }
+  - { id: "water_flow_rate", name: "water_flow_rate", unit: "m^3/s", kind: "input", domains: ["subtractive"], description: "Water volumetric flow.", domain_constraints: ["water_flow_rate>0", "isfinite(water_flow_rate)"] }
+  - { id: "hydraulic_power", name: "hydraulic_power", unit: "W", kind: "output", domains: ["subtractive"], description: "Hydraulic power p*Q.", domain_constraints: ["hydraulic_power>=0", "isfinite(hydraulic_power)"] }
+  - { id: "abrasive_mass_flow", name: "abrasive_mass_flow", unit: "kg/s", kind: "input", domains: ["subtractive"], description: "Abrasive mass flow.", domain_constraints: ["abrasive_mass_flow>=0", "isfinite(abrasive_mass_flow)"] }
+  - { id: "abrasive_dose_per_length", name: "abrasive_dose_per_length", unit: "kg/m", kind: "output", domains: ["subtractive"], description: "Abrasive dose per length.", domain_constraints: ["abrasive_dose_per_length>=0", "isfinite(abrasive_dose_per_length)"] }
+  - { id: "wjet_kerf_offset", name: "wjet_kerf_offset", unit: "m", kind: "output", domains: ["subtractive"], description: "Waterjet kerf offset (template).", domain_constraints: ["wjet_kerf_offset>=0", "isfinite(wjet_kerf_offset)"] }
+  - { id: "wjet_taper_angle", name: "wjet_taper_angle", unit: "rad", kind: "output", domains: ["subtractive"], description: "Waterjet taper angle (template).", domain_constraints: ["wjet_taper_angle>=0", "isfinite(wjet_taper_angle)"] }
+  - { id: "v_cut_depth", name: "v_cut_depth", unit: "m", kind: "output", domains: ["subtractive"], description: "V-cut depth (template).", domain_constraints: ["v_cut_depth>=0", "isfinite(v_cut_depth)"] }
+  - { id: "wjet_hp_ref", name: "wjet_hydraulic_power_ref", unit: "W", kind: "parameter", domains: ["subtractive"], description: "Waterjet hydraulic power reference (cal).", domain_constraints: ["wjet_hp_ref>0", "isfinite(wjet_hp_ref)"] }
+  - { id: "wjet_md_ref", name: "wjet_abrasive_dose_ref", unit: "kg/m", kind: "parameter", domains: ["subtractive"], description: "Waterjet abrasive dose reference (cal).", domain_constraints: ["wjet_md_ref>0", "isfinite(wjet_md_ref)"] }
+  - { id: "wjet_v_ref", name: "wjet_speed_ref", unit: "m/s", kind: "parameter", domains: ["subtractive"], description: "Waterjet travel speed reference (cal).", domain_constraints: ["wjet_v_ref>0", "isfinite(wjet_v_ref)"] }
+  - { id: "wjet_kerf_scale", name: "wjet_kerf_scale", unit: "m", kind: "parameter", domains: ["subtractive"], description: "Kerf offset scale (cal).", domain_constraints: ["wjet_kerf_scale>0", "isfinite(wjet_kerf_scale)"] }
+  - { id: "wjet_kerf_k0", name: "wjet_kerf_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(wjet_kerf_k0)"] }
+  - { id: "wjet_kerf_k1", name: "wjet_kerf_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(wjet_kerf_k1)"] }
+  - { id: "wjet_kerf_k2", name: "wjet_kerf_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(wjet_kerf_k2)"] }
+  - { id: "wjet_kerf_k3", name: "wjet_kerf_k3", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(wjet_kerf_k3)"] }
+  - { id: "wjet_taper_scale", name: "wjet_taper_scale", unit: "rad", kind: "parameter", domains: ["subtractive"], description: "Taper scale (cal).", domain_constraints: ["wjet_taper_scale>=0", "isfinite(wjet_taper_scale)"] }
+  - { id: "wjet_taper_k0", name: "wjet_taper_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Taper coeff (cal).", domain_constraints: ["isfinite(wjet_taper_k0)"] }
+  - { id: "wjet_taper_k1", name: "wjet_taper_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Taper coeff (cal).", domain_constraints: ["isfinite(wjet_taper_k1)"] }
+  - { id: "wjet_taper_k2", name: "wjet_taper_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Taper coeff (cal).", domain_constraints: ["isfinite(wjet_taper_k2)"] }
+  - { id: "wjet_taper_k3", name: "wjet_taper_k3", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Taper coeff (cal).", domain_constraints: ["isfinite(wjet_taper_k3)"] }
+  - { id: "vcut_scale", name: "vcut_scale", unit: "m", kind: "parameter", domains: ["subtractive"], description: "V-cut scale (cal).", domain_constraints: ["vcut_scale>=0", "isfinite(vcut_scale)"] }
+  - { id: "vcut_k0", name: "vcut_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "V-cut coeff (cal).", domain_constraints: ["isfinite(vcut_k0)"] }
+  - { id: "vcut_k1", name: "vcut_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "V-cut coeff (cal).", domain_constraints: ["isfinite(vcut_k1)"] }
+  - { id: "vcut_k2", name: "vcut_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "V-cut coeff (cal).", domain_constraints: ["isfinite(vcut_k2)"] }
+  - { id: "vcut_k3", name: "vcut_k3", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "V-cut coeff (cal).", domain_constraints: ["isfinite(vcut_k3)"] }
+  - { id: "sample_rate", name: "sample_rate", unit: "Hz", kind: "input", domains: ["metrology"], description: "Acquisition sample rate.", domain_constraints: ["sample_rate>0", "isfinite(sample_rate)"] }
+  - { id: "point_spacing", name: "point_spacing", unit: "m", kind: "output", domains: ["metrology"], description: "Along-track point spacing.", domain_constraints: ["point_spacing>=0", "isfinite(point_spacing)"] }
+  - { id: "overlap_fraction", name: "overlap_fraction", unit: "1", kind: "input", domains: ["metrology"], description: "Fractional overlap between raster lines/swaths.", domain_constraints: ["overlap_fraction>=0", "overlap_fraction<1", "isfinite(overlap_fraction)"] }
+  - { id: "scan_width", name: "scan_width", unit: "m", kind: "input", domains: ["metrology"], description: "Raster scan width.", domain_constraints: ["scan_width>0", "isfinite(scan_width)"] }
+  - { id: "scan_height", name: "scan_height", unit: "m", kind: "input", domains: ["metrology"], description: "Raster scan height.", domain_constraints: ["scan_height>0", "isfinite(scan_height)"] }
+  - { id: "raster_time", name: "raster_time", unit: "s", kind: "output", domains: ["metrology"], description: "Raster scan time estimate.", domain_constraints: ["raster_time>=0", "isfinite(raster_time)"] }
+  - { id: "point_density", name: "point_density", unit: "1/m^2", kind: "output", domains: ["metrology"], description: "Estimated point density.", domain_constraints: ["point_density>=0", "isfinite(point_density)"] }
+  - { id: "point_count", name: "point_count", unit: "1", kind: "output", domains: ["metrology"], description: "Estimated point count.", domain_constraints: ["point_count>=0", "isfinite(point_count)"] }
+  - { id: "tof_dt", name: "tof_dt", unit: "s", kind: "input", domains: ["metrology"], description: "Time-of-flight delta time.", domain_constraints: ["tof_dt>=0", "isfinite(tof_dt)"] }
+  - { id: "lidar_range", name: "lidar_range", unit: "m", kind: "output", domains: ["metrology"], description: "LiDAR range from ToF.", domain_constraints: ["lidar_range>=0", "isfinite(lidar_range)"] }
+  - { id: "timing_jitter", name: "timing_jitter", unit: "s", kind: "input", domains: ["metrology"], description: "Timing jitter std-dev.", domain_constraints: ["timing_jitter>=0", "isfinite(timing_jitter)"] }
+  - { id: "range_noise", name: "range_noise", unit: "m", kind: "output", domains: ["metrology"], description: "Range noise from timing jitter.", domain_constraints: ["range_noise>=0", "isfinite(range_noise)"] }
+  - { id: "angular_step", name: "angular_step", unit: "rad", kind: "input", domains: ["metrology"], description: "Angular step increment.", domain_constraints: ["angular_step>0", "isfinite(angular_step)"] }
+  - { id: "arc_spacing", name: "arc_spacing", unit: "m", kind: "output", domains: ["metrology"], description: "Arc spacing at range for angular step.", domain_constraints: ["arc_spacing>=0", "isfinite(arc_spacing)"] }
+  - { id: "u_component_1", name: "uncertainty_component_1", unit: "m", kind: "input", domains: ["metrology"], description: "Uncertainty component for RSS.", domain_constraints: ["u_component_1>=0", "isfinite(u_component_1)"] }
+  - { id: "u_component_2", name: "uncertainty_component_2", unit: "m", kind: "input", domains: ["metrology"], description: "Uncertainty component for RSS.", domain_constraints: ["u_component_2>=0", "isfinite(u_component_2)"] }
+  - { id: "u_component_3", name: "uncertainty_component_3", unit: "m", kind: "input", domains: ["metrology"], description: "Uncertainty component for RSS.", domain_constraints: ["u_component_3>=0", "isfinite(u_component_3)"] }
+  - { id: "combined_uncertainty", name: "combined_standard_uncertainty", unit: "m", kind: "output", domains: ["metrology"], description: "Combined standard uncertainty (RSS).", domain_constraints: ["combined_uncertainty>=0", "isfinite(combined_uncertainty)"] }
+  - { id: "coverage_factor_k", name: "coverage_factor", unit: "1", kind: "input", domains: ["metrology"], description: "Coverage factor k (explicit).", domain_constraints: ["coverage_factor_k>0", "isfinite(coverage_factor_k)"] }
+  - { id: "expanded_uncertainty_u95", name: "expanded_uncertainty", unit: "m", kind: "output", domains: ["metrology"], description: "Expanded uncertainty (k*uc).", domain_constraints: ["expanded_uncertainty_u95>=0", "isfinite(expanded_uncertainty_u95)"] }
+  - { id: "exposure_time", name: "exposure_time", unit: "s", kind: "input", domains: ["metrology"], description: "Exposure / integration time.", domain_constraints: ["exposure_time>=0", "isfinite(exposure_time)"] }
+  - { id: "motion_blur_error", name: "motion_blur_error", unit: "m", kind: "output", domains: ["metrology"], description: "Position error due to motion blur.", domain_constraints: ["motion_blur_error>=0", "isfinite(motion_blur_error)"] }
+  - { id: "trigger_jitter", name: "trigger_jitter", unit: "s", kind: "input", domains: ["metrology"], description: "Trigger timing jitter.", domain_constraints: ["trigger_jitter>=0", "isfinite(trigger_jitter)"] }
+  - { id: "trigger_jitter_error", name: "trigger_jitter_error", unit: "m", kind: "output", domains: ["metrology"], description: "Position error due to trigger jitter.", domain_constraints: ["trigger_jitter_error>=0", "isfinite(trigger_jitter_error)"] }
+  - { id: "point_size_bytes", name: "point_size_bytes", unit: "B", kind: "input", domains: ["metrology"], description: "Serialized bytes per point.", domain_constraints: ["point_size_bytes>0", "isfinite(point_size_bytes)"] }
+  - { id: "pointcloud_size", name: "pointcloud_size", unit: "B", kind: "output", domains: ["metrology"], description: "Point cloud size in bytes.", domain_constraints: ["pointcloud_size>=0", "isfinite(pointcloud_size)"] }
+  - { id: "io_bandwidth", name: "io_bandwidth", unit: "B/s", kind: "input", domains: ["metrology"], description: "Effective I/O bandwidth.", domain_constraints: ["io_bandwidth>0", "isfinite(io_bandwidth)"] }
+  - { id: "io_time", name: "io_time", unit: "s", kind: "output", domains: ["metrology"], description: "I/O time estimate.", domain_constraints: ["io_time>=0", "isfinite(io_time)"] }
+  - { id: "yarn_tex", name: "yarn_tex", unit: "tex", kind: "input", domains: ["composites_3d_woven"], description: "Generic yarn linear mass in tex.", domain_constraints: ["yarn_tex>0", "isfinite(yarn_tex)"] }
+  - { id: "yarn_linear_mass_density", name: "yarn_linear_mass_density", unit: "kg/m", kind: "output", domains: ["composites_3d_woven"], description: "Yarn linear mass density.", domain_constraints: ["yarn_linear_mass_density>0", "isfinite(yarn_linear_mass_density)"] }
+  - { id: "warp_tex", name: "warp_tex", unit: "tex", kind: "input", domains: ["composites_3d_woven"], description: "Warp yarn tex.", domain_constraints: ["warp_tex>0", "isfinite(warp_tex)"] }
+  - { id: "weft_tex", name: "weft_tex", unit: "tex", kind: "input", domains: ["composites_3d_woven"], description: "Weft yarn tex.", domain_constraints: ["weft_tex>0", "isfinite(weft_tex)"] }
+  - { id: "binder_tex", name: "binder_tex", unit: "tex", kind: "input", domains: ["composites_3d_woven"], description: "Binder yarn tex.", domain_constraints: ["binder_tex>0", "isfinite(binder_tex)"] }
+  - { id: "warp_linear_mass_density", name: "warp_linear_mass_density", unit: "kg/m", kind: "output", domains: ["composites_3d_woven"], description: "Warp yarn linear mass density.", domain_constraints: ["warp_linear_mass_density>0", "isfinite(warp_linear_mass_density)"] }
+  - { id: "weft_linear_mass_density", name: "weft_linear_mass_density", unit: "kg/m", kind: "output", domains: ["composites_3d_woven"], description: "Weft yarn linear mass density.", domain_constraints: ["weft_linear_mass_density>0", "isfinite(weft_linear_mass_density)"] }
+  - { id: "binder_linear_mass_density", name: "binder_linear_mass_density", unit: "kg/m", kind: "output", domains: ["composites_3d_woven"], description: "Binder yarn linear mass density.", domain_constraints: ["binder_linear_mass_density>0", "isfinite(binder_linear_mass_density)"] }
+  - { id: "warp_ends_per_meter", name: "warp_ends_per_meter", unit: "1/m", kind: "input", domains: ["composites_3d_woven"], description: "Warp ends per meter.", domain_constraints: ["warp_ends_per_meter>0", "isfinite(warp_ends_per_meter)"] }
+  - { id: "weft_picks_per_meter", name: "weft_picks_per_meter", unit: "1/m", kind: "input", domains: ["composites_3d_woven"], description: "Weft picks per meter.", domain_constraints: ["weft_picks_per_meter>0", "isfinite(weft_picks_per_meter)"] }
+  - { id: "binder_ends_per_meter", name: "binder_ends_per_meter", unit: "1/m", kind: "input", domains: ["composites_3d_woven"], description: "Binder ends per meter (effective through-thickness stitching density projected per area).", domain_constraints: ["binder_ends_per_meter>=0", "isfinite(binder_ends_per_meter)"] }
+  - { id: "warp_areal_mass", name: "warp_areal_mass", unit: "kg/m^2", kind: "output", domains: ["composites_3d_woven"], description: "Warp areal mass contribution.", domain_constraints: ["warp_areal_mass>=0", "isfinite(warp_areal_mass)"] }
+  - { id: "weft_areal_mass", name: "weft_areal_mass", unit: "kg/m^2", kind: "output", domains: ["composites_3d_woven"], description: "Weft areal mass contribution.", domain_constraints: ["weft_areal_mass>=0", "isfinite(weft_areal_mass)"] }
+  - { id: "binder_areal_mass", name: "binder_areal_mass", unit: "kg/m^2", kind: "output", domains: ["composites_3d_woven"], description: "Binder areal mass contribution.", domain_constraints: ["binder_areal_mass>=0", "isfinite(binder_areal_mass)"] }
+  - { id: "fiber_areal_mass_total", name: "fiber_areal_mass_total", unit: "kg/m^2", kind: "output", domains: ["composites_3d_woven"], description: "Total fiber areal mass.", domain_constraints: ["fiber_areal_mass_total>=0", "isfinite(fiber_areal_mass_total)"] }
+  - { id: "fiber_density", name: "fiber_density", unit: "kg/m^3", kind: "input", domains: ["composites_3d_woven"], description: "Fiber density.", domain_constraints: ["fiber_density>0", "isfinite(fiber_density)"] }
+  - { id: "preform_thickness", name: "preform_thickness", unit: "m", kind: "input", domains: ["composites_3d_woven"], description: "Preform thickness.", domain_constraints: ["preform_thickness>0", "isfinite(preform_thickness)"] }
+  - { id: "fiber_volume_fraction", name: "fiber_volume_fraction", unit: "1", kind: "output", domains: ["composites_3d_woven"], description: "Fiber volume fraction from areal mass, density, thickness.", domain_constraints: ["fiber_volume_fraction>=0", "fiber_volume_fraction<=1", "isfinite(fiber_volume_fraction)"] }
+  - { id: "void_volume_fraction", name: "void_volume_fraction", unit: "1", kind: "input", domains: ["composites_3d_woven"], description: "Void volume fraction (explicit input; measured/estimated externally).", domain_constraints: ["void_volume_fraction>=0", "void_volume_fraction<=1", "isfinite(void_volume_fraction)"] }
+  - { id: "matrix_volume_fraction", name: "matrix_volume_fraction", unit: "1", kind: "output", domains: ["composites_3d_woven"], description: "Matrix volume fraction (closure).", domain_constraints: ["matrix_volume_fraction>=0", "matrix_volume_fraction<=1", "isfinite(matrix_volume_fraction)"] }
+  - { id: "crimp_angle", name: "crimp_angle", unit: "rad", kind: "input", domains: ["composites_3d_woven"], description: "Crimp/undulation angle (effective).", domain_constraints: ["crimp_angle>=0", "crimp_angle<pi/2", "isfinite(crimp_angle)"] }
+  - { id: "crimp_k", name: "crimp_k", unit: "1", kind: "parameter", domains: ["composites_3d_woven"], description: "Crimp efficiency decay parameter (template; calibration required).", domain_constraints: ["crimp_k>=0", "isfinite(crimp_k)"] }
+  - { id: "crimp_efficiency", name: "crimp_efficiency", unit: "1", kind: "output", domains: ["composites_3d_woven"], description: "Crimp/undulation efficiency factor (template).", domain_constraints: ["crimp_efficiency>=0", "crimp_efficiency<=1", "isfinite(crimp_efficiency)"] }
+  - { id: "compaction_pressure", name: "compaction_pressure", unit: "Pa", kind: "input", domains: ["composites_3d_woven"], description: "Compaction pressure.", domain_constraints: ["compaction_pressure>=0", "isfinite(compaction_pressure)"] }
+  - { id: "compaction_p_ref", name: "compaction_pressure_reference", unit: "Pa", kind: "parameter", domains: ["composites_3d_woven"], description: "Compaction reference pressure (template; calibration required).", domain_constraints: ["compaction_p_ref>0", "isfinite(compaction_p_ref)"] }
+  - { id: "compaction_k", name: "compaction_k", unit: "m", kind: "parameter", domains: ["composites_3d_woven"], description: "Compaction thickness scale (template; calibration required).", domain_constraints: ["compaction_k>=0", "isfinite(compaction_k)"] }
+  - { id: "compacted_thickness", name: "compacted_thickness", unit: "m", kind: "output", domains: ["composites_3d_woven"], description: "Compacted thickness (template).", domain_constraints: ["compacted_thickness>0", "isfinite(compacted_thickness)"] }
+  - { id: "bending_moment", name: "bending_moment", unit: "N*m", kind: "input", domains: ["structures"], description: "Bending moment.", domain_constraints: ["isfinite(bending_moment)"] }
+  - { id: "neutral_axis_c", name: "neutral_axis_distance", unit: "m", kind: "input", domains: ["structures"], description: "Distance from neutral axis to outer fiber.", domain_constraints: ["neutral_axis_c>0", "isfinite(neutral_axis_c)"] }
+  - { id: "second_moment_i", name: "second_moment_of_area", unit: "m^4", kind: "input", domains: ["structures"], description: "Second moment of area (area moment of inertia).", domain_constraints: ["second_moment_i>0", "isfinite(second_moment_i)"] }
+  - { id: "bending_stress", name: "bending_stress", unit: "Pa", kind: "output", domains: ["structures"], description: "Bending stress at outer fiber.", domain_constraints: ["isfinite(bending_stress)"] }
+  - { id: "shear_force", name: "shear_force", unit: "N", kind: "input", domains: ["structures"], description: "Transverse shear force.", domain_constraints: ["isfinite(shear_force)"] }
+  - { id: "first_moment_q", name: "first_moment_of_area", unit: "m^3", kind: "input", domains: ["structures"], description: "First moment of area about neutral axis.", domain_constraints: ["isfinite(first_moment_q)"] }
+  - { id: "section_width", name: "section_width", unit: "m", kind: "input", domains: ["structures"], description: "Section width at the point where shear stress is evaluated.", domain_constraints: ["section_width>0", "isfinite(section_width)"] }
+  - { id: "shear_stress", name: "shear_stress", unit: "Pa", kind: "output", domains: ["structures"], description: "Beam shear stress.", domain_constraints: ["isfinite(shear_stress)"] }
+  - { id: "buckling_k", name: "buckling_coefficient_k", unit: "1", kind: "input", domains: ["structures"], description: "Plate buckling coefficient (boundary condition / mode dependent).", domain_constraints: ["buckling_k>0", "isfinite(buckling_k)"] }
+  - { id: "youngs_modulus", name: "youngs_modulus", unit: "Pa", kind: "input", domains: ["structures"], description: "Young's modulus.", domain_constraints: ["youngs_modulus>0", "isfinite(youngs_modulus)"] }
+  - { id: "poisson_ratio", name: "poisson_ratio", unit: "1", kind: "input", domains: ["structures"], description: "Poisson's ratio.", domain_constraints: ["isfinite(poisson_ratio)"] }
+  - { id: "plate_thickness", name: "plate_thickness", unit: "m", kind: "input", domains: ["structures"], description: "Plate thickness.", domain_constraints: ["plate_thickness>0", "isfinite(plate_thickness)"] }
+  - { id: "plate_span", name: "plate_span", unit: "m", kind: "input", domains: ["structures"], description: "Characteristic plate span for buckling formula (typically the loaded/shorter dimension).", domain_constraints: ["plate_span>0", "isfinite(plate_span)"] }
+  - { id: "plate_buckling_stress", name: "plate_buckling_stress", unit: "Pa", kind: "output", domains: ["structures"], description: "Plate buckling critical stress (template).", domain_constraints: ["isfinite(plate_buckling_stress)"] }
+
+models:
+  - id: "risf_sine_law_thickness"
+    domain: "risf"
+    purpose: "Final thickness via sine law approximation."
+    equations:
+      - { name: "t_final", expr: "t_initial*cos(wall_angle)", variables: ["t_initial", "wall_angle"], assumptions: ["Sine law; constant volume; wall_angle in (0, pi/2)."] }
+    constraints: ["t_initial>0", "wall_angle>0", "wall_angle<pi/2", "isfinite(t_initial) and isfinite(wall_angle)"]
+    outputs: [{ id: "t_final", unit: "m" }]
+
+  - id: "risf_sine_law_thinning_ratio"
+    domain: "risf"
+    purpose: "Thickness ratio implied by sine law."
+    equations:
+      - { name: "thinning_ratio", expr: "cos(wall_angle)", variables: ["wall_angle"], assumptions: ["Sine law; wall_angle in (0, pi/2)."] }
+    constraints: ["wall_angle>0", "wall_angle<pi/2", "isfinite(wall_angle)"]
+    outputs: [{ id: "thinning_ratio", unit: "1" }]
+
+  - id: "risf_scallop_height_exact"
+    domain: "risf"
+    purpose: "Scallop height (exact circle geometry)."
+    equations:
+      - { name: "scallop_height", expr: "tool_radius-sqrt((tool_radius^2)-((tool_stepover/2)^2))", variables: ["tool_radius", "tool_stepover"] }
+    constraints: ["tool_radius>0", "tool_stepover>=0", "(tool_radius^2)-((tool_stepover/2)^2)>=0", "isfinite(tool_radius) and isfinite(tool_stepover)"]
+    outputs: [{ id: "scallop_height", unit: "m" }]
+
+  - id: "risf_scallop_height_small_step"
+    domain: "risf"
+    purpose: "Scallop height (small-step approximation)."
+    equations:
+      - { name: "scallop_height_small_step", expr: "(tool_stepover^2)/(8*tool_radius)", variables: ["tool_radius", "tool_stepover"], assumptions: ["Valid when tool_stepover/tool_radius is small."] }
+    constraints: ["tool_radius>0", "tool_stepover>=0", "isfinite(tool_radius) and isfinite(tool_stepover)"]
+    outputs: [{ id: "scallop_height_small_step", unit: "m" }]
+
+  - id: "risf_inverse_scallop_to_step"
+    domain: "risf"
+    purpose: "Inverse scallop target to step parameter."
+    equations:
+      - { name: "stepdown_from_scallop", expr: "2*sqrt((2*tool_radius*target_scallop_height)-(target_scallop_height^2))", variables: ["tool_radius", "target_scallop_height"] }
+    constraints: ["tool_radius>0", "target_scallop_height>=0", "(2*tool_radius*target_scallop_height)-(target_scallop_height^2)>=0", "isfinite(tool_radius) and isfinite(target_scallop_height)"]
+    outputs: [{ id: "stepdown_from_scallop", unit: "m" }]
+
+  - id: "risf_aerens_axial_force_template"
+    domain: "risf"
+    purpose: "Aerens-family axial force template (calibration required)."
+    equations:
+      - name: "axial_force"
+        expr: "aerens_force_scale*exp(aerens_k0+(aerens_k1*wall_angle)+(aerens_k2*ln(t_initial/aerens_t_ref))+(aerens_k3*ln(tool_radius/aerens_r_ref))+(aerens_k4*ln(tool_stepdown/aerens_dz_ref))+(aerens_k5*ln(tool_stepover/aerens_s_ref))+(aerens_k6*ln((tool_stepover/aerens_s_ref)/(tool_radius/aerens_r_ref))) )"
+        variables: ["aerens_force_scale", "aerens_k0", "aerens_k1", "aerens_k2", "aerens_k3", "aerens_k4", "aerens_k5", "aerens_k6", "aerens_t_ref", "aerens_r_ref", "aerens_s_ref", "aerens_dz_ref", "t_initial", "wall_angle", "tool_radius", "tool_stepdown", "tool_stepover"]
+        assumptions: ["Template only; coefficients and references must be calibrated. ln args are dimensionless ratios."]
+    constraints:
+      - "aerens_force_scale>0"
+      - "aerens_t_ref>0 and aerens_r_ref>0 and aerens_s_ref>0 and aerens_dz_ref>0"
+      - "t_initial>0 and tool_radius>0 and tool_stepdown>0 and tool_stepover>0"
+      - "wall_angle>0 and wall_angle<pi/2"
+      - "isfinite(aerens_force_scale) and isfinite(aerens_k0) and isfinite(aerens_k1) and isfinite(aerens_k2) and isfinite(aerens_k3) and isfinite(aerens_k4) and isfinite(aerens_k5) and isfinite(aerens_k6)"
+      - "isfinite(aerens_t_ref) and isfinite(aerens_r_ref) and isfinite(aerens_s_ref) and isfinite(aerens_dz_ref)"
+      - "isfinite(t_initial) and isfinite(tool_radius) and isfinite(tool_stepdown) and isfinite(tool_stepover) and isfinite(wall_angle)"
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/risf_aerens_axial_force_template/calibration.yaml"
+      parameters:
+        - { id: "aerens_force_scale", unit: "N" }
+        - { id: "aerens_k0", unit: "1" }
+        - { id: "aerens_k1", unit: "1" }
+        - { id: "aerens_k2", unit: "1" }
+        - { id: "aerens_k3", unit: "1" }
+        - { id: "aerens_k4", unit: "1" }
+        - { id: "aerens_k5", unit: "1" }
+        - { id: "aerens_k6", unit: "1" }
+        - { id: "aerens_t_ref", unit: "m" }
+        - { id: "aerens_r_ref", unit: "m" }
+        - { id: "aerens_s_ref", unit: "m" }
+        - { id: "aerens_dz_ref", unit: "m" }
+      data_requirements:
+        - "Measured axial force synchronized with toolpath for known (t_initial, wall_angle, tool_radius, tool_stepdown, tool_stepover)."
+        - "Sufficient span of operating conditions to avoid parameter degeneracy."
+    outputs: [{ id: "axial_force", unit: "N" }]
+
+  - id: "risf_robot_deflection_compliance_template"
+    domain: "risf"
+    purpose: "Robot/tool deflection via calibrated linear compliance."
+    equations:
+      - { name: "robot_deflection", expr: "robot_linear_compliance*axial_force", variables: ["robot_linear_compliance", "axial_force"], assumptions: ["Linear compliance valid within calibrated load regime."] }
+    constraints: ["robot_linear_compliance>=0", "axial_force>=0", "isfinite(robot_linear_compliance) and isfinite(axial_force)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/risf_robot_deflection_compliance_template/calibration.yaml"
+      parameters: [{ id: "robot_linear_compliance", unit: "m/N" }]
+      data_requirements:
+        - "Applied force vs measured end-effector deflection under representative configuration."
+        - "Calibration procedure documented in artifact."
+    outputs: [{ id: "robot_deflection", unit: "m" }]
+
+  - id: "additive_pbf_energy_densities"
+    domain: "additive"
+    purpose: "PBF energy density primitives (line/area/volume)."
+    equations:
+      - { name: "energy_line", expr: "(laser_power*process_efficiency)/scan_speed", variables: ["laser_power", "process_efficiency", "scan_speed"] }
+      - { name: "energy_area", expr: "(laser_power*process_efficiency)/(scan_speed*hatch_spacing)", variables: ["laser_power", "process_efficiency", "scan_speed", "hatch_spacing"] }
+      - { name: "energy_volume", expr: "(laser_power*process_efficiency)/(scan_speed*hatch_spacing*layer_thickness)", variables: ["laser_power", "process_efficiency", "scan_speed", "hatch_spacing", "layer_thickness"] }
+    constraints: ["laser_power>0", "process_efficiency>=0 and process_efficiency<=1", "scan_speed>0", "hatch_spacing>0", "layer_thickness>0", "isfinite(laser_power) and isfinite(process_efficiency) and isfinite(scan_speed) and isfinite(hatch_spacing) and isfinite(layer_thickness)"]
+    outputs:
+      - { id: "energy_line", unit: "J/m" }
+      - { id: "energy_area", unit: "J/m^2" }
+      - { id: "energy_volume", unit: "J/m^3" }
+
+  - id: "additive_waam_heat_input_per_length"
+    domain: "additive"
+    purpose: "WAAM heat input per length from arc electrical power and travel speed."
+    equations:
+      - { name: "heat_input_per_length", expr: "(arc_voltage*arc_current*process_efficiency)/travel_speed", variables: ["arc_voltage", "arc_current", "process_efficiency", "travel_speed"] }
+    constraints: ["arc_voltage>0", "arc_current>0", "process_efficiency>=0 and process_efficiency<=1", "travel_speed>0", "isfinite(arc_voltage) and isfinite(arc_current) and isfinite(process_efficiency) and isfinite(travel_speed)"]
+    outputs: [{ id: "heat_input_per_length", unit: "J/m" }]
+
+  - id: "additive_vat_jacobs_working_curve"
+    domain: "additive"
+    purpose: "VAT Jacobs working curve template (calibration required)."
+    equations:
+      - { name: "cure_depth", expr: "penetration_depth*ln(exposure_energy/critical_energy)", variables: ["penetration_depth", "exposure_energy", "critical_energy"] }
+    constraints: ["penetration_depth>0", "critical_energy>0", "exposure_energy>0", "(exposure_energy/critical_energy)>0", "isfinite(penetration_depth) and isfinite(exposure_energy) and isfinite(critical_energy)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/additive_vat_jacobs_working_curve/calibration.yaml"
+      parameters:
+        - { id: "critical_energy", unit: "J/m^2" }
+        - { id: "penetration_depth", unit: "m" }
+      data_requirements:
+        - "Measured cure depth vs exposure energy for the resin/optics/process stack."
+        - "Fit procedure documented in calibration artifact."
+    outputs: [{ id: "cure_depth", unit: "m" }]
+
+  - id: "additive_binderjet_scale_compensation"
+    domain: "additive"
+    purpose: "Scale compensation from calibrated linear shrinkage (binder-jet/sintering template)."
+    equations:
+      - { name: "scale_compensation", expr: "1/(1-linear_shrinkage)", variables: ["linear_shrinkage"] }
+    constraints: ["linear_shrinkage>=0", "linear_shrinkage<1", "(1-linear_shrinkage)!=0", "isfinite(linear_shrinkage)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/additive_binderjet_scale_compensation/calibration.yaml"
+      parameters: [{ id: "linear_shrinkage", unit: "1" }]
+      data_requirements:
+        - "Measured pre/post dimensions to infer linear shrinkage for material+cycle."
+    outputs: [{ id: "scale_compensation", unit: "1" }]
+
+  - id: "subtractive_laser_power_density"
+    domain: "subtractive"
+    purpose: "Laser spot area and power density from spot diameter and power."
+    equations:
+      - { name: "beam_area", expr: "pi*(beam_spot_diameter/2)^2", variables: ["beam_spot_diameter"] }
+      - { name: "power_density", expr: "laser_power/(pi*(beam_spot_diameter/2)^2)", variables: ["laser_power", "beam_spot_diameter"] }
+    constraints: ["beam_spot_diameter>0", "laser_power>0", "isfinite(beam_spot_diameter) and isfinite(laser_power)"]
+    outputs:
+      - { id: "beam_area", unit: "m^2" }
+      - { id: "power_density", unit: "W/m^2" }
+
+  - id: "subtractive_laser_absorbed_heat_per_length"
+    domain: "subtractive"
+    purpose: "Absorbed heat per unit cut length (coupling via absorptivity and efficiency)."
+    equations:
+      - { name: "absorbed_heat_per_length", expr: "(laser_power*absorptivity*process_efficiency)/travel_speed", variables: ["laser_power", "absorptivity", "process_efficiency", "travel_speed"] }
+    constraints: ["laser_power>0", "absorptivity>=0 and absorptivity<=1", "process_efficiency>=0 and process_efficiency<=1", "travel_speed>0", "isfinite(laser_power) and isfinite(absorptivity) and isfinite(process_efficiency) and isfinite(travel_speed)"]
+    outputs: [{ id: "absorbed_heat_per_length", unit: "J/m" }]
+
+  - id: "subtractive_laser_haz_template"
+    domain: "subtractive"
+    purpose: "Laser HAZ width template (calibration required)."
+    equations:
+      - { name: "haz_width", expr: "laser_haz_scale*exp(laser_haz_k0+(laser_haz_k1*ln(absorbed_heat_per_length/laser_haz_q_ref))+(laser_haz_k2*ln(travel_speed/laser_haz_v_ref)))", variables: ["laser_haz_scale", "laser_haz_k0", "laser_haz_k1", "laser_haz_k2", "absorbed_heat_per_length", "laser_haz_q_ref", "travel_speed", "laser_haz_v_ref"] }
+    constraints: ["laser_haz_scale>0", "laser_haz_q_ref>0", "laser_haz_v_ref>0", "absorbed_heat_per_length>0", "travel_speed>0", "(absorbed_heat_per_length/laser_haz_q_ref)>0", "(travel_speed/laser_haz_v_ref)>0", "isfinite(laser_haz_scale) and isfinite(laser_haz_k0) and isfinite(laser_haz_k1) and isfinite(laser_haz_k2)", "isfinite(absorbed_heat_per_length) and isfinite(laser_haz_q_ref) and isfinite(travel_speed) and isfinite(laser_haz_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_laser_haz_template/calibration.yaml"
+      parameters:
+        - { id: "laser_haz_scale", unit: "m" }
+        - { id: "laser_haz_k0", unit: "1" }
+        - { id: "laser_haz_k1", unit: "1" }
+        - { id: "laser_haz_k2", unit: "1" }
+        - { id: "laser_haz_q_ref", unit: "J/m" }
+        - { id: "laser_haz_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured HAZ width under known absorbed_heat_per_length and travel_speed with traceable metrology."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "haz_width", unit: "m" }]
+
+  - id: "subtractive_laser_kerf_template"
+    domain: "subtractive"
+    purpose: "Laser kerf width template (calibration required)."
+    equations:
+      - { name: "kerf_width", expr: "laser_kerf_scale*exp(laser_kerf_k0+(laser_kerf_k1*ln(laser_power/laser_kerf_p_ref))+(laser_kerf_k2*ln(travel_speed/laser_kerf_v_ref)))", variables: ["laser_kerf_scale", "laser_kerf_k0", "laser_kerf_k1", "laser_kerf_k2", "laser_power", "laser_kerf_p_ref", "travel_speed", "laser_kerf_v_ref"] }
+    constraints: ["laser_kerf_scale>0", "laser_kerf_p_ref>0", "laser_kerf_v_ref>0", "laser_power>0", "travel_speed>0", "(laser_power/laser_kerf_p_ref)>0", "(travel_speed/laser_kerf_v_ref)>0", "isfinite(laser_kerf_scale) and isfinite(laser_kerf_k0) and isfinite(laser_kerf_k1) and isfinite(laser_kerf_k2)", "isfinite(laser_power) and isfinite(laser_kerf_p_ref) and isfinite(travel_speed) and isfinite(laser_kerf_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_laser_kerf_template/calibration.yaml"
+      parameters:
+        - { id: "laser_kerf_scale", unit: "m" }
+        - { id: "laser_kerf_k0", unit: "1" }
+        - { id: "laser_kerf_k1", unit: "1" }
+        - { id: "laser_kerf_k2", unit: "1" }
+        - { id: "laser_kerf_p_ref", unit: "W" }
+        - { id: "laser_kerf_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured kerf width vs (laser_power, travel_speed) for a fixed optics/material stack."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "kerf_width", unit: "m" }]
+
+  - id: "subtractive_waterjet_hydraulic_power"
+    domain: "subtractive"
+    purpose: "Waterjet hydraulic power primitive (p*Q)."
+    equations:
+      - { name: "hydraulic_power", expr: "waterjet_pressure*water_flow_rate", variables: ["waterjet_pressure", "water_flow_rate"] }
+    constraints: ["waterjet_pressure>0", "water_flow_rate>0", "isfinite(waterjet_pressure) and isfinite(water_flow_rate)"]
+    outputs: [{ id: "hydraulic_power", unit: "W" }]
+
+  - id: "subtractive_waterjet_abrasive_dose_per_length"
+    domain: "subtractive"
+    purpose: "Abrasive dose per unit length (mass_flow / travel_speed)."
+    equations:
+      - { name: "abrasive_dose_per_length", expr: "abrasive_mass_flow/travel_speed", variables: ["abrasive_mass_flow", "travel_speed"] }
+    constraints: ["abrasive_mass_flow>=0", "travel_speed>0", "(travel_speed)!=0", "isfinite(abrasive_mass_flow) and isfinite(travel_speed)"]
+    outputs: [{ id: "abrasive_dose_per_length", unit: "kg/m" }]
+
+  - id: "subtractive_waterjet_kerf_offset_template"
+    domain: "subtractive"
+    purpose: "Waterjet kerf offset template (calibration required)."
+    equations:
+      - { name: "wjet_kerf_offset", expr: "wjet_kerf_scale*exp(wjet_kerf_k0+(wjet_kerf_k1*ln(hydraulic_power/wjet_hp_ref))+(wjet_kerf_k2*ln(abrasive_dose_per_length/wjet_md_ref))+(wjet_kerf_k3*ln(travel_speed/wjet_v_ref)))", variables: ["wjet_kerf_scale", "wjet_kerf_k0", "wjet_kerf_k1", "wjet_kerf_k2", "wjet_kerf_k3", "hydraulic_power", "wjet_hp_ref", "abrasive_dose_per_length", "wjet_md_ref", "travel_speed", "wjet_v_ref"] }
+    constraints: ["wjet_kerf_scale>0", "wjet_hp_ref>0 and wjet_md_ref>0 and wjet_v_ref>0", "hydraulic_power>0", "abrasive_dose_per_length>0", "travel_speed>0", "(hydraulic_power/wjet_hp_ref)>0", "(abrasive_dose_per_length/wjet_md_ref)>0", "(travel_speed/wjet_v_ref)>0", "isfinite(wjet_kerf_scale) and isfinite(wjet_kerf_k0) and isfinite(wjet_kerf_k1) and isfinite(wjet_kerf_k2) and isfinite(wjet_kerf_k3)", "isfinite(hydraulic_power) and isfinite(wjet_hp_ref) and isfinite(abrasive_dose_per_length) and isfinite(wjet_md_ref) and isfinite(travel_speed) and isfinite(wjet_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_waterjet_kerf_offset_template/calibration.yaml"
+      parameters:
+        - { id: "wjet_kerf_scale", unit: "m" }
+        - { id: "wjet_kerf_k0", unit: "1" }
+        - { id: "wjet_kerf_k1", unit: "1" }
+        - { id: "wjet_kerf_k2", unit: "1" }
+        - { id: "wjet_kerf_k3", unit: "1" }
+        - { id: "wjet_hp_ref", unit: "W" }
+        - { id: "wjet_md_ref", unit: "kg/m" }
+        - { id: "wjet_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured kerf offset vs (hydraulic_power, abrasive_dose_per_length, travel_speed) with recorded setup metadata."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "wjet_kerf_offset", unit: "m" }]
+
+  - id: "subtractive_waterjet_taper_template"
+    domain: "subtractive"
+    purpose: "Waterjet taper angle template (calibration required)."
+    equations:
+      - { name: "wjet_taper_angle", expr: "wjet_taper_scale*exp(wjet_taper_k0+(wjet_taper_k1*ln(hydraulic_power/wjet_hp_ref))+(wjet_taper_k2*ln(abrasive_dose_per_length/wjet_md_ref))+(wjet_taper_k3*ln(travel_speed/wjet_v_ref)))", variables: ["wjet_taper_scale", "wjet_taper_k0", "wjet_taper_k1", "wjet_taper_k2", "wjet_taper_k3", "hydraulic_power", "wjet_hp_ref", "abrasive_dose_per_length", "wjet_md_ref", "travel_speed", "wjet_v_ref"] }
+    constraints: ["wjet_taper_scale>=0", "wjet_hp_ref>0 and wjet_md_ref>0 and wjet_v_ref>0", "hydraulic_power>0", "abrasive_dose_per_length>0", "travel_speed>0", "(hydraulic_power/wjet_hp_ref)>0", "(abrasive_dose_per_length/wjet_md_ref)>0", "(travel_speed/wjet_v_ref)>0", "isfinite(wjet_taper_scale) and isfinite(wjet_taper_k0) and isfinite(wjet_taper_k1) and isfinite(wjet_taper_k2) and isfinite(wjet_taper_k3)", "isfinite(hydraulic_power) and isfinite(wjet_hp_ref) and isfinite(abrasive_dose_per_length) and isfinite(wjet_md_ref) and isfinite(travel_speed) and isfinite(wjet_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_waterjet_taper_template/calibration.yaml"
+      parameters:
+        - { id: "wjet_taper_scale", unit: "rad" }
+        - { id: "wjet_taper_k0", unit: "1" }
+        - { id: "wjet_taper_k1", unit: "1" }
+        - { id: "wjet_taper_k2", unit: "1" }
+        - { id: "wjet_taper_k3", unit: "1" }
+        - { id: "wjet_hp_ref", unit: "W" }
+        - { id: "wjet_md_ref", unit: "kg/m" }
+        - { id: "wjet_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured taper angle vs operating conditions with traceable metrology."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "wjet_taper_angle", unit: "rad" }]
+
+  - id: "subtractive_waterjet_vcut_template"
+    domain: "subtractive"
+    purpose: "Waterjet V-cut depth template (calibration required)."
+    equations:
+      - { name: "v_cut_depth", expr: "vcut_scale*exp(vcut_k0+(vcut_k1*ln(hydraulic_power/wjet_hp_ref))+(vcut_k2*ln(abrasive_dose_per_length/wjet_md_ref))+(vcut_k3*ln(travel_speed/wjet_v_ref)))", variables: ["vcut_scale", "vcut_k0", "vcut_k1", "vcut_k2", "vcut_k3", "hydraulic_power", "wjet_hp_ref", "abrasive_dose_per_length", "wjet_md_ref", "travel_speed", "wjet_v_ref"] }
+    constraints: ["vcut_scale>=0", "wjet_hp_ref>0 and wjet_md_ref>0 and wjet_v_ref>0", "hydraulic_power>0", "abrasive_dose_per_length>0", "travel_speed>0", "(hydraulic_power/wjet_hp_ref)>0", "(abrasive_dose_per_length/wjet_md_ref)>0", "(travel_speed/wjet_v_ref)>0", "isfinite(vcut_scale) and isfinite(vcut_k0) and isfinite(vcut_k1) and isfinite(vcut_k2) and isfinite(vcut_k3)", "isfinite(hydraulic_power) and isfinite(wjet_hp_ref) and isfinite(abrasive_dose_per_length) and isfinite(wjet_md_ref) and isfinite(travel_speed) and isfinite(wjet_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_waterjet_vcut_template/calibration.yaml"
+      parameters:
+        - { id: "vcut_scale", unit: "m" }
+        - { id: "vcut_k0", unit: "1" }
+        - { id: "vcut_k1", unit: "1" }
+        - { id: "vcut_k2", unit: "1" }
+        - { id: "vcut_k3", unit: "1" }
+        - { id: "wjet_hp_ref", unit: "W" }
+        - { id: "wjet_md_ref", unit: "kg/m" }
+        - { id: "wjet_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured V-cut depth vs operating conditions with traceable metrology."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "v_cut_depth", unit: "m" }]
+
+  - id: "metrology_spacing_from_speed_and_rate"
+    domain: "metrology"
+    purpose: "Along-track point spacing from speed and sample rate."
+    equations:
+      - { name: "point_spacing", expr: "scan_speed/sample_rate", variables: ["scan_speed", "sample_rate"] }
+    constraints: ["sample_rate>0", "(sample_rate)!=0", "scan_speed>=0", "isfinite(scan_speed) and isfinite(sample_rate)"]
+    outputs: [{ id: "point_spacing", unit: "m" }]
+
+  - id: "metrology_raster_scan_time_with_overlap"
+    domain: "metrology"
+    purpose: "Raster scan time estimate using effective line spacing from stepover and overlap."
+    equations:
+      - name: "raster_time"
+        expr: "(scan_width/scan_speed)*(scan_height/(tool_stepover*(1-overlap_fraction)))"
+        variables: ["scan_width", "scan_speed", "scan_height", "tool_stepover", "overlap_fraction"]
+        assumptions: ["Ignores acceleration/turnaround overhead; deterministic planning primitive."]
+    constraints:
+      - "scan_width>0"
+      - "scan_height>0"
+      - "scan_speed>0"
+      - "tool_stepover>0"
+      - "overlap_fraction>=0 and overlap_fraction<1"
+      - "(1-overlap_fraction)>0"
+      - "(tool_stepover*(1-overlap_fraction))>0"
+      - "isfinite(scan_width) and isfinite(scan_height) and isfinite(scan_speed) and isfinite(tool_stepover) and isfinite(overlap_fraction)"
+    outputs: [{ id: "raster_time", unit: "s" }]
+
+  - id: "metrology_point_density_and_count"
+    domain: "metrology"
+    purpose: "Estimate point density and point count from along-track spacing and effective line spacing."
+    equations:
+      - { name: "point_density", expr: "1/(point_spacing*(tool_stepover*(1-overlap_fraction)))", variables: ["point_spacing", "tool_stepover", "overlap_fraction"], assumptions: ["Assumes approximately uniform sampling grid."] }
+      - { name: "point_count", expr: "scan_width*scan_height*(1/(point_spacing*(tool_stepover*(1-overlap_fraction))))", variables: ["scan_width", "scan_height", "point_spacing", "tool_stepover", "overlap_fraction"] }
+    constraints:
+      - "point_spacing>0"
+      - "tool_stepover>0"
+      - "overlap_fraction>=0 and overlap_fraction<1"
+      - "(1-overlap_fraction)>0"
+      - "(point_spacing*(tool_stepover*(1-overlap_fraction)))!=0"
+      - "scan_width>0 and scan_height>0"
+      - "isfinite(scan_width) and isfinite(scan_height) and isfinite(point_spacing) and isfinite(tool_stepover) and isfinite(overlap_fraction)"
+    outputs:
+      - { id: "point_density", unit: "1/m^2" }
+      - { id: "point_count", unit: "1" }
+
+  - id: "metrology_lidar_range_from_tof"
+    domain: "metrology"
+    purpose: "LiDAR range from time-of-flight delta time."
+    equations:
+      - { name: "lidar_range", expr: "c_light*tof_dt/2", variables: ["c_light", "tof_dt"] }
+    constraints: ["c_light>0", "tof_dt>=0", "isfinite(c_light) and isfinite(tof_dt)"]
+    outputs: [{ id: "lidar_range", unit: "m" }]
+
+  - id: "metrology_lidar_range_noise_from_jitter"
+    domain: "metrology"
+    purpose: "Range noise standard deviation induced by timing jitter."
+    equations:
+      - { name: "range_noise", expr: "c_light*timing_jitter/2", variables: ["c_light", "timing_jitter"] }
+    constraints: ["c_light>0", "timing_jitter>=0", "isfinite(c_light) and isfinite(timing_jitter)"]
+    outputs: [{ id: "range_noise", unit: "m" }]
+
+  - id: "metrology_angular_step_to_arc_spacing"
+    domain: "metrology"
+    purpose: "Arc spacing from angular step at a given range."
+    equations:
+      - { name: "arc_spacing", expr: "lidar_range*angular_step", variables: ["lidar_range", "angular_step"] }
+    constraints: ["lidar_range>=0", "angular_step>0", "isfinite(lidar_range) and isfinite(angular_step)"]
+    outputs: [{ id: "arc_spacing", unit: "m" }]
+
+  - id: "metrology_uncertainty_rss_and_expanded"
+    domain: "metrology"
+    purpose: "Combine uncertainty components by RSS and compute expanded uncertainty with explicit coverage factor."
+    equations:
+      - { name: "combined_uncertainty", expr: "sqrt((u_component_1^2)+(u_component_2^2)+(u_component_3^2))", variables: ["u_component_1", "u_component_2", "u_component_3"] }
+      - { name: "expanded_uncertainty_u95", expr: "coverage_factor_k*sqrt((u_component_1^2)+(u_component_2^2)+(u_component_3^2))", variables: ["coverage_factor_k", "u_component_1", "u_component_2", "u_component_3"] }
+    constraints:
+      - "u_component_1>=0 and u_component_2>=0 and u_component_3>=0"
+      - "coverage_factor_k>0"
+      - "((u_component_1^2)+(u_component_2^2)+(u_component_3^2))>=0"
+      - "isfinite(coverage_factor_k) and isfinite(u_component_1) and isfinite(u_component_2) and isfinite(u_component_3)"
+    outputs:
+      - { id: "combined_uncertainty", unit: "m" }
+      - { id: "expanded_uncertainty_u95", unit: "m" }
+
+  - id: "metrology_motion_blur_position_error"
+    domain: "metrology"
+    purpose: "Position error due to motion during exposure/integration."
+    equations:
+      - { name: "motion_blur_error", expr: "scan_speed*exposure_time", variables: ["scan_speed", "exposure_time"] }
+    constraints: ["scan_speed>=0", "exposure_time>=0", "isfinite(scan_speed) and isfinite(exposure_time)"]
+    outputs: [{ id: "motion_blur_error", unit: "m" }]
+
+  - id: "metrology_trigger_jitter_position_error"
+    domain: "metrology"
+    purpose: "Position error due to trigger timing jitter at speed."
+    equations:
+      - { name: "trigger_jitter_error", expr: "scan_speed*trigger_jitter", variables: ["scan_speed", "trigger_jitter"] }
+    constraints: ["scan_speed>=0", "trigger_jitter>=0", "isfinite(scan_speed) and isfinite(trigger_jitter)"]
+    outputs: [{ id: "trigger_jitter_error", unit: "m" }]
+
+  - id: "metrology_pointcloud_size_and_io_time"
+    domain: "metrology"
+    purpose: "Deterministic planning for point cloud size and I/O time."
+    equations:
+      - { name: "pointcloud_size", expr: "point_count*point_size_bytes", variables: ["point_count", "point_size_bytes"] }
+      - { name: "io_time", expr: "(point_count*point_size_bytes)/io_bandwidth", variables: ["point_count", "point_size_bytes", "io_bandwidth"] }
+    constraints:
+      - "point_count>=0"
+      - "point_size_bytes>0"
+      - "io_bandwidth>0"
+      - "(io_bandwidth)!=0"
+      - "isfinite(point_count) and isfinite(point_size_bytes) and isfinite(io_bandwidth)"
+    outputs:
+      - { id: "pointcloud_size", unit: "B" }
+      - { id: "io_time", unit: "s" }
+
+  - id: "composites_tex_to_linear_mass_density"
+    domain: "composites_3d_woven"
+    purpose: "Convert tex to linear mass density."
+    equations:
+      - { name: "yarn_linear_mass_density", expr: "yarn_tex*1.0e-6", variables: ["yarn_tex"], assumptions: ["1 tex = 1 g/km = 1e-6 kg/m."] }
+    constraints: ["yarn_tex>0", "isfinite(yarn_tex)"]
+    outputs: [{ id: "yarn_linear_mass_density", unit: "kg/m" }]
+
+  - id: "composites_warp_weft_binder_linear_mass"
+    domain: "composites_3d_woven"
+    purpose: "Convert warp/weft/binder tex to linear mass density."
+    equations:
+      - { name: "warp_linear_mass_density", expr: "warp_tex*1.0e-6", variables: ["warp_tex"], assumptions: ["1 tex = 1e-6 kg/m."] }
+      - { name: "weft_linear_mass_density", expr: "weft_tex*1.0e-6", variables: ["weft_tex"], assumptions: ["1 tex = 1e-6 kg/m."] }
+      - { name: "binder_linear_mass_density", expr: "binder_tex*1.0e-6", variables: ["binder_tex"], assumptions: ["1 tex = 1e-6 kg/m."] }
+    constraints: ["warp_tex>0", "weft_tex>0", "binder_tex>0", "isfinite(warp_tex) and isfinite(weft_tex) and isfinite(binder_tex)"]
+    outputs:
+      - { id: "warp_linear_mass_density", unit: "kg/m" }
+      - { id: "weft_linear_mass_density", unit: "kg/m" }
+      - { id: "binder_linear_mass_density", unit: "kg/m" }
+
+  - id: "composites_areal_mass_contributions"
+    domain: "composites_3d_woven"
+    purpose: "Areal mass contributions from yarn linear mass density and count density."
+    equations:
+      - { name: "warp_areal_mass", expr: "warp_ends_per_meter*warp_linear_mass_density", variables: ["warp_ends_per_meter", "warp_linear_mass_density"] }
+      - { name: "weft_areal_mass", expr: "weft_picks_per_meter*weft_linear_mass_density", variables: ["weft_picks_per_meter", "weft_linear_mass_density"] }
+      - { name: "binder_areal_mass", expr: "binder_ends_per_meter*binder_linear_mass_density", variables: ["binder_ends_per_meter", "binder_linear_mass_density"] }
+    constraints:
+      - "warp_ends_per_meter>0 and weft_picks_per_meter>0 and binder_ends_per_meter>=0"
+      - "warp_linear_mass_density>0 and weft_linear_mass_density>0 and binder_linear_mass_density>0"
+      - "isfinite(warp_ends_per_meter) and isfinite(weft_picks_per_meter) and isfinite(binder_ends_per_meter)"
+      - "isfinite(warp_linear_mass_density) and isfinite(weft_linear_mass_density) and isfinite(binder_linear_mass_density)"
+    outputs:
+      - { id: "warp_areal_mass", unit: "kg/m^2" }
+      - { id: "weft_areal_mass", unit: "kg/m^2" }
+      - { id: "binder_areal_mass", unit: "kg/m^2" }
+
+  - id: "composites_total_fiber_areal_mass"
+    domain: "composites_3d_woven"
+    purpose: "Total fiber areal mass from warp/weft/binder contributions."
+    equations:
+      - { name: "fiber_areal_mass_total", expr: "warp_areal_mass+weft_areal_mass+binder_areal_mass", variables: ["warp_areal_mass", "weft_areal_mass", "binder_areal_mass"] }
+    constraints: ["warp_areal_mass>=0 and weft_areal_mass>=0 and binder_areal_mass>=0", "isfinite(warp_areal_mass) and isfinite(weft_areal_mass) and isfinite(binder_areal_mass)"]
+    outputs: [{ id: "fiber_areal_mass_total", unit: "kg/m^2" }]
+
+  - id: "composites_fiber_volume_fraction_from_areal_mass"
+    domain: "composites_3d_woven"
+    purpose: "Fiber volume fraction from total fiber areal mass, fiber density, and preform thickness."
+    equations:
+      - { name: "fiber_volume_fraction", expr: "fiber_areal_mass_total/(fiber_density*preform_thickness)", variables: ["fiber_areal_mass_total", "fiber_density", "preform_thickness"] }
+    constraints:
+      - "fiber_areal_mass_total>=0"
+      - "fiber_density>0"
+      - "preform_thickness>0"
+      - "(fiber_density*preform_thickness)!=0"
+      - "isfinite(fiber_areal_mass_total) and isfinite(fiber_density) and isfinite(preform_thickness)"
+    outputs: [{ id: "fiber_volume_fraction", unit: "1" }]
+
+  - id: "composites_matrix_void_closure"
+    domain: "composites_3d_woven"
+    purpose: "Matrix fraction via closure with explicit void fraction input."
+    equations:
+      - { name: "matrix_volume_fraction", expr: "1-fiber_volume_fraction-void_volume_fraction", variables: ["fiber_volume_fraction", "void_volume_fraction"] }
+    constraints:
+      - "fiber_volume_fraction>=0 and fiber_volume_fraction<=1"
+      - "void_volume_fraction>=0 and void_volume_fraction<=1"
+      - "(1-fiber_volume_fraction-void_volume_fraction)>=0"
+      - "isfinite(fiber_volume_fraction) and isfinite(void_volume_fraction)"
+    outputs: [{ id: "matrix_volume_fraction", unit: "1" }]
+
+  - id: "composites_crimp_efficiency_template"
+    domain: "composites_3d_woven"
+    purpose: "Crimp/undulation efficiency template (calibration required)."
+    equations:
+      - { name: "crimp_efficiency", expr: "exp(-crimp_k*(crimp_angle^2))", variables: ["crimp_k", "crimp_angle"], assumptions: ["Template only; effective crimp_angle definition must match calibration protocol."] }
+    constraints: ["crimp_k>=0", "crimp_angle>=0 and crimp_angle<pi/2", "isfinite(crimp_k) and isfinite(crimp_angle)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/composites_crimp_efficiency_template/calibration.yaml"
+      parameters: [{ id: "crimp_k", unit: "1" }]
+      data_requirements:
+        - "Measured effective stiffness/strength reduction vs crimp_angle for the specific architecture (warp/weft/binder)."
+        - "Explicit definition of crimp_angle and measurement method recorded in calibration artifact."
+    outputs: [{ id: "crimp_efficiency", unit: "1" }]
+
+  - id: "composites_compaction_law_template"
+    domain: "composites_3d_woven"
+    purpose: "Preform compaction law template (calibration required)."
+    equations:
+      - { name: "compacted_thickness", expr: "preform_thickness-(compaction_k*ln(1+(compaction_pressure/compaction_p_ref)))", variables: ["preform_thickness", "compaction_k", "compaction_pressure", "compaction_p_ref"], assumptions: ["Template only; captures logarithmic compaction response."] }
+    constraints:
+      - "preform_thickness>0"
+      - "compaction_k>=0"
+      - "compaction_pressure>=0"
+      - "compaction_p_ref>0"
+      - "(compaction_pressure/compaction_p_ref)>=0"
+      - "(1+(compaction_pressure/compaction_p_ref))>0"
+      - "isfinite(preform_thickness) and isfinite(compaction_k) and isfinite(compaction_pressure) and isfinite(compaction_p_ref)"
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/composites_compaction_law_template/calibration.yaml"
+      parameters:
+        - { id: "compaction_k", unit: "m" }
+        - { id: "compaction_p_ref", unit: "Pa" }
+      data_requirements:
+        - "Measured thickness vs compaction_pressure for the preform architecture (temperature/humidity/process state recorded)."
+        - "Calibration scope and validity bounds documented in calibration artifact (no thresholds stored in mathlib)."
+    outputs: [{ id: "compacted_thickness", unit: "m" }]
+
+  - id: "structures_beam_bending_stress"
+    domain: "structures"
+    purpose: "Beam bending stress at distance c from neutral axis: sigma = M*c/I."
+    equations:
+      - { name: "bending_stress", expr: "bending_moment*neutral_axis_c/second_moment_i", variables: ["bending_moment", "neutral_axis_c", "second_moment_i"] }
+    constraints: ["neutral_axis_c>0", "second_moment_i>0", "(second_moment_i)!=0", "isfinite(bending_moment) and isfinite(neutral_axis_c) and isfinite(second_moment_i)"]
+    outputs: [{ id: "bending_stress", unit: "Pa" }]
+
+  - id: "structures_beam_shear_stress"
+    domain: "structures"
+    purpose: "Beam shear stress: tau = V*Q/(I*b)."
+    equations:
+      - { name: "shear_stress", expr: "shear_force*first_moment_q/(second_moment_i*section_width)", variables: ["shear_force", "first_moment_q", "second_moment_i", "section_width"] }
+    constraints: ["second_moment_i>0", "section_width>0", "(second_moment_i*section_width)!=0", "isfinite(shear_force) and isfinite(first_moment_q) and isfinite(second_moment_i) and isfinite(section_width)"]
+    outputs: [{ id: "shear_stress", unit: "Pa" }]
+
+  - id: "structures_plate_buckling_stress_template"
+    domain: "structures"
+    purpose: "Plate buckling critical stress template with explicit k input."
+    equations:
+      - { name: "plate_buckling_stress", expr: "(buckling_k*(pi^2)*youngs_modulus/(12*(1-(poisson_ratio^2))))*((plate_thickness/plate_span)^2)", variables: ["buckling_k", "youngs_modulus", "poisson_ratio", "plate_thickness", "plate_span"], assumptions: ["Linear elastic thin plate theory template; plate_span is characteristic dimension for the chosen k."] }
+    constraints: ["buckling_k>0", "youngs_modulus>0", "plate_thickness>0", "plate_span>0", "(1-(poisson_ratio^2))!=0", "(1-(poisson_ratio^2))>0", "isfinite(buckling_k) and isfinite(youngs_modulus) and isfinite(poisson_ratio) and isfinite(plate_thickness) and isfinite(plate_span)"]
+    outputs: [{ id: "plate_buckling_stress", unit: "Pa" }]
+
+research_sources:
+  policy:
+    media_allowed_only_under_research_leads: true
+    models_must_not_reference_research_leads: true
+    forbid_media_for_coefficients_or_thresholds: true
+  authoritative:
+    verification_policy:
+      status_values: ["to_verify", "verified"]
+      require_verification_before_production_use: true
+      forbid_unverified_for_coefficients: true
+    entries:
+      - id: "ref_si_brochure"
+        type: "standard"
+        status: "to_verify"
+        citation:
+          title: "The International System of Units (SI) — Brochure"
+          authors: []
+          organization: "BIPM"
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Used for unit definitions and conventions only."]
+      - id: "ref_gum_uncertainty"
+        type: "standard"
+        status: "to_verify"
+        citation:
+          title: "Guide to the Expression of Uncertainty in Measurement (GUM)"
+          authors: []
+          organization: "JCGM"
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Used for uncertainty combination concepts (RSS, coverage factor usage)."]
+      - id: "ref_vat_jacobs_curve"
+        type: "paper_or_book"
+        status: "to_verify"
+        citation:
+          title: "Working curve / Jacobs model for photopolymerization depth of cure"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Model is template; requires local calibration for Ec and Dp."]
+      - id: "ref_pbf_process_fundamentals"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation:
+          title: "Powder bed fusion process fundamentals (energy density formulations)"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Energy density forms are algebraic primitives; no thresholds in mathlib."]
+      - id: "ref_waam_heat_input"
+        type: "standard_or_handbook"
+        status: "to_verify"
+        citation:
+          title: "Arc welding heat input calculation (electrical power / travel speed)"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Heat input is a primitive; coupling efficiency is explicit input."]
+      - id: "ref_binderjet_shrinkage"
+        type: "standard_or_handbook"
+        status: "to_verify"
+        citation:
+          title: "Sintering/binder-jet linear shrinkage and scale compensation methods"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Linear shrinkage is calibrated; compensation formula is purely algebraic."]
+      - id: "ref_laser_cutting_thermal_models"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation:
+          title: "Laser cutting fundamentals: absorbed energy, kerf, and HAZ scaling"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Kerf/HAZ are templates requiring calibration; absorbed heat/length is a primitive."]
+      - id: "ref_waterjet_cutting_models"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation:
+          title: "Abrasive waterjet cutting fundamentals: hydraulic power, kerf, taper"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Kerf/taper/V-cut are templates requiring calibration."]
+      - id: "ref_lidar_tof_principles"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation:
+          title: "Time-of-flight LiDAR range equation and timing-jitter-limited precision"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Range and range-noise primitives; c_light treated as constant."]
+      - id: "ref_pointcloud_planning"
+        type: "practice_note"
+        status: "to_verify"
+        citation:
+          title: "Point cloud acquisition planning: density, size, and I/O budgeting"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Deterministic planning primitives only; no performance thresholds."]
+      - id: "ref_risf_sine_law"
+        type: "paper_or_review"
+        status: "to_verify"
+        citation:
+          title: "Incremental sheet forming sine law thickness relation"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Used for sine-law thickness/thinning ratio model; applicability must be validated per material/process."]
+      - id: "ref_risf_scallop_geometry"
+        type: "textbook_or_practice"
+        status: "to_verify"
+        citation:
+          title: "Scallop height geometry for ball-end/toolpath stepover"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Exact circle geometry and small-step approximation."]
+      - id: "ref_risf_force_models_aerens_family"
+        type: "paper_or_review"
+        status: "to_verify"
+        citation:
+          title: "Aerens-family empirical force models for incremental sheet forming"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["This mathlib contains only an empirical template; coefficients must be calibrated."]
+      - id: "ref_robot_compliance_calibration"
+        type: "practice_note"
+        status: "to_verify"
+        citation:
+          title: "Robot structural compliance identification and validation"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Linear compliance model; calibration required and validity bounds documented externally."]
+      - id: "ref_textile_tex_definition"
+        type: "standard"
+        status: "to_verify"
+        citation:
+          title: "Tex linear density definition (mass per length) for yarns"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["1 tex = 1 g/km = 1e-6 kg/m conversion used."]
+      - id: "ref_composites_fvf_areal_mass"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation:
+          title: "Fiber volume fraction estimation from areal weight and thickness"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["Closure with void fraction kept explicit (input)."]
+      - id: "ref_plate_buckling_theory"
+        type: "textbook"
+        status: "to_verify"
+        citation:
+          title: "Classical plate buckling theory (k*pi^2*E/(12*(1-nu^2))*(t/b)^2)"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["k is explicit input; boundary conditions handled by process spec selection of k."]
+      - id: "ref_mechanics_of_materials_beams"
+        type: "textbook"
+        status: "to_verify"
+        citation:
+          title: "Mechanics of materials: beam bending and shear stress relations"
+          authors: []
+          organization: null
+          year: null
+          identifiers: { doi: null, isbn: null, url: null }
+        notes: ["σ = M c / I, τ = V Q / (I b) primitives."]
+    model_map:
+      - { model_id: "risf_sine_law_thickness", source_ids: ["ref_risf_sine_law"] }
+      - { model_id: "risf_sine_law_thinning_ratio", source_ids: ["ref_risf_sine_law"] }
+      - { model_id: "risf_scallop_height_exact", source_ids: ["ref_risf_scallop_geometry"] }
+      - { model_id: "risf_scallop_height_small_step", source_ids: ["ref_risf_scallop_geometry"] }
+      - { model_id: "risf_inverse_scallop_to_step", source_ids: ["ref_risf_scallop_geometry"] }
+      - { model_id: "risf_aerens_axial_force_template", source_ids: ["ref_risf_force_models_aerens_family"] }
+      - { model_id: "risf_robot_deflection_compliance_template", source_ids: ["ref_robot_compliance_calibration"] }
+      - { model_id: "additive_pbf_energy_densities", source_ids: ["ref_pbf_process_fundamentals"] }
+      - { model_id: "additive_waam_heat_input_per_length", source_ids: ["ref_waam_heat_input"] }
+      - { model_id: "additive_vat_jacobs_working_curve", source_ids: ["ref_vat_jacobs_curve"] }
+      - { model_id: "additive_binderjet_scale_compensation", source_ids: ["ref_binderjet_shrinkage"] }
+      - { model_id: "subtractive_laser_power_density", source_ids: ["ref_laser_cutting_thermal_models"] }
+      - { model_id: "subtractive_laser_absorbed_heat_per_length", source_ids: ["ref_laser_cutting_thermal_models"] }
+      - { model_id: "subtractive_laser_haz_template", source_ids: ["ref_laser_cutting_thermal_models"] }
+      - { model_id: "subtractive_laser_kerf_template", source_ids: ["ref_laser_cutting_thermal_models"] }
+      - { model_id: "subtractive_waterjet_hydraulic_power", source_ids: ["ref_waterjet_cutting_models"] }
+      - { model_id: "subtractive_waterjet_abrasive_dose_per_length", source_ids: ["ref_waterjet_cutting_models"] }
+      - { model_id: "subtractive_waterjet_kerf_offset_template", source_ids: ["ref_waterjet_cutting_models"] }
+      - { model_id: "subtractive_waterjet_taper_template", source_ids: ["ref_waterjet_cutting_models"] }
+      - { model_id: "subtractive_waterjet_vcut_template", source_ids: ["ref_waterjet_cutting_models"] }
+      - { model_id: "metrology_spacing_from_speed_and_rate", source_ids: ["ref_pointcloud_planning"] }
+      - { model_id: "metrology_raster_scan_time_with_overlap", source_ids: ["ref_pointcloud_planning"] }
+      - { model_id: "metrology_point_density_and_count", source_ids: ["ref_pointcloud_planning"] }
+      - { model_id: "metrology_lidar_range_from_tof", source_ids: ["ref_lidar_tof_principles", "ref_si_brochure"] }
+      - { model_id: "metrology_lidar_range_noise_from_jitter", source_ids: ["ref_lidar_tof_principles", "ref_si_brochure"] }
+      - { model_id: "metrology_angular_step_to_arc_spacing", source_ids: ["ref_lidar_tof_principles"] }
+      - { model_id: "metrology_uncertainty_rss_and_expanded", source_ids: ["ref_gum_uncertainty"] }
+      - { model_id: "metrology_motion_blur_position_error", source_ids: ["ref_pointcloud_planning"] }
+      - { model_id: "metrology_trigger_jitter_position_error", source_ids: ["ref_pointcloud_planning"] }
+      - { model_id: "metrology_pointcloud_size_and_io_time", source_ids: ["ref_pointcloud_planning"] }
+      - { model_id: "composites_tex_to_linear_mass_density", source_ids: ["ref_textile_tex_definition"] }
+      - { model_id: "composites_warp_weft_binder_linear_mass", source_ids: ["ref_textile_tex_definition"] }
+      - { model_id: "composites_areal_mass_contributions", source_ids: ["ref_composites_fvf_areal_mass"] }
+      - { model_id: "composites_total_fiber_areal_mass", source_ids: ["ref_composites_fvf_areal_mass"] }
+      - { model_id: "composites_fiber_volume_fraction_from_areal_mass", source_ids: ["ref_composites_fvf_areal_mass"] }
+      - { model_id: "composites_matrix_void_closure", source_ids: ["ref_composites_fvf_areal_mass"] }
+      - { model_id: "composites_crimp_efficiency_template", source_ids: ["ref_composites_fvf_areal_mass"] }
+      - { model_id: "composites_compaction_law_template", source_ids: ["ref_composites_fvf_areal_mass"] }
+      - { model_id: "structures_beam_bending_stress", source_ids: ["ref_mechanics_of_materials_beams"] }
+      - { model_id: "structures_beam_shear_stress", source_ids: ["ref_mechanics_of_materials_beams"] }
+      - { model_id: "structures_plate_buckling_stress_template", source_ids: ["ref_plate_buckling_theory"] }
+  research_leads:
+    entries:
+      - id: "media_placeholder_001"
+        status: "to_verify"
+        media_type: "video_or_article"
+        title: "Media lead placeholder (allowed here only; never referenced by models)"
+        creators: []
+        platform: null
+        published_date: null
+        url: null
+        notes:
+          - "If retained, must be used only for ideation/research leads."
+          - "Must never be used for coefficients, thresholds, or model calibration values."
+
+tripwires:
+  active_profile: "STRICT"
+  toggles:
+    enforce_units: true
+    enforce_domains: true
+    enforce_equation_safety: true
+    enforce_numeric_sanity: true
+    enforce_authority_rules: true
+    enforce_calibration_rules: true
+    enforce_determinism: true
+  profiles:
+    STRICT:
+      toggles: { enforce_units: true, enforce_domains: true, enforce_equation_safety: true, enforce_numeric_sanity: true, enforce_authority_rules: true, enforce_calibration_rules: true, enforce_determinism: true }
+    DEVELOPMENT:
+      toggles: { enforce_units: true, enforce_domains: true, enforce_equation_safety: true, enforce_numeric_sanity: true, enforce_authority_rules: false, enforce_calibration_rules: true, enforce_determinism: true }
+    OFF:
+      toggles: { enforce_units: false, enforce_domains: false, enforce_equation_safety: false, enforce_numeric_sanity: false, enforce_authority_rules: false, enforce_calibration_rules: false, enforce_determinism: false }
+  rules:
+    - { id: "MEDIA_REFERENCE_GUARD", intent: "Media may exist only under research_sources.research_leads and must never be referenced by models or used for coefficients/thresholds.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
+    - { id: "DOMAIN_ALLOWLIST", intent: "Each model.domain must be in conventions.domains.allowed_domains.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
+    - { id: "EQUATION_SAFETY", intent: "Expressions must conform to conventions.expression_language allowlist/denylist and must satisfy required domain guards for divide/sqrt/ln/log10/exp.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
+    - { id: "NUMERIC_SANITY", intent: "Forbid NaN/Inf, forbid non-finite intermediates, and canonicalize negative zero.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
+    - { id: "CALIBRATION_REQUIRED", intent: "Empirical templates must declare calibration with explicit requirements and storage_path; non-empirical models must not declare calibration.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
+    - { id: "DETERMINISM_CANON", intent: "Determinism rules must be explicit and hashing must exclude meta.build while covering all other sections.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
+meta:
+  title: "MANUFACTURING MATHLIB V0"
+  schema: { id: "manufacturing.mathlib", version: "0" }
+  scope:
+    program: "Manufacturing math library (auditable, deterministic, safety-guarded)"
+    intent: "Reusable, unit-safe variables + models for manufacturing engineering domains"
+    exclusions:
+      - "No acceptance thresholds in this file (belongs in process specs / calibration artifacts)"
+      - "No hard-coded empirical coefficients without explicit calibration requirements + storage_path"
+      - "No media-derived coefficients or thresholds"
+  build: { chunk: 10, name: "Tripwires", state: "COMPLETE" }
+
+units:
+  system: "SI"
+  base_dimensions:
+    L: "length"
+    M: "mass"
+    T: "time"
+    I: "electric_current"
+    TH: "thermodynamic_temperature"
+    N: "amount_of_substance"
+    J: "luminous_intensity"
+  prefixes:
+    - { id: "nano", name: "nano", symbol: "n", factor: 1.0e-9 }
+    - { id: "micro", name: "micro", symbol: "u", factor: 1.0e-6 }
+    - { id: "milli", name: "milli", symbol: "m", factor: 1.0e-3 }
+    - { id: "centi", name: "centi", symbol: "c", factor: 1.0e-2 }
+    - { id: "deci", name: "deci", symbol: "d", factor: 1.0e-1 }
+    - { id: "deka", name: "deka", symbol: "da", factor: 1.0e1 }
+    - { id: "hecto", name: "hecto", symbol: "h", factor: 1.0e2 }
+    - { id: "kilo", name: "kilo", symbol: "k", factor: 1.0e3 }
+    - { id: "mega", name: "mega", symbol: "M", factor: 1.0e6 }
+    - { id: "giga", name: "giga", symbol: "G", factor: 1.0e9 }
+  base_units:
+    - { id: "m", name: "meter", symbol: "m", quantity: "length", dimension: { L: 1, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg", name: "kilogram", symbol: "kg", quantity: "mass", dimension: { L: 0, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "s", name: "second", symbol: "s", quantity: "time", dimension: { L: 0, M: 0, T: 1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "A", name: "ampere", symbol: "A", quantity: "electric_current", dimension: { L: 0, M: 0, T: 0, I: 1, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "K", name: "kelvin", symbol: "K", quantity: "thermodynamic_temperature", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 1, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "mol", name: "mole", symbol: "mol", quantity: "amount_of_substance", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 1, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "cd", name: "candela", symbol: "cd", quantity: "luminous_intensity", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 1 }, to_SI: { scale: 1.0, offset: 0.0 } }
+  derived_units:
+    - { id: "1", name: "dimensionless", symbol: "1", quantity: "dimensionless", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "rad", name: "radian", symbol: "rad", quantity: "plane_angle", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "deg", name: "degree", symbol: "deg", quantity: "plane_angle", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 0.017453292519943295, offset: 0.0 } }
+    - { id: "Hz", name: "hertz", symbol: "Hz", quantity: "frequency", dimension: { L: 0, M: 0, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "N", name: "newton", symbol: "N", quantity: "force", dimension: { L: 1, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "Pa", name: "pascal", symbol: "Pa", quantity: "pressure", dimension: { L: -1, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "J", name: "joule", symbol: "J", quantity: "energy", dimension: { L: 2, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "W", name: "watt", symbol: "W", quantity: "power", dimension: { L: 2, M: 1, T: -3, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "V", name: "volt", symbol: "V", quantity: "electric_potential", dimension: { L: 2, M: 1, T: -3, I: -1, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m/s", name: "meters_per_second", symbol: "m/s", quantity: "speed", dimension: { L: 1, M: 0, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m^2", name: "square_meter", symbol: "m^2", quantity: "area", dimension: { L: 2, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m^3", name: "cubic_meter", symbol: "m^3", quantity: "volume", dimension: { L: 3, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m^4", name: "meter_to_fourth", symbol: "m^4", quantity: "second_moment_area", dimension: { L: 4, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "N*m", name: "newton_meter", symbol: "N*m", quantity: "moment", dimension: { L: 2, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "J/m", name: "joules_per_meter", symbol: "J/m", quantity: "energy_per_length", dimension: { L: 1, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "J/m^2", name: "joules_per_square_meter", symbol: "J/m^2", quantity: "energy_per_area", dimension: { L: 0, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "J/m^3", name: "joules_per_cubic_meter", symbol: "J/m^3", quantity: "energy_per_volume", dimension: { L: -1, M: 1, T: -2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "W/m^2", name: "watts_per_square_meter", symbol: "W/m^2", quantity: "power_per_area", dimension: { L: 0, M: 1, T: -3, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg/s", name: "kilograms_per_second", symbol: "kg/s", quantity: "mass_flow", dimension: { L: 0, M: 1, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m^3/s", name: "cubic_meters_per_second", symbol: "m^3/s", quantity: "volumetric_flow", dimension: { L: 3, M: 0, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg/m", name: "kilograms_per_meter", symbol: "kg/m", quantity: "linear_mass_density", dimension: { L: -1, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg/m^2", name: "kilograms_per_square_meter", symbol: "kg/m^2", quantity: "areal_mass_density", dimension: { L: -2, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "kg/m^3", name: "kilograms_per_cubic_meter", symbol: "kg/m^3", quantity: "density", dimension: { L: -3, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "1/m", name: "per_meter", symbol: "1/m", quantity: "linear_number_density", dimension: { L: -1, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "1/m^2", name: "per_square_meter", symbol: "1/m^2", quantity: "areal_number_density", dimension: { L: -2, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "m/N", name: "meters_per_newton", symbol: "m/N", quantity: "compliance", dimension: { L: 0, M: -1, T: 2, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "B", name: "byte", symbol: "B", quantity: "information", dimension: { L: 0, M: 0, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "B/s", name: "bytes_per_second", symbol: "B/s", quantity: "data_rate", dimension: { L: 0, M: 0, T: -1, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 1.0, offset: 0.0 } }
+    - { id: "tex", name: "tex", symbol: "tex", quantity: "linear_mass_density", dimension: { L: -1, M: 1, T: 0, I: 0, TH: 0, N: 0, J: 0 }, to_SI: { scale: 0.000001, offset: 0.0 } }
+  formatting:
+    canonical_unit_id_case: "preserve"
+    preferred_micro_symbol: "u"
+    forbid_implicit_units: true
+    unit_expression: { multiplication: "*", division: "/", exponent: "^", parentheses: "()", whitespace: "forbidden" }
+
+conventions:
+  identifiers:
+    variable_id_pattern: "^[a-z][a-z0-9_]{2,63}$"
+    model_id_pattern: "^[a-z][a-z0-9_]{2,63}$"
+    source_id_pattern: "^[a-z][a-z0-9_\\-]{2,63}$"
+    reserved_prefixes: ["sys_", "internal_"]
+  domains:
+    allowed_domains: ["risf", "additive", "subtractive", "metrology", "composites_3d_woven", "structures"]
+  paths:
+    calibration_storage_root: "manufacturing/calibration"
+    empirical_model_storage_hint: "manufacturing/calibration/<model_id>/calibration.yaml"
+    hashes_storage_hint: "manufacturing/calibration/<model_id>/hashes.json"
+  determinism:
+    numeric_type: "float64"
+    nan_policy: "forbidden"
+    inf_policy: "forbidden"
+    signed_zero_policy: "canonicalize_to_plus_zero"
+    rounding: { mode: "HALF_EVEN", decimals_default: 12, clamp_negative_zero: true }
+    canonical_number_format:
+      style: "decimal_or_scientific"
+      scientific_when_abs_ge: 1000000000.0
+      scientific_when_abs_lt: 0.000001
+      max_decimals: 12
+    canonicalization:
+      map_key_order: "lexicographic"
+      list_order: "preserve_declared"
+      string_normalization: "NFC"
+      forbid_yaml_anchors: true
+      forbid_non_finite_numbers: true
+      line_endings: "LF"
+    hashing:
+      algorithm: "SHA-256"
+      canonical_input: "canonical-json-from-yaml"
+      include_sections: ["meta", "units", "conventions", "variable_registry", "models", "research_sources", "tripwires"]
+      exclude_paths: ["meta.build"]
+  expression_language:
+    id: "mathlib_expr_v1"
+    allowlist:
+      operators: ["+", "-", "*", "/", "^", "<", "<=", ">", ">=", "==", "!=", "and", "or", "not"]
+      functions: ["abs", "min", "max", "clamp", "sqrt", "exp", "ln", "log10", "pow", "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "floor", "ceil", "round", "isfinite"]
+      constants: ["pi", "e"]
+      literals: { allow_integers: true, allow_decimals: true, allow_scientific_notation: true }
+    denylist:
+      tokens: ["__", "import", "eval", "exec", "lambda", "while", "for", "class", "def", "globals", "locals", "open", "read", "write", "system", "os", "subprocess", "socket", "http", "https", "file:", "data:", "javascript:"]
+      patterns: ["(?i)\\b(system|subprocess|os\\.|socket|requests|http)\\b"]
+    safety_guards:
+      forbid_divide_by_zero: true
+      forbid_sqrt_of_negative: true
+      forbid_ln_of_nonpositive: true
+      forbid_log10_of_nonpositive: true
+      forbid_non_finite_intermediates: true
+      require_domain_guards: true
+      require_exp_bounded_argument: false
+
+variable_registry:
+  - { id: "c_light", name: "speed_of_light", unit: "m/s", kind: "constant", domains: ["metrology"], description: "Speed of light in vacuum (exact by SI definition).", domain_constraints: ["isfinite(c_light)", "c_light>0"] }
+  - { id: "t_initial", name: "initial_thickness", unit: "m", kind: "input", domains: ["risf", "structures", "composites_3d_woven"], description: "Initial thickness.", domain_constraints: ["t_initial>0", "isfinite(t_initial)"] }
+  - { id: "t_final", name: "final_thickness", unit: "m", kind: "output", domains: ["risf"], description: "Predicted final thickness.", domain_constraints: ["t_final>0", "isfinite(t_final)"] }
+  - { id: "wall_angle", name: "wall_angle", unit: "rad", kind: "input", domains: ["risf"], description: "RISF wall angle.", domain_constraints: ["wall_angle>0", "wall_angle<pi/2", "isfinite(wall_angle)"] }
+  - { id: "thinning_ratio", name: "thinning_ratio", unit: "1", kind: "output", domains: ["risf"], description: "t_final/t_initial.", domain_constraints: ["thinning_ratio>0", "isfinite(thinning_ratio)"] }
+  - { id: "tool_radius", name: "tool_radius", unit: "m", kind: "input", domains: ["risf"], description: "Tool radius.", domain_constraints: ["tool_radius>0", "isfinite(tool_radius)"] }
+  - { id: "tool_stepover", name: "tool_stepover", unit: "m", kind: "input", domains: ["risf", "metrology", "composites_3d_woven"], description: "Lateral stepover / scan line step / generic pitch for line spacing.", domain_constraints: ["tool_stepover>=0", "isfinite(tool_stepover)"] }
+  - { id: "tool_stepdown", name: "tool_stepdown", unit: "m", kind: "input", domains: ["risf"], description: "Axial stepdown.", domain_constraints: ["tool_stepdown>0", "isfinite(tool_stepdown)"] }
+  - { id: "scallop_height", name: "scallop_height", unit: "m", kind: "output", domains: ["risf"], description: "Scallop height (exact).", domain_constraints: ["scallop_height>=0", "isfinite(scallop_height)"] }
+  - { id: "scallop_height_small_step", name: "scallop_height_small_step", unit: "m", kind: "output", domains: ["risf"], description: "Scallop height (approx).", domain_constraints: ["scallop_height_small_step>=0", "isfinite(scallop_height_small_step)"] }
+  - { id: "target_scallop_height", name: "target_scallop_height", unit: "m", kind: "input", domains: ["risf"], description: "Target scallop height.", domain_constraints: ["target_scallop_height>=0", "isfinite(target_scallop_height)"] }
+  - { id: "stepdown_from_scallop", name: "stepdown_from_scallop", unit: "m", kind: "output", domains: ["risf"], description: "Inverse-solved step from target scallop.", domain_constraints: ["stepdown_from_scallop>=0", "isfinite(stepdown_from_scallop)"] }
+  - { id: "axial_force", name: "axial_force", unit: "N", kind: "output", domains: ["risf"], description: "Axial forming force.", domain_constraints: ["axial_force>=0", "isfinite(axial_force)"] }
+  - { id: "aerens_force_scale", name: "aerens_force_scale", unit: "N", kind: "parameter", domains: ["risf"], description: "Aerens template force scale.", domain_constraints: ["aerens_force_scale>0", "isfinite(aerens_force_scale)"] }
+  - { id: "aerens_k0", name: "aerens_k0", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k0)"] }
+  - { id: "aerens_k1", name: "aerens_k1", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k1)"] }
+  - { id: "aerens_k2", name: "aerens_k2", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k2)"] }
+  - { id: "aerens_k3", name: "aerens_k3", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k3)"] }
+  - { id: "aerens_k4", name: "aerens_k4", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k4)"] }
+  - { id: "aerens_k5", name: "aerens_k5", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k5)"] }
+  - { id: "aerens_k6", name: "aerens_k6", unit: "1", kind: "coefficient", domains: ["risf"], description: "Aerens coefficient.", domain_constraints: ["isfinite(aerens_k6)"] }
+  - { id: "aerens_t_ref", name: "aerens_thickness_reference", unit: "m", kind: "parameter", domains: ["risf"], description: "Aerens thickness reference.", domain_constraints: ["aerens_t_ref>0", "isfinite(aerens_t_ref)"] }
+  - { id: "aerens_r_ref", name: "aerens_radius_reference", unit: "m", kind: "parameter", domains: ["risf"], description: "Aerens radius reference.", domain_constraints: ["aerens_r_ref>0", "isfinite(aerens_r_ref)"] }
+  - { id: "aerens_s_ref", name: "aerens_stepover_reference", unit: "m", kind: "parameter", domains: ["risf"], description: "Aerens stepover reference.", domain_constraints: ["aerens_s_ref>0", "isfinite(aerens_s_ref)"] }
+  - { id: "aerens_dz_ref", name: "aerens_stepdown_reference", unit: "m", kind: "parameter", domains: ["risf"], description: "Aerens stepdown reference.", domain_constraints: ["aerens_dz_ref>0", "isfinite(aerens_dz_ref)"] }
+  - { id: "robot_linear_compliance", name: "robot_linear_compliance", unit: "m/N", kind: "parameter", domains: ["risf"], description: "Linear compliance.", domain_constraints: ["robot_linear_compliance>=0", "isfinite(robot_linear_compliance)"] }
+  - { id: "robot_deflection", name: "robot_deflection", unit: "m", kind: "output", domains: ["risf"], description: "Predicted deflection.", domain_constraints: ["robot_deflection>=0", "isfinite(robot_deflection)"] }
+  - { id: "laser_power", name: "laser_power", unit: "W", kind: "input", domains: ["additive", "subtractive"], description: "Laser power.", domain_constraints: ["laser_power>0", "isfinite(laser_power)"] }
+  - { id: "process_efficiency", name: "process_efficiency", unit: "1", kind: "input", domains: ["additive", "subtractive"], description: "Energy coupling efficiency.", domain_constraints: ["process_efficiency>=0", "process_efficiency<=1", "isfinite(process_efficiency)"] }
+  - { id: "scan_speed", name: "scan_speed", unit: "m/s", kind: "input", domains: ["additive", "metrology"], description: "Scan speed.", domain_constraints: ["scan_speed>0", "isfinite(scan_speed)"] }
+  - { id: "travel_speed", name: "travel_speed", unit: "m/s", kind: "input", domains: ["additive", "subtractive", "metrology"], description: "Travel speed.", domain_constraints: ["travel_speed>0", "isfinite(travel_speed)"] }
+  - { id: "layer_thickness", name: "layer_thickness", unit: "m", kind: "input", domains: ["additive"], description: "Layer thickness.", domain_constraints: ["layer_thickness>0", "isfinite(layer_thickness)"] }
+  - { id: "hatch_spacing", name: "hatch_spacing", unit: "m", kind: "input", domains: ["additive"], description: "Hatch spacing.", domain_constraints: ["hatch_spacing>0", "isfinite(hatch_spacing)"] }
+  - { id: "energy_line", name: "energy_line", unit: "J/m", kind: "output", domains: ["additive"], description: "Line energy.", domain_constraints: ["energy_line>=0", "isfinite(energy_line)"] }
+  - { id: "energy_area", name: "energy_area", unit: "J/m^2", kind: "output", domains: ["additive"], description: "Areal energy.", domain_constraints: ["energy_area>=0", "isfinite(energy_area)"] }
+  - { id: "energy_volume", name: "energy_volume", unit: "J/m^3", kind: "output", domains: ["additive"], description: "Volumetric energy.", domain_constraints: ["energy_volume>=0", "isfinite(energy_volume)"] }
+  - { id: "arc_voltage", name: "arc_voltage", unit: "V", kind: "input", domains: ["additive"], description: "Arc voltage.", domain_constraints: ["arc_voltage>0", "isfinite(arc_voltage)"] }
+  - { id: "arc_current", name: "arc_current", unit: "A", kind: "input", domains: ["additive"], description: "Arc current.", domain_constraints: ["arc_current>0", "isfinite(arc_current)"] }
+  - { id: "heat_input_per_length", name: "heat_input_per_length", unit: "J/m", kind: "output", domains: ["additive", "subtractive"], description: "Heat input per length.", domain_constraints: ["heat_input_per_length>=0", "isfinite(heat_input_per_length)"] }
+  - { id: "exposure_energy", name: "exposure_energy", unit: "J/m^2", kind: "input", domains: ["additive"], description: "Exposure energy dose.", domain_constraints: ["exposure_energy>0", "isfinite(exposure_energy)"] }
+  - { id: "critical_energy", name: "critical_energy", unit: "J/m^2", kind: "parameter", domains: ["additive"], description: "Critical energy Ec (cal).", domain_constraints: ["critical_energy>0", "isfinite(critical_energy)"] }
+  - { id: "penetration_depth", name: "penetration_depth", unit: "m", kind: "parameter", domains: ["additive"], description: "Penetration depth Dp (cal).", domain_constraints: ["penetration_depth>0", "isfinite(penetration_depth)"] }
+  - { id: "cure_depth", name: "cure_depth", unit: "m", kind: "output", domains: ["additive"], description: "Predicted cure depth.", domain_constraints: ["cure_depth>=0", "isfinite(cure_depth)"] }
+  - { id: "linear_shrinkage", name: "linear_shrinkage", unit: "1", kind: "parameter", domains: ["additive"], description: "Linear shrinkage (cal).", domain_constraints: ["linear_shrinkage>=0", "linear_shrinkage<1", "isfinite(linear_shrinkage)"] }
+  - { id: "scale_compensation", name: "scale_compensation", unit: "1", kind: "output", domains: ["additive"], description: "Scale compensation.", domain_constraints: ["scale_compensation>0", "isfinite(scale_compensation)"] }
+  - { id: "beam_spot_diameter", name: "beam_spot_diameter", unit: "m", kind: "input", domains: ["subtractive"], description: "Laser spot diameter.", domain_constraints: ["beam_spot_diameter>0", "isfinite(beam_spot_diameter)"] }
+  - { id: "beam_area", name: "beam_area", unit: "m^2", kind: "output", domains: ["subtractive"], description: "Laser spot area.", domain_constraints: ["beam_area>0", "isfinite(beam_area)"] }
+  - { id: "power_density", name: "power_density", unit: "W/m^2", kind: "output", domains: ["subtractive"], description: "Laser power density.", domain_constraints: ["power_density>=0", "isfinite(power_density)"] }
+  - { id: "absorptivity", name: "absorptivity", unit: "1", kind: "input", domains: ["subtractive"], description: "Absorptivity.", domain_constraints: ["absorptivity>=0", "absorptivity<=1", "isfinite(absorptivity)"] }
+  - { id: "absorbed_heat_per_length", name: "absorbed_heat_per_length", unit: "J/m", kind: "output", domains: ["subtractive"], description: "Absorbed heat per length.", domain_constraints: ["absorbed_heat_per_length>=0", "isfinite(absorbed_heat_per_length)"] }
+  - { id: "haz_width", name: "haz_width", unit: "m", kind: "output", domains: ["subtractive"], description: "HAZ width (template).", domain_constraints: ["haz_width>=0", "isfinite(haz_width)"] }
+  - { id: "kerf_width", name: "kerf_width", unit: "m", kind: "output", domains: ["subtractive"], description: "Kerf width (template).", domain_constraints: ["kerf_width>=0", "isfinite(kerf_width)"] }
+  - { id: "laser_haz_scale", name: "laser_haz_scale", unit: "m", kind: "parameter", domains: ["subtractive"], description: "HAZ scale (cal).", domain_constraints: ["laser_haz_scale>0", "isfinite(laser_haz_scale)"] }
+  - { id: "laser_haz_k0", name: "laser_haz_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "HAZ coeff (cal).", domain_constraints: ["isfinite(laser_haz_k0)"] }
+  - { id: "laser_haz_k1", name: "laser_haz_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "HAZ coeff (cal).", domain_constraints: ["isfinite(laser_haz_k1)"] }
+  - { id: "laser_haz_k2", name: "laser_haz_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "HAZ coeff (cal).", domain_constraints: ["isfinite(laser_haz_k2)"] }
+  - { id: "laser_haz_q_ref", name: "laser_haz_q_ref", unit: "J/m", kind: "parameter", domains: ["subtractive"], description: "HAZ heat/len reference (cal).", domain_constraints: ["laser_haz_q_ref>0", "isfinite(laser_haz_q_ref)"] }
+  - { id: "laser_haz_v_ref", name: "laser_haz_v_ref", unit: "m/s", kind: "parameter", domains: ["subtractive"], description: "HAZ speed reference (cal).", domain_constraints: ["laser_haz_v_ref>0", "isfinite(laser_haz_v_ref)"] }
+  - { id: "laser_kerf_scale", name: "laser_kerf_scale", unit: "m", kind: "parameter", domains: ["subtractive"], description: "Kerf scale (cal).", domain_constraints: ["laser_kerf_scale>0", "isfinite(laser_kerf_scale)"] }
+  - { id: "laser_kerf_k0", name: "laser_kerf_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(laser_kerf_k0)"] }
+  - { id: "laser_kerf_k1", name: "laser_kerf_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(laser_kerf_k1)"] }
+  - { id: "laser_kerf_k2", name: "laser_kerf_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(laser_kerf_k2)"] }
+  - { id: "laser_kerf_p_ref", name: "laser_kerf_p_ref", unit: "W", kind: "parameter", domains: ["subtractive"], description: "Kerf power reference (cal).", domain_constraints: ["laser_kerf_p_ref>0", "isfinite(laser_kerf_p_ref)"] }
+  - { id: "laser_kerf_v_ref", name: "laser_kerf_v_ref", unit: "m/s", kind: "parameter", domains: ["subtractive"], description: "Kerf speed reference (cal).", domain_constraints: ["laser_kerf_v_ref>0", "isfinite(laser_kerf_v_ref)"] }
+  - { id: "waterjet_pressure", name: "waterjet_pressure", unit: "Pa", kind: "input", domains: ["subtractive"], description: "Waterjet pressure.", domain_constraints: ["waterjet_pressure>0", "isfinite(waterjet_pressure)"] }
+  - { id: "water_flow_rate", name: "water_flow_rate", unit: "m^3/s", kind: "input", domains: ["subtractive"], description: "Water volumetric flow.", domain_constraints: ["water_flow_rate>0", "isfinite(water_flow_rate)"] }
+  - { id: "hydraulic_power", name: "hydraulic_power", unit: "W", kind: "output", domains: ["subtractive"], description: "Hydraulic power p*Q.", domain_constraints: ["hydraulic_power>=0", "isfinite(hydraulic_power)"] }
+  - { id: "abrasive_mass_flow", name: "abrasive_mass_flow", unit: "kg/s", kind: "input", domains: ["subtractive"], description: "Abrasive mass flow.", domain_constraints: ["abrasive_mass_flow>=0", "isfinite(abrasive_mass_flow)"] }
+  - { id: "abrasive_dose_per_length", name: "abrasive_dose_per_length", unit: "kg/m", kind: "output", domains: ["subtractive"], description: "Abrasive dose per length.", domain_constraints: ["abrasive_dose_per_length>=0", "isfinite(abrasive_dose_per_length)"] }
+  - { id: "wjet_kerf_offset", name: "wjet_kerf_offset", unit: "m", kind: "output", domains: ["subtractive"], description: "Waterjet kerf offset (template).", domain_constraints: ["wjet_kerf_offset>=0", "isfinite(wjet_kerf_offset)"] }
+  - { id: "wjet_taper_angle", name: "wjet_taper_angle", unit: "rad", kind: "output", domains: ["subtractive"], description: "Waterjet taper angle (template).", domain_constraints: ["wjet_taper_angle>=0", "isfinite(wjet_taper_angle)"] }
+  - { id: "v_cut_depth", name: "v_cut_depth", unit: "m", kind: "output", domains: ["subtractive"], description: "V-cut depth (template).", domain_constraints: ["v_cut_depth>=0", "isfinite(v_cut_depth)"] }
+  - { id: "wjet_hp_ref", name: "wjet_hydraulic_power_ref", unit: "W", kind: "parameter", domains: ["subtractive"], description: "Waterjet hydraulic power reference (cal).", domain_constraints: ["wjet_hp_ref>0", "isfinite(wjet_hp_ref)"] }
+  - { id: "wjet_md_ref", name: "wjet_abrasive_dose_ref", unit: "kg/m", kind: "parameter", domains: ["subtractive"], description: "Waterjet abrasive dose reference (cal).", domain_constraints: ["wjet_md_ref>0", "isfinite(wjet_md_ref)"] }
+  - { id: "wjet_v_ref", name: "wjet_speed_ref", unit: "m/s", kind: "parameter", domains: ["subtractive"], description: "Waterjet travel speed reference (cal).", domain_constraints: ["wjet_v_ref>0", "isfinite(wjet_v_ref)"] }
+  - { id: "wjet_kerf_scale", name: "wjet_kerf_scale", unit: "m", kind: "parameter", domains: ["subtractive"], description: "Kerf offset scale (cal).", domain_constraints: ["wjet_kerf_scale>0", "isfinite(wjet_kerf_scale)"] }
+  - { id: "wjet_kerf_k0", name: "wjet_kerf_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(wjet_kerf_k0)"] }
+  - { id: "wjet_kerf_k1", name: "wjet_kerf_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(wjet_kerf_k1)"] }
+  - { id: "wjet_kerf_k2", name: "wjet_kerf_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(wjet_kerf_k2)"] }
+  - { id: "wjet_kerf_k3", name: "wjet_kerf_k3", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Kerf coeff (cal).", domain_constraints: ["isfinite(wjet_kerf_k3)"] }
+  - { id: "wjet_taper_scale", name: "wjet_taper_scale", unit: "rad", kind: "parameter", domains: ["subtractive"], description: "Taper scale (cal).", domain_constraints: ["wjet_taper_scale>=0", "isfinite(wjet_taper_scale)"] }
+  - { id: "wjet_taper_k0", name: "wjet_taper_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Taper coeff (cal).", domain_constraints: ["isfinite(wjet_taper_k0)"] }
+  - { id: "wjet_taper_k1", name: "wjet_taper_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Taper coeff (cal).", domain_constraints: ["isfinite(wjet_taper_k1)"] }
+  - { id: "wjet_taper_k2", name: "wjet_taper_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Taper coeff (cal).", domain_constraints: ["isfinite(wjet_taper_k2)"] }
+  - { id: "wjet_taper_k3", name: "wjet_taper_k3", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "Taper coeff (cal).", domain_constraints: ["isfinite(wjet_taper_k3)"] }
+  - { id: "vcut_scale", name: "vcut_scale", unit: "m", kind: "parameter", domains: ["subtractive"], description: "V-cut scale (cal).", domain_constraints: ["isfinite(vcut_scale)"] }
+  - { id: "vcut_k0", name: "vcut_k0", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "V-cut coeff (cal).", domain_constraints: ["isfinite(vcut_k0)"] }
+  - { id: "vcut_k1", name: "vcut_k1", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "V-cut coeff (cal).", domain_constraints: ["isfinite(vcut_k1)"] }
+  - { id: "vcut_k2", name: "vcut_k2", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "V-cut coeff (cal).", domain_constraints: ["isfinite(vcut_k2)"] }
+  - { id: "vcut_k3", name: "vcut_k3", unit: "1", kind: "coefficient", domains: ["subtractive"], description: "V-cut coeff (cal).", domain_constraints: ["isfinite(vcut_k3)"] }
+  - { id: "sample_rate", name: "sample_rate", unit: "Hz", kind: "input", domains: ["metrology"], description: "Acquisition sample rate.", domain_constraints: ["sample_rate>0", "isfinite(sample_rate)"] }
+  - { id: "point_spacing", name: "point_spacing", unit: "m", kind: "output", domains: ["metrology"], description: "Along-track point spacing.", domain_constraints: ["point_spacing>=0", "isfinite(point_spacing)"] }
+  - { id: "overlap_fraction", name: "overlap_fraction", unit: "1", kind: "input", domains: ["metrology"], description: "Fractional overlap between raster lines/swaths.", domain_constraints: ["overlap_fraction>=0", "overlap_fraction<1", "isfinite(overlap_fraction)"] }
+  - { id: "scan_width", name: "scan_width", unit: "m", kind: "input", domains: ["metrology"], description: "Raster scan width.", domain_constraints: ["scan_width>0", "isfinite(scan_width)"] }
+  - { id: "scan_height", name: "scan_height", unit: "m", kind: "input", domains: ["metrology"], description: "Raster scan height.", domain_constraints: ["scan_height>0", "isfinite(scan_height)"] }
+  - { id: "raster_time", name: "raster_time", unit: "s", kind: "output", domains: ["metrology"], description: "Raster scan time estimate.", domain_constraints: ["raster_time>=0", "isfinite(raster_time)"] }
+  - { id: "point_density", name: "point_density", unit: "1/m^2", kind: "output", domains: ["metrology"], description: "Estimated point density.", domain_constraints: ["point_density>=0", "isfinite(point_density)"] }
+  - { id: "point_count", name: "point_count", unit: "1", kind: "output", domains: ["metrology"], description: "Estimated point count.", domain_constraints: ["point_count>=0", "isfinite(point_count)"] }
+  - { id: "tof_dt", name: "tof_dt", unit: "s", kind: "input", domains: ["metrology"], description: "Time-of-flight delta time.", domain_constraints: ["tof_dt>=0", "isfinite(tof_dt)"] }
+  - { id: "lidar_range", name: "lidar_range", unit: "m", kind: "output", domains: ["metrology"], description: "LiDAR range from ToF.", domain_constraints: ["lidar_range>=0", "isfinite(lidar_range)"] }
+  - { id: "timing_jitter", name: "timing_jitter", unit: "s", kind: "input", domains: ["metrology"], description: "Timing jitter std-dev.", domain_constraints: ["timing_jitter>=0", "isfinite(timing_jitter)"] }
+  - { id: "range_noise", name: "range_noise", unit: "m", kind: "output", domains: ["metrology"], description: "Range noise from timing jitter.", domain_constraints: ["range_noise>=0", "isfinite(range_noise)"] }
+  - { id: "angular_step", name: "angular_step", unit: "rad", kind: "input", domains: ["metrology"], description: "Angular step increment.", domain_constraints: ["angular_step>0", "isfinite(angular_step)"] }
+  - { id: "arc_spacing", name: "arc_spacing", unit: "m", kind: "output", domains: ["metrology"], description: "Arc spacing at range for angular step.", domain_constraints: ["arc_spacing>=0", "isfinite(arc_spacing)"] }
+  - { id: "u_component_1", name: "uncertainty_component_1", unit: "m", kind: "input", domains: ["metrology"], description: "Uncertainty component for RSS.", domain_constraints: ["u_component_1>=0", "isfinite(u_component_1)"] }
+  - { id: "u_component_2", name: "uncertainty_component_2", unit: "m", kind: "input", domains: ["metrology"], description: "Uncertainty component for RSS.", domain_constraints: ["u_component_2>=0", "isfinite(u_component_2)"] }
+  - { id: "u_component_3", name: "uncertainty_component_3", unit: "m", kind: "input", domains: ["metrology"], description: "Uncertainty component for RSS.", domain_constraints: ["u_component_3>=0", "isfinite(u_component_3)"] }
+  - { id: "combined_uncertainty", name: "combined_standard_uncertainty", unit: "m", kind: "output", domains: ["metrology"], description: "Combined standard uncertainty (RSS).", domain_constraints: ["combined_uncertainty>=0", "isfinite(combined_uncertainty)"] }
+  - { id: "coverage_factor_k", name: "coverage_factor", unit: "1", kind: "input", domains: ["metrology"], description: "Coverage factor k (explicit).", domain_constraints: ["coverage_factor_k>0", "isfinite(coverage_factor_k)"] }
+  - { id: "expanded_uncertainty_u95", name: "expanded_uncertainty", unit: "m", kind: "output", domains: ["metrology"], description: "Expanded uncertainty (k*uc).", domain_constraints: ["expanded_uncertainty_u95>=0", "isfinite(expanded_uncertainty_u95)"] }
+  - { id: "exposure_time", name: "exposure_time", unit: "s", kind: "input", domains: ["metrology"], description: "Exposure / integration time.", domain_constraints: ["exposure_time>=0", "isfinite(exposure_time)"] }
+  - { id: "motion_blur_error", name: "motion_blur_error", unit: "m", kind: "output", domains: ["metrology"], description: "Position error due to motion blur.", domain_constraints: ["motion_blur_error>=0", "isfinite(motion_blur_error)"] }
+  - { id: "trigger_jitter", name: "trigger_jitter", unit: "s", kind: "input", domains: ["metrology"], description: "Trigger timing jitter.", domain_constraints: ["trigger_jitter>=0", "isfinite(trigger_jitter)"] }
+  - { id: "trigger_jitter_error", name: "trigger_jitter_error", unit: "m", kind: "output", domains: ["metrology"], description: "Position error due to trigger jitter.", domain_constraints: ["trigger_jitter_error>=0", "isfinite(trigger_jitter_error)"] }
+  - { id: "point_size_bytes", name: "point_size_bytes", unit: "B", kind: "input", domains: ["metrology"], description: "Serialized bytes per point.", domain_constraints: ["point_size_bytes>0", "isfinite(point_size_bytes)"] }
+  - { id: "pointcloud_size", name: "pointcloud_size", unit: "B", kind: "output", domains: ["metrology"], description: "Point cloud size in bytes.", domain_constraints: ["pointcloud_size>=0", "isfinite(pointcloud_size)"] }
+  - { id: "io_bandwidth", name: "io_bandwidth", unit: "B/s", kind: "input", domains: ["metrology"], description: "Effective I/O bandwidth.", domain_constraints: ["io_bandwidth>0", "isfinite(io_bandwidth)"] }
+  - { id: "io_time", name: "io_time", unit: "s", kind: "output", domains: ["metrology"], description: "I/O time estimate.", domain_constraints: ["io_time>=0", "isfinite(io_time)"] }
+  - { id: "yarn_tex", name: "yarn_tex", unit: "tex", kind: "input", domains: ["composites_3d_woven"], description: "Generic yarn linear mass in tex.", domain_constraints: ["yarn_tex>0", "isfinite(yarn_tex)"] }
+  - { id: "yarn_linear_mass_density", name: "yarn_linear_mass_density", unit: "kg/m", kind: "output", domains: ["composites_3d_woven"], description: "Yarn linear mass density.", domain_constraints: ["yarn_linear_mass_density>0", "isfinite(yarn_linear_mass_density)"] }
+  - { id: "warp_tex", name: "warp_tex", unit: "tex", kind: "input", domains: ["composites_3d_woven"], description: "Warp yarn tex.", domain_constraints: ["warp_tex>0", "isfinite(warp_tex)"] }
+  - { id: "weft_tex", name: "weft_tex", unit: "tex", kind: "input", domains: ["composites_3d_woven"], description: "Weft yarn tex.", domain_constraints: ["weft_tex>0", "isfinite(weft_tex)"] }
+  - { id: "binder_tex", name: "binder_tex", unit: "tex", kind: "input", domains: ["composites_3d_woven"], description: "Binder yarn tex.", domain_constraints: ["binder_tex>0", "isfinite(binder_tex)"] }
+  - { id: "warp_linear_mass_density", name: "warp_linear_mass_density", unit: "kg/m", kind: "output", domains: ["composites_3d_woven"], description: "Warp yarn linear mass density.", domain_constraints: ["warp_linear_mass_density>0", "isfinite(warp_linear_mass_density)"] }
+  - { id: "weft_linear_mass_density", name: "weft_linear_mass_density", unit: "kg/m", kind: "output", domains: ["composites_3d_woven"], description: "Weft yarn linear mass density.", domain_constraints: ["weft_linear_mass_density>0", "isfinite(weft_linear_mass_density)"] }
+  - { id: "binder_linear_mass_density", name: "binder_linear_mass_density", unit: "kg/m", kind: "output", domains: ["composites_3d_woven"], description: "Binder yarn linear mass density.", domain_constraints: ["binder_linear_mass_density>0", "isfinite(binder_linear_mass_density)"] }
+  - { id: "warp_ends_per_meter", name: "warp_ends_per_meter", unit: "1/m", kind: "input", domains: ["composites_3d_woven"], description: "Warp ends per meter.", domain_constraints: ["warp_ends_per_meter>0", "isfinite(warp_ends_per_meter)"] }
+  - { id: "weft_picks_per_meter", name: "weft_picks_per_meter", unit: "1/m", kind: "input", domains: ["composites_3d_woven"], description: "Weft picks per meter.", domain_constraints: ["weft_picks_per_meter>0", "isfinite(weft_picks_per_meter)"] }
+  - { id: "binder_ends_per_meter", name: "binder_ends_per_meter", unit: "1/m", kind: "input", domains: ["composites_3d_woven"], description: "Binder ends per meter (effective through-thickness stitching density projected per area).", domain_constraints: ["binder_ends_per_meter>=0", "isfinite(binder_ends_per_meter)"] }
+  - { id: "warp_areal_mass", name: "warp_areal_mass", unit: "kg/m^2", kind: "output", domains: ["composites_3d_woven"], description: "Warp areal mass contribution.", domain_constraints: ["warp_areal_mass>=0", "isfinite(warp_areal_mass)"] }
+  - { id: "weft_areal_mass", name: "weft_areal_mass", unit: "kg/m^2", kind: "output", domains: ["composites_3d_woven"], description: "Weft areal mass contribution.", domain_constraints: ["weft_areal_mass>=0", "isfinite(weft_areal_mass)"] }
+  - { id: "binder_areal_mass", name: "binder_areal_mass", unit: "kg/m^2", kind: "output", domains: ["composites_3d_woven"], description: "Binder areal mass contribution.", domain_constraints: ["binder_areal_mass>=0", "isfinite(binder_areal_mass)"] }
+  - { id: "fiber_areal_mass_total", name: "fiber_areal_mass_total", unit: "kg/m^2", kind: "output", domains: ["composites_3d_woven"], description: "Total fiber areal mass.", domain_constraints: ["fiber_areal_mass_total>=0", "isfinite(fiber_areal_mass_total)"] }
+  - { id: "fiber_density", name: "fiber_density", unit: "kg/m^3", kind: "input", domains: ["composites_3d_woven"], description: "Fiber density.", domain_constraints: ["fiber_density>0", "isfinite(fiber_density)"] }
+  - { id: "preform_thickness", name: "preform_thickness", unit: "m", kind: "input", domains: ["composites_3d_woven"], description: "Preform thickness.", domain_constraints: ["preform_thickness>0", "isfinite(preform_thickness)"] }
+  - { id: "fiber_volume_fraction", name: "fiber_volume_fraction", unit: "1", kind: "output", domains: ["composites_3d_woven"], description: "Fiber volume fraction from areal mass, density, thickness.", domain_constraints: ["fiber_volume_fraction>=0", "fiber_volume_fraction<=1", "isfinite(fiber_volume_fraction)"] }
+  - { id: "void_volume_fraction", name: "void_volume_fraction", unit: "1", kind: "input", domains: ["composites_3d_woven"], description: "Void volume fraction (explicit input; measured/estimated externally).", domain_constraints: ["void_volume_fraction>=0", "void_volume_fraction<=1", "isfinite(void_volume_fraction)"] }
+  - { id: "matrix_volume_fraction", name: "matrix_volume_fraction", unit: "1", kind: "output", domains: ["composites_3d_woven"], description: "Matrix volume fraction (closure).", domain_constraints: ["matrix_volume_fraction>=0", "matrix_volume_fraction<=1", "isfinite(matrix_volume_fraction)"] }
+  - { id: "crimp_angle", name: "crimp_angle", unit: "rad", kind: "input", domains: ["composites_3d_woven"], description: "Crimp/undulation angle (effective).", domain_constraints: ["crimp_angle>=0", "crimp_angle<pi/2", "isfinite(crimp_angle)"] }
+  - { id: "crimp_k", name: "crimp_k", unit: "1", kind: "parameter", domains: ["composites_3d_woven"], description: "Crimp efficiency decay parameter (template; calibration required).", domain_constraints: ["crimp_k>=0", "isfinite(crimp_k)"] }
+  - { id: "crimp_efficiency", name: "crimp_efficiency", unit: "1", kind: "output", domains: ["composites_3d_woven"], description: "Crimp/undulation efficiency factor (template).", domain_constraints: ["crimp_efficiency>=0", "crimp_efficiency<=1", "isfinite(crimp_efficiency)"] }
+  - { id: "compaction_pressure", name: "compaction_pressure", unit: "Pa", kind: "input", domains: ["composites_3d_woven"], description: "Compaction pressure.", domain_constraints: ["compaction_pressure>=0", "isfinite(compaction_pressure)"] }
+  - { id: "compaction_p_ref", name: "compaction_pressure_reference", unit: "Pa", kind: "parameter", domains: ["composites_3d_woven"], description: "Compaction reference pressure (template; calibration required).", domain_constraints: ["compaction_p_ref>0", "isfinite(compaction_p_ref)"] }
+  - { id: "compaction_k", name: "compaction_k", unit: "m", kind: "parameter", domains: ["composites_3d_woven"], description: "Compaction thickness scale (template; calibration required).", domain_constraints: ["compaction_k>=0", "isfinite(compaction_k)"] }
+  - { id: "compacted_thickness", name: "compacted_thickness", unit: "m", kind: "output", domains: ["composites_3d_woven"], description: "Compacted thickness (template).", domain_constraints: ["compacted_thickness>0", "isfinite(compacted_thickness)"] }
+  - { id: "bending_moment", name: "bending_moment", unit: "N*m", kind: "input", domains: ["structures"], description: "Bending moment.", domain_constraints: ["isfinite(bending_moment)"] }
+  - { id: "neutral_axis_c", name: "neutral_axis_distance", unit: "m", kind: "input", domains: ["structures"], description: "Distance from neutral axis to outer fiber.", domain_constraints: ["neutral_axis_c>0", "isfinite(neutral_axis_c)"] }
+  - { id: "second_moment_i", name: "second_moment_of_area", unit: "m^4", kind: "input", domains: ["structures"], description: "Second moment of area (area moment of inertia).", domain_constraints: ["second_moment_i>0", "isfinite(second_moment_i)"] }
+  - { id: "bending_stress", name: "bending_stress", unit: "Pa", kind: "output", domains: ["structures"], description: "Bending stress at outer fiber.", domain_constraints: ["isfinite(bending_stress)"] }
+  - { id: "shear_force", name: "shear_force", unit: "N", kind: "input", domains: ["structures"], description: "Transverse shear force.", domain_constraints: ["isfinite(shear_force)"] }
+  - { id: "first_moment_q", name: "first_moment_of_area", unit: "m^3", kind: "input", domains: ["structures"], description: "First moment of area about neutral axis.", domain_constraints: ["isfinite(first_moment_q)"] }
+  - { id: "section_width", name: "section_width", unit: "m", kind: "input", domains: ["structures"], description: "Section width at the point where shear stress is evaluated.", domain_constraints: ["section_width>0", "isfinite(section_width)"] }
+  - { id: "shear_stress", name: "shear_stress", unit: "Pa", kind: "output", domains: ["structures"], description: "Beam shear stress.", domain_constraints: ["isfinite(shear_stress)"] }
+  - { id: "buckling_k", name: "buckling_coefficient_k", unit: "1", kind: "input", domains: ["structures"], description: "Plate buckling coefficient (boundary condition / mode dependent).", domain_constraints: ["buckling_k>0", "isfinite(buckling_k)"] }
+  - { id: "youngs_modulus", name: "youngs_modulus", unit: "Pa", kind: "input", domains: ["structures"], description: "Young's modulus.", domain_constraints: ["youngs_modulus>0", "isfinite(youngs_modulus)"] }
+  - { id: "poisson_ratio", name: "poisson_ratio", unit: "1", kind: "input", domains: ["structures"], description: "Poisson's ratio.", domain_constraints: ["isfinite(poisson_ratio)"] }
+  - { id: "plate_thickness", name: "plate_thickness", unit: "m", kind: "input", domains: ["structures"], description: "Plate thickness.", domain_constraints: ["plate_thickness>0", "isfinite(plate_thickness)"] }
+  - { id: "plate_span", name: "plate_span", unit: "m", kind: "input", domains: ["structures"], description: "Characteristic plate span for buckling formula (typically the loaded/shorter dimension).", domain_constraints: ["plate_span>0", "isfinite(plate_span)"] }
+  - { id: "plate_buckling_stress", name: "plate_buckling_stress", unit: "Pa", kind: "output", domains: ["structures"], description: "Plate buckling critical stress (template).", domain_constraints: ["isfinite(plate_buckling_stress)"] }
+
+models:
+  - id: "risf_sine_law_thickness"
+    domain: "risf"
+    purpose: "Final thickness via sine law approximation."
+    equations:
+      - { name: "t_final", expr: "t_initial*cos(wall_angle)", variables: ["t_initial", "wall_angle"], assumptions: ["Sine law; constant volume; wall_angle in (0, pi/2)."] }
+    constraints: ["t_initial>0", "wall_angle>0", "wall_angle<pi/2", "isfinite(t_initial) and isfinite(wall_angle)"]
+    outputs: [{ id: "t_final", unit: "m" }]
+
+  - id: "risf_sine_law_thinning_ratio"
+    domain: "risf"
+    purpose: "Thickness ratio implied by sine law."
+    equations:
+      - { name: "thinning_ratio", expr: "cos(wall_angle)", variables: ["wall_angle"], assumptions: ["Sine law; wall_angle in (0, pi/2)."] }
+    constraints: ["wall_angle>0", "wall_angle<pi/2", "isfinite(wall_angle)"]
+    outputs: [{ id: "thinning_ratio", unit: "1" }]
+
+  - id: "risf_scallop_height_exact"
+    domain: "risf"
+    purpose: "Scallop height (exact circle geometry)."
+    equations:
+      - { name: "scallop_height", expr: "tool_radius-sqrt((tool_radius^2)-((tool_stepover/2)^2))", variables: ["tool_radius", "tool_stepover"] }
+    constraints: ["tool_radius>0", "tool_stepover>=0", "(tool_radius^2)-((tool_stepover/2)^2)>=0", "isfinite(tool_radius) and isfinite(tool_stepover)"]
+    outputs: [{ id: "scallop_height", unit: "m" }]
+
+  - id: "risf_scallop_height_small_step"
+    domain: "risf"
+    purpose: "Scallop height (small-step approximation)."
+    equations:
+      - { name: "scallop_height_small_step", expr: "(tool_stepover^2)/(8*tool_radius)", variables: ["tool_radius", "tool_stepover"], assumptions: ["Valid when tool_stepover/tool_radius is small."] }
+    constraints: ["tool_radius>0", "tool_stepover>=0", "isfinite(tool_radius) and isfinite(tool_stepover)"]
+    outputs: [{ id: "scallop_height_small_step", unit: "m" }]
+
+  - id: "risf_inverse_scallop_to_step"
+    domain: "risf"
+    purpose: "Inverse scallop target to step parameter."
+    equations:
+      - { name: "stepdown_from_scallop", expr: "2*sqrt((2*tool_radius*target_scallop_height)-(target_scallop_height^2))", variables: ["tool_radius", "target_scallop_height"] }
+    constraints: ["tool_radius>0", "target_scallop_height>=0", "(2*tool_radius*target_scallop_height)-(target_scallop_height^2)>=0", "isfinite(tool_radius) and isfinite(target_scallop_height)"]
+    outputs: [{ id: "stepdown_from_scallop", unit: "m" }]
+
+  - id: "risf_aerens_axial_force_template"
+    domain: "risf"
+    purpose: "Aerens-family axial force template (calibration required)."
+    equations:
+      - name: "axial_force"
+        expr: "aerens_force_scale*exp(aerens_k0+(aerens_k1*wall_angle)+(aerens_k2*ln(t_initial/aerens_t_ref))+(aerens_k3*ln(tool_radius/aerens_r_ref))+(aerens_k4*ln(tool_stepdown/aerens_dz_ref))+(aerens_k5*ln(tool_stepover/aerens_s_ref))+(aerens_k6*ln((tool_stepover/aerens_s_ref)/(tool_radius/aerens_r_ref))) )"
+        variables: ["aerens_force_scale", "aerens_k0", "aerens_k1", "aerens_k2", "aerens_k3", "aerens_k4", "aerens_k5", "aerens_k6", "aerens_t_ref", "aerens_r_ref", "aerens_s_ref", "aerens_dz_ref", "t_initial", "wall_angle", "tool_radius", "tool_stepdown", "tool_stepover"]
+        assumptions: ["Template only; coefficients and references must be calibrated. ln args are dimensionless ratios."]
+    constraints:
+      - "aerens_force_scale>0"
+      - "aerens_t_ref>0 and aerens_r_ref>0 and aerens_s_ref>0 and aerens_dz_ref>0"
+      - "t_initial>0 and tool_radius>0 and tool_stepdown>0 and tool_stepover>0"
+      - "wall_angle>0 and wall_angle<pi/2"
+      - "isfinite(aerens_force_scale) and isfinite(aerens_k0) and isfinite(aerens_k1) and isfinite(aerens_k2) and isfinite(aerens_k3) and isfinite(aerens_k4) and isfinite(aerens_k5) and isfinite(aerens_k6)"
+      - "isfinite(aerens_t_ref) and isfinite(aerens_r_ref) and isfinite(aerens_s_ref) and isfinite(aerens_dz_ref)"
+      - "isfinite(t_initial) and isfinite(tool_radius) and isfinite(tool_stepdown) and isfinite(tool_stepover) and isfinite(wall_angle)"
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/risf_aerens_axial_force_template/calibration.yaml"
+      parameters:
+        - { id: "aerens_force_scale", unit: "N" }
+        - { id: "aerens_k0", unit: "1" }
+        - { id: "aerens_k1", unit: "1" }
+        - { id: "aerens_k2", unit: "1" }
+        - { id: "aerens_k3", unit: "1" }
+        - { id: "aerens_k4", unit: "1" }
+        - { id: "aerens_k5", unit: "1" }
+        - { id: "aerens_k6", unit: "1" }
+        - { id: "aerens_t_ref", unit: "m" }
+        - { id: "aerens_r_ref", unit: "m" }
+        - { id: "aerens_s_ref", unit: "m" }
+        - { id: "aerens_dz_ref", unit: "m" }
+      data_requirements:
+        - "Measured axial force synchronized with toolpath for known (t_initial, wall_angle, tool_radius, tool_stepdown, tool_stepover)."
+        - "Sufficient span of operating conditions to avoid parameter degeneracy."
+    outputs: [{ id: "axial_force", unit: "N" }]
+
+  - id: "risf_robot_deflection_compliance_template"
+    domain: "risf"
+    purpose: "Robot/tool deflection via calibrated linear compliance."
+    equations:
+      - { name: "robot_deflection", expr: "robot_linear_compliance*axial_force", variables: ["robot_linear_compliance", "axial_force"], assumptions: ["Linear compliance valid within calibrated load regime."] }
+    constraints: ["robot_linear_compliance>=0", "axial_force>=0", "isfinite(robot_linear_compliance) and isfinite(axial_force)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/risf_robot_deflection_compliance_template/calibration.yaml"
+      parameters: [{ id: "robot_linear_compliance", unit: "m/N" }]
+      data_requirements:
+        - "Applied force vs measured end-effector deflection under representative configuration."
+        - "Calibration procedure documented in artifact."
+    outputs: [{ id: "robot_deflection", unit: "m" }]
+
+  - id: "additive_pbf_energy_densities"
+    domain: "additive"
+    purpose: "PBF energy density primitives (line/area/volume)."
+    equations:
+      - { name: "energy_line", expr: "(laser_power*process_efficiency)/scan_speed", variables: ["laser_power", "process_efficiency", "scan_speed"] }
+      - { name: "energy_area", expr: "(laser_power*process_efficiency)/(scan_speed*hatch_spacing)", variables: ["laser_power", "process_efficiency", "scan_speed", "hatch_spacing"] }
+      - { name: "energy_volume", expr: "(laser_power*process_efficiency)/(scan_speed*hatch_spacing*layer_thickness)", variables: ["laser_power", "process_efficiency", "scan_speed", "hatch_spacing", "layer_thickness"] }
+    constraints: ["laser_power>0", "process_efficiency>=0 and process_efficiency<=1", "scan_speed>0", "hatch_spacing>0", "layer_thickness>0", "isfinite(laser_power) and isfinite(process_efficiency) and isfinite(scan_speed) and isfinite(hatch_spacing) and isfinite(layer_thickness)"]
+    outputs:
+      - { id: "energy_line", unit: "J/m" }
+      - { id: "energy_area", unit: "J/m^2" }
+      - { id: "energy_volume", unit: "J/m^3" }
+
+  - id: "additive_waam_heat_input_per_length"
+    domain: "additive"
+    purpose: "WAAM heat input per length from arc electrical power and travel speed."
+    equations:
+      - { name: "heat_input_per_length", expr: "(arc_voltage*arc_current*process_efficiency)/travel_speed", variables: ["arc_voltage", "arc_current", "process_efficiency", "travel_speed"] }
+    constraints: ["arc_voltage>0", "arc_current>0", "process_efficiency>=0 and process_efficiency<=1", "travel_speed>0", "isfinite(arc_voltage) and isfinite(arc_current) and isfinite(process_efficiency) and isfinite(travel_speed)"]
+    outputs: [{ id: "heat_input_per_length", unit: "J/m" }]
+
+  - id: "additive_vat_jacobs_working_curve"
+    domain: "additive"
+    purpose: "VAT Jacobs working curve template (calibration required)."
+    equations:
+      - { name: "cure_depth", expr: "penetration_depth*ln(exposure_energy/critical_energy)", variables: ["penetration_depth", "exposure_energy", "critical_energy"] }
+    constraints: ["penetration_depth>0", "critical_energy>0", "exposure_energy>0", "(exposure_energy/critical_energy)>0", "isfinite(penetration_depth) and isfinite(exposure_energy) and isfinite(critical_energy)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/additive_vat_jacobs_working_curve/calibration.yaml"
+      parameters:
+        - { id: "critical_energy", unit: "J/m^2" }
+        - { id: "penetration_depth", unit: "m" }
+      data_requirements:
+        - "Measured cure depth vs exposure energy for the resin/optics/process stack."
+        - "Fit procedure documented in calibration artifact."
+    outputs: [{ id: "cure_depth", unit: "m" }]
+
+  - id: "additive_binderjet_scale_compensation"
+    domain: "additive"
+    purpose: "Scale compensation from calibrated linear shrinkage (binder-jet/sintering template)."
+    equations:
+      - { name: "scale_compensation", expr: "1/(1-linear_shrinkage)", variables: ["linear_shrinkage"] }
+    constraints: ["linear_shrinkage>=0", "linear_shrinkage<1", "(1-linear_shrinkage)!=0", "isfinite(linear_shrinkage)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/additive_binderjet_scale_compensation/calibration.yaml"
+      parameters: [{ id: "linear_shrinkage", unit: "1" }]
+      data_requirements:
+        - "Measured pre/post dimensions to infer linear shrinkage for material+cycle."
+    outputs: [{ id: "scale_compensation", unit: "1" }]
+
+  - id: "subtractive_laser_power_density"
+    domain: "subtractive"
+    purpose: "Laser spot area and power density from spot diameter and power."
+    equations:
+      - { name: "beam_area", expr: "pi*(beam_spot_diameter/2)^2", variables: ["beam_spot_diameter"] }
+      - { name: "power_density", expr: "laser_power/(pi*(beam_spot_diameter/2)^2)", variables: ["laser_power", "beam_spot_diameter"] }
+    constraints: ["beam_spot_diameter>0", "laser_power>0", "isfinite(beam_spot_diameter) and isfinite(laser_power)"]
+    outputs:
+      - { id: "beam_area", unit: "m^2" }
+      - { id: "power_density", unit: "W/m^2" }
+
+  - id: "subtractive_laser_absorbed_heat_per_length"
+    domain: "subtractive"
+    purpose: "Absorbed heat per unit cut length (coupling via absorptivity and efficiency)."
+    equations:
+      - { name: "absorbed_heat_per_length", expr: "(laser_power*absorptivity*process_efficiency)/travel_speed", variables: ["laser_power", "absorptivity", "process_efficiency", "travel_speed"] }
+    constraints: ["laser_power>0", "absorptivity>=0 and absorptivity<=1", "process_efficiency>=0 and process_efficiency<=1", "travel_speed>0", "isfinite(laser_power) and isfinite(absorptivity) and isfinite(process_efficiency) and isfinite(travel_speed)"]
+    outputs: [{ id: "absorbed_heat_per_length", unit: "J/m" }]
+
+  - id: "subtractive_laser_haz_template"
+    domain: "subtractive"
+    purpose: "Laser HAZ width template (calibration required)."
+    equations:
+      - { name: "haz_width", expr: "laser_haz_scale*exp(laser_haz_k0+(laser_haz_k1*ln(absorbed_heat_per_length/laser_haz_q_ref))+(laser_haz_k2*ln(travel_speed/laser_haz_v_ref)))", variables: ["laser_haz_scale", "laser_haz_k0", "laser_haz_k1", "laser_haz_k2", "absorbed_heat_per_length", "laser_haz_q_ref", "travel_speed", "laser_haz_v_ref"] }
+    constraints: ["laser_haz_scale>0", "laser_haz_q_ref>0", "laser_haz_v_ref>0", "absorbed_heat_per_length>0", "travel_speed>0", "(absorbed_heat_per_length/laser_haz_q_ref)>0", "(travel_speed/laser_haz_v_ref)>0", "isfinite(laser_haz_scale) and isfinite(laser_haz_k0) and isfinite(laser_haz_k1) and isfinite(laser_haz_k2)", "isfinite(absorbed_heat_per_length) and isfinite(laser_haz_q_ref) and isfinite(travel_speed) and isfinite(laser_haz_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_laser_haz_template/calibration.yaml"
+      parameters:
+        - { id: "laser_haz_scale", unit: "m" }
+        - { id: "laser_haz_k0", unit: "1" }
+        - { id: "laser_haz_k1", unit: "1" }
+        - { id: "laser_haz_k2", unit: "1" }
+        - { id: "laser_haz_q_ref", unit: "J/m" }
+        - { id: "laser_haz_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured HAZ width under known absorbed_heat_per_length and travel_speed with traceable metrology."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "haz_width", unit: "m" }]
+
+  - id: "subtractive_laser_kerf_template"
+    domain: "subtractive"
+    purpose: "Laser kerf width template (calibration required)."
+    equations:
+      - { name: "kerf_width", expr: "laser_kerf_scale*exp(laser_kerf_k0+(laser_kerf_k1*ln(laser_power/laser_kerf_p_ref))+(laser_kerf_k2*ln(travel_speed/laser_kerf_v_ref)))", variables: ["laser_kerf_scale", "laser_kerf_k0", "laser_kerf_k1", "laser_kerf_k2", "laser_power", "laser_kerf_p_ref", "travel_speed", "laser_kerf_v_ref"] }
+    constraints: ["laser_kerf_scale>0", "laser_kerf_p_ref>0", "laser_kerf_v_ref>0", "laser_power>0", "travel_speed>0", "(laser_power/laser_kerf_p_ref)>0", "(travel_speed/laser_kerf_v_ref)>0", "isfinite(laser_kerf_scale) and isfinite(laser_kerf_k0) and isfinite(laser_kerf_k1) and isfinite(laser_kerf_k2)", "isfinite(laser_power) and isfinite(laser_kerf_p_ref) and isfinite(travel_speed) and isfinite(laser_kerf_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_laser_kerf_template/calibration.yaml"
+      parameters:
+        - { id: "laser_kerf_scale", unit: "m" }
+        - { id: "laser_kerf_k0", unit: "1" }
+        - { id: "laser_kerf_k1", unit: "1" }
+        - { id: "laser_kerf_k2", unit: "1" }
+        - { id: "laser_kerf_p_ref", unit: "W" }
+        - { id: "laser_kerf_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured kerf width vs (laser_power, travel_speed) for a fixed optics/material stack."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "kerf_width", unit: "m" }]
+
+  - id: "subtractive_waterjet_hydraulic_power"
+    domain: "subtractive"
+    purpose: "Waterjet hydraulic power primitive (p*Q)."
+    equations:
+      - { name: "hydraulic_power", expr: "waterjet_pressure*water_flow_rate", variables: ["waterjet_pressure", "water_flow_rate"] }
+    constraints: ["waterjet_pressure>0", "water_flow_rate>0", "isfinite(waterjet_pressure) and isfinite(water_flow_rate)"]
+    outputs: [{ id: "hydraulic_power", unit: "W" }]
+
+  - id: "subtractive_waterjet_abrasive_dose_per_length"
+    domain: "subtractive"
+    purpose: "Abrasive dose per unit length (mass_flow / travel_speed)."
+    equations:
+      - { name: "abrasive_dose_per_length", expr: "abrasive_mass_flow/travel_speed", variables: ["abrasive_mass_flow", "travel_speed"] }
+    constraints: ["abrasive_mass_flow>=0", "travel_speed>0", "(travel_speed)!=0", "isfinite(abrasive_mass_flow) and isfinite(travel_speed)"]
+    outputs: [{ id: "abrasive_dose_per_length", unit: "kg/m" }]
+
+  - id: "subtractive_waterjet_kerf_offset_template"
+    domain: "subtractive"
+    purpose: "Waterjet kerf offset template (calibration required)."
+    equations:
+      - { name: "wjet_kerf_offset", expr: "wjet_kerf_scale*exp(wjet_kerf_k0+(wjet_kerf_k1*ln(hydraulic_power/wjet_hp_ref))+(wjet_kerf_k2*ln(abrasive_dose_per_length/wjet_md_ref))+(wjet_kerf_k3*ln(travel_speed/wjet_v_ref)))", variables: ["wjet_kerf_scale", "wjet_kerf_k0", "wjet_kerf_k1", "wjet_kerf_k2", "wjet_kerf_k3", "hydraulic_power", "wjet_hp_ref", "abrasive_dose_per_length", "wjet_md_ref", "travel_speed", "wjet_v_ref"] }
+    constraints: ["wjet_kerf_scale>0", "wjet_hp_ref>0 and wjet_md_ref>0 and wjet_v_ref>0", "hydraulic_power>0", "abrasive_dose_per_length>0", "travel_speed>0", "(hydraulic_power/wjet_hp_ref)>0", "(abrasive_dose_per_length/wjet_md_ref)>0", "(travel_speed/wjet_v_ref)>0", "isfinite(wjet_kerf_scale) and isfinite(wjet_kerf_k0) and isfinite(wjet_kerf_k1) and isfinite(wjet_kerf_k2) and isfinite(wjet_kerf_k3)", "isfinite(hydraulic_power) and isfinite(wjet_hp_ref) and isfinite(abrasive_dose_per_length) and isfinite(wjet_md_ref) and isfinite(travel_speed) and isfinite(wjet_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_waterjet_kerf_offset_template/calibration.yaml"
+      parameters:
+        - { id: "wjet_kerf_scale", unit: "m" }
+        - { id: "wjet_kerf_k0", unit: "1" }
+        - { id: "wjet_kerf_k1", unit: "1" }
+        - { id: "wjet_kerf_k2", unit: "1" }
+        - { id: "wjet_kerf_k3", unit: "1" }
+        - { id: "wjet_hp_ref", unit: "W" }
+        - { id: "wjet_md_ref", unit: "kg/m" }
+        - { id: "wjet_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured kerf offset vs (hydraulic_power, abrasive_dose_per_length, travel_speed) with recorded setup metadata."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "wjet_kerf_offset", unit: "m" }]
+
+  - id: "subtractive_waterjet_taper_template"
+    domain: "subtractive"
+    purpose: "Waterjet taper angle template (calibration required)."
+    equations:
+      - { name: "wjet_taper_angle", expr: "wjet_taper_scale*exp(wjet_taper_k0+(wjet_taper_k1*ln(hydraulic_power/wjet_hp_ref))+(wjet_taper_k2*ln(abrasive_dose_per_length/wjet_md_ref))+(wjet_taper_k3*ln(travel_speed/wjet_v_ref)))", variables: ["wjet_taper_scale", "wjet_taper_k0", "wjet_taper_k1", "wjet_taper_k2", "wjet_taper_k3", "hydraulic_power", "wjet_hp_ref", "abrasive_dose_per_length", "wjet_md_ref", "travel_speed", "wjet_v_ref"] }
+    constraints: ["wjet_taper_scale>=0", "wjet_hp_ref>0 and wjet_md_ref>0 and wjet_v_ref>0", "hydraulic_power>0", "abrasive_dose_per_length>0", "travel_speed>0", "(hydraulic_power/wjet_hp_ref)>0", "(abrasive_dose_per_length/wjet_md_ref)>0", "(travel_speed/wjet_v_ref)>0", "isfinite(wjet_taper_scale) and isfinite(wjet_taper_k0) and isfinite(wjet_taper_k1) and isfinite(wjet_taper_k2) and isfinite(wjet_taper_k3)", "isfinite(hydraulic_power) and isfinite(wjet_hp_ref) and isfinite(abrasive_dose_per_length) and isfinite(wjet_md_ref) and isfinite(travel_speed) and isfinite(wjet_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_waterjet_taper_template/calibration.yaml"
+      parameters:
+        - { id: "wjet_taper_scale", unit: "rad" }
+        - { id: "wjet_taper_k0", unit: "1" }
+        - { id: "wjet_taper_k1", unit: "1" }
+        - { id: "wjet_taper_k2", unit: "1" }
+        - { id: "wjet_taper_k3", unit: "1" }
+        - { id: "wjet_hp_ref", unit: "W" }
+        - { id: "wjet_md_ref", unit: "kg/m" }
+        - { id: "wjet_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured taper angle vs operating conditions with traceable metrology."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "wjet_taper_angle", unit: "rad" }]
+
+  - id: "subtractive_waterjet_vcut_template"
+    domain: "subtractive"
+    purpose: "Waterjet V-cut depth template (calibration required)."
+    equations:
+      - { name: "v_cut_depth", expr: "vcut_scale*exp(vcut_k0+(vcut_k1*ln(hydraulic_power/wjet_hp_ref))+(vcut_k2*ln(abrasive_dose_per_length/wjet_md_ref))+(vcut_k3*ln(travel_speed/wjet_v_ref)))", variables: ["vcut_scale", "vcut_k0", "vcut_k1", "vcut_k2", "vcut_k3", "hydraulic_power", "wjet_hp_ref", "abrasive_dose_per_length", "wjet_md_ref", "travel_speed", "wjet_v_ref"] }
+    constraints: ["vcut_scale>=0", "wjet_hp_ref>0 and wjet_md_ref>0 and wjet_v_ref>0", "hydraulic_power>0", "abrasive_dose_per_length>0", "travel_speed>0", "(hydraulic_power/wjet_hp_ref)>0", "(abrasive_dose_per_length/wjet_md_ref)>0", "(travel_speed/wjet_v_ref)>0", "isfinite(vcut_scale) and isfinite(vcut_k0) and isfinite(vcut_k1) and isfinite(vcut_k2) and isfinite(vcut_k3)", "isfinite(hydraulic_power) and isfinite(wjet_hp_ref) and isfinite(abrasive_dose_per_length) and isfinite(wjet_md_ref) and isfinite(travel_speed) and isfinite(wjet_v_ref)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/subtractive_waterjet_vcut_template/calibration.yaml"
+      parameters:
+        - { id: "vcut_scale", unit: "m" }
+        - { id: "vcut_k0", unit: "1" }
+        - { id: "vcut_k1", unit: "1" }
+        - { id: "vcut_k2", unit: "1" }
+        - { id: "vcut_k3", unit: "1" }
+        - { id: "wjet_hp_ref", unit: "W" }
+        - { id: "wjet_md_ref", unit: "kg/m" }
+        - { id: "wjet_v_ref", unit: "m/s" }
+      data_requirements:
+        - "Measured V-cut depth vs operating conditions with traceable metrology."
+        - "Documented calibration procedure stored in artifact."
+    outputs: [{ id: "v_cut_depth", unit: "m" }]
+
+  - id: "metrology_spacing_from_speed_and_rate"
+    domain: "metrology"
+    purpose: "Along-track point spacing from speed and sample rate."
+    equations:
+      - { name: "point_spacing", expr: "scan_speed/sample_rate", variables: ["scan_speed", "sample_rate"] }
+    constraints: ["sample_rate>0", "(sample_rate)!=0", "scan_speed>=0", "isfinite(scan_speed) and isfinite(sample_rate)"]
+    outputs: [{ id: "point_spacing", unit: "m" }]
+
+  - id: "metrology_raster_scan_time_with_overlap"
+    domain: "metrology"
+    purpose: "Raster scan time estimate using effective line spacing from stepover and overlap."
+    equations:
+      - name: "raster_time"
+        expr: "(scan_width/scan_speed)*(scan_height/(tool_stepover*(1-overlap_fraction)))"
+        variables: ["scan_width", "scan_speed", "scan_height", "tool_stepover", "overlap_fraction"]
+        assumptions: ["Ignores acceleration/turnaround overhead; deterministic planning primitive."]
+    constraints:
+      - "scan_width>0"
+      - "scan_height>0"
+      - "scan_speed>0"
+      - "tool_stepover>0"
+      - "overlap_fraction>=0 and overlap_fraction<1"
+      - "(1-overlap_fraction)>0"
+      - "(tool_stepover*(1-overlap_fraction))>0"
+      - "isfinite(scan_width) and isfinite(scan_height) and isfinite(scan_speed) and isfinite(tool_stepover) and isfinite(overlap_fraction)"
+    outputs: [{ id: "raster_time", unit: "s" }]
+
+  - id: "metrology_point_density_and_count"
+    domain: "metrology"
+    purpose: "Estimate point density and point count from along-track spacing and effective line spacing."
+    equations:
+      - { name: "point_density", expr: "1/(point_spacing*(tool_stepover*(1-overlap_fraction)))", variables: ["point_spacing", "tool_stepover", "overlap_fraction"], assumptions: ["Assumes approximately uniform sampling grid."] }
+      - { name: "point_count", expr: "scan_width*scan_height*(1/(point_spacing*(tool_stepover*(1-overlap_fraction))))", variables: ["scan_width", "scan_height", "point_spacing", "tool_stepover", "overlap_fraction"] }
+    constraints:
+      - "point_spacing>0"
+      - "tool_stepover>0"
+      - "overlap_fraction>=0 and overlap_fraction<1"
+      - "(1-overlap_fraction)>0"
+      - "(point_spacing*(tool_stepover*(1-overlap_fraction)))!=0"
+      - "scan_width>0 and scan_height>0"
+      - "isfinite(scan_width) and isfinite(scan_height) and isfinite(point_spacing) and isfinite(tool_stepover) and isfinite(overlap_fraction)"
+    outputs:
+      - { id: "point_density", unit: "1/m^2" }
+      - { id: "point_count", unit: "1" }
+
+  - id: "metrology_lidar_range_from_tof"
+    domain: "metrology"
+    purpose: "LiDAR range from time-of-flight delta time."
+    equations:
+      - { name: "lidar_range", expr: "c_light*tof_dt/2", variables: ["c_light", "tof_dt"] }
+    constraints: ["c_light>0", "tof_dt>=0", "isfinite(c_light) and isfinite(tof_dt)"]
+    outputs: [{ id: "lidar_range", unit: "m" }]
+
+  - id: "metrology_lidar_range_noise_from_jitter"
+    domain: "metrology"
+    purpose: "Range noise standard deviation induced by timing jitter."
+    equations:
+      - { name: "range_noise", expr: "c_light*timing_jitter/2", variables: ["c_light", "timing_jitter"] }
+    constraints: ["c_light>0", "timing_jitter>=0", "isfinite(c_light) and isfinite(timing_jitter)"]
+    outputs: [{ id: "range_noise", unit: "m" }]
+
+  - id: "metrology_angular_step_to_arc_spacing"
+    domain: "metrology"
+    purpose: "Arc spacing from angular step at a given range."
+    equations:
+      - { name: "arc_spacing", expr: "lidar_range*angular_step", variables: ["lidar_range", "angular_step"] }
+    constraints: ["lidar_range>=0", "angular_step>0", "isfinite(lidar_range) and isfinite(angular_step)"]
+    outputs: [{ id: "arc_spacing", unit: "m" }]
+
+  - id: "metrology_uncertainty_rss_and_expanded"
+    domain: "metrology"
+    purpose: "Combine uncertainty components by RSS and compute expanded uncertainty with explicit coverage factor."
+    equations:
+      - { name: "combined_uncertainty", expr: "sqrt((u_component_1^2)+(u_component_2^2)+(u_component_3^2))", variables: ["u_component_1", "u_component_2", "u_component_3"] }
+      - { name: "expanded_uncertainty_u95", expr: "coverage_factor_k*sqrt((u_component_1^2)+(u_component_2^2)+(u_component_3^2))", variables: ["coverage_factor_k", "u_component_1", "u_component_2", "u_component_3"] }
+    constraints:
+      - "u_component_1>=0 and u_component_2>=0 and u_component_3>=0"
+      - "coverage_factor_k>0"
+      - "((u_component_1^2)+(u_component_2^2)+(u_component_3^2))>=0"
+      - "isfinite(coverage_factor_k) and isfinite(u_component_1) and isfinite(u_component_2) and isfinite(u_component_3)"
+    outputs:
+      - { id: "combined_uncertainty", unit: "m" }
+      - { id: "expanded_uncertainty_u95", unit: "m" }
+
+  - id: "metrology_motion_blur_position_error"
+    domain: "metrology"
+    purpose: "Position error due to motion during exposure/integration."
+    equations:
+      - { name: "motion_blur_error", expr: "scan_speed*exposure_time", variables: ["scan_speed", "exposure_time"] }
+    constraints: ["scan_speed>=0", "exposure_time>=0", "isfinite(scan_speed) and isfinite(exposure_time)"]
+    outputs: [{ id: "motion_blur_error", unit: "m" }]
+
+  - id: "metrology_trigger_jitter_position_error"
+    domain: "metrology"
+    purpose: "Position error due to trigger timing jitter at speed."
+    equations:
+      - { name: "trigger_jitter_error", expr: "scan_speed*trigger_jitter", variables: ["scan_speed", "trigger_jitter"] }
+    constraints: ["scan_speed>=0", "trigger_jitter>=0", "isfinite(scan_speed) and isfinite(trigger_jitter)"]
+    outputs: [{ id: "trigger_jitter_error", unit: "m" }]
+
+  - id: "metrology_pointcloud_size_and_io_time"
+    domain: "metrology"
+    purpose: "Deterministic planning for point cloud size and I/O time."
+    equations:
+      - { name: "pointcloud_size", expr: "point_count*point_size_bytes", variables: ["point_count", "point_size_bytes"] }
+      - { name: "io_time", expr: "(point_count*point_size_bytes)/io_bandwidth", variables: ["point_count", "point_size_bytes", "io_bandwidth"] }
+    constraints:
+      - "point_count>=0"
+      - "point_size_bytes>0"
+      - "io_bandwidth>0"
+      - "(io_bandwidth)!=0"
+      - "isfinite(point_count) and isfinite(point_size_bytes) and isfinite(io_bandwidth)"
+    outputs:
+      - { id: "pointcloud_size", unit: "B" }
+      - { id: "io_time", unit: "s" }
+
+  - id: "composites_tex_to_linear_mass_density"
+    domain: "composites_3d_woven"
+    purpose: "Convert tex to linear mass density."
+    equations:
+      - { name: "yarn_linear_mass_density", expr: "yarn_tex*1.0e-6", variables: ["yarn_tex"], assumptions: ["1 tex = 1 g/km = 1e-6 kg/m."] }
+    constraints: ["yarn_tex>0", "isfinite(yarn_tex)"]
+    outputs: [{ id: "yarn_linear_mass_density", unit: "kg/m" }]
+
+  - id: "composites_warp_weft_binder_linear_mass"
+    domain: "composites_3d_woven"
+    purpose: "Convert warp/weft/binder tex to linear mass density."
+    equations:
+      - { name: "warp_linear_mass_density", expr: "warp_tex*1.0e-6", variables: ["warp_tex"], assumptions: ["1 tex = 1e-6 kg/m."] }
+      - { name: "weft_linear_mass_density", expr: "weft_tex*1.0e-6", variables: ["weft_tex"], assumptions: ["1 tex = 1e-6 kg/m."] }
+      - { name: "binder_linear_mass_density", expr: "binder_tex*1.0e-6", variables: ["binder_tex"], assumptions: ["1 tex = 1e-6 kg/m."] }
+    constraints: ["warp_tex>0", "weft_tex>0", "binder_tex>0", "isfinite(warp_tex) and isfinite(weft_tex) and isfinite(binder_tex)"]
+    outputs:
+      - { id: "warp_linear_mass_density", unit: "kg/m" }
+      - { id: "weft_linear_mass_density", unit: "kg/m" }
+      - { id: "binder_linear_mass_density", unit: "kg/m" }
+
+  - id: "composites_areal_mass_contributions"
+    domain: "composites_3d_woven"
+    purpose: "Areal mass contributions from yarn linear mass density and count density."
+    equations:
+      - { name: "warp_areal_mass", expr: "warp_ends_per_meter*warp_linear_mass_density", variables: ["warp_ends_per_meter", "warp_linear_mass_density"] }
+      - { name: "weft_areal_mass", expr: "weft_picks_per_meter*weft_linear_mass_density", variables: ["weft_picks_per_meter", "weft_linear_mass_density"] }
+      - { name: "binder_areal_mass", expr: "binder_ends_per_meter*binder_linear_mass_density", variables: ["binder_ends_per_meter", "binder_linear_mass_density"] }
+    constraints:
+      - "warp_ends_per_meter>0 and weft_picks_per_meter>0 and binder_ends_per_meter>=0"
+      - "warp_linear_mass_density>0 and weft_linear_mass_density>0 and binder_linear_mass_density>0"
+      - "isfinite(warp_ends_per_meter) and isfinite(weft_picks_per_meter) and isfinite(binder_ends_per_meter)"
+      - "isfinite(warp_linear_mass_density) and isfinite(weft_linear_mass_density) and isfinite(binder_linear_mass_density)"
+    outputs:
+      - { id: "warp_areal_mass", unit: "kg/m^2" }
+      - { id: "weft_areal_mass", unit: "kg/m^2" }
+      - { id: "binder_areal_mass", unit: "kg/m^2" }
+
+  - id: "composites_total_fiber_areal_mass"
+    domain: "composites_3d_woven"
+    purpose: "Total fiber areal mass from warp/weft/binder contributions."
+    equations:
+      - { name: "fiber_areal_mass_total", expr: "warp_areal_mass+weft_areal_mass+binder_areal_mass", variables: ["warp_areal_mass", "weft_areal_mass", "binder_areal_mass"] }
+    constraints: ["warp_areal_mass>=0 and weft_areal_mass>=0 and binder_areal_mass>=0", "isfinite(warp_areal_mass) and isfinite(weft_areal_mass) and isfinite(binder_areal_mass)"]
+    outputs: [{ id: "fiber_areal_mass_total", unit: "kg/m^2" }]
+
+  - id: "composites_fiber_volume_fraction_from_areal_mass"
+    domain: "composites_3d_woven"
+    purpose: "Fiber volume fraction from total fiber areal mass, fiber density, and preform thickness."
+    equations:
+      - { name: "fiber_volume_fraction", expr: "fiber_areal_mass_total/(fiber_density*preform_thickness)", variables: ["fiber_areal_mass_total", "fiber_density", "preform_thickness"] }
+    constraints:
+      - "fiber_areal_mass_total>=0"
+      - "fiber_density>0"
+      - "preform_thickness>0"
+      - "(fiber_density*preform_thickness)!=0"
+      - "isfinite(fiber_areal_mass_total) and isfinite(fiber_density) and isfinite(preform_thickness)"
+    outputs: [{ id: "fiber_volume_fraction", unit: "1" }]
+
+  - id: "composites_matrix_void_closure"
+    domain: "composites_3d_woven"
+    purpose: "Matrix fraction via closure with explicit void fraction input."
+    equations:
+      - { name: "matrix_volume_fraction", expr: "1-fiber_volume_fraction-void_volume_fraction", variables: ["fiber_volume_fraction", "void_volume_fraction"] }
+    constraints:
+      - "fiber_volume_fraction>=0 and fiber_volume_fraction<=1"
+      - "void_volume_fraction>=0 and void_volume_fraction<=1"
+      - "(1-fiber_volume_fraction-void_volume_fraction)>=0"
+      - "isfinite(fiber_volume_fraction) and isfinite(void_volume_fraction)"
+    outputs: [{ id: "matrix_volume_fraction", unit: "1" }]
+
+  - id: "composites_crimp_efficiency_template"
+    domain: "composites_3d_woven"
+    purpose: "Crimp/undulation efficiency template (calibration required)."
+    equations:
+      - { name: "crimp_efficiency", expr: "exp(-crimp_k*(crimp_angle^2))", variables: ["crimp_k", "crimp_angle"], assumptions: ["Template only; effective crimp_angle definition must match calibration protocol."] }
+    constraints: ["crimp_k>=0", "crimp_angle>=0 and crimp_angle<pi/2", "isfinite(crimp_k) and isfinite(crimp_angle)"]
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/composites_crimp_efficiency_template/calibration.yaml"
+      parameters: [{ id: "crimp_k", unit: "1" }]
+      data_requirements:
+        - "Measured effective stiffness/strength reduction vs crimp_angle for the specific architecture (warp/weft/binder)."
+        - "Explicit definition of crimp_angle and measurement method recorded in calibration artifact."
+    outputs: [{ id: "crimp_efficiency", unit: "1" }]
+
+  - id: "composites_compaction_law_template"
+    domain: "composites_3d_woven"
+    purpose: "Preform compaction law template (calibration required)."
+    equations:
+      - { name: "compacted_thickness", expr: "preform_thickness-(compaction_k*ln(1+(compaction_pressure/compaction_p_ref)))", variables: ["preform_thickness", "compaction_k", "compaction_pressure", "compaction_p_ref"], assumptions: ["Template only; captures logarithmic compaction response."] }
+    constraints:
+      - "preform_thickness>0"
+      - "compaction_k>=0"
+      - "compaction_pressure>=0"
+      - "compaction_p_ref>0"
+      - "(compaction_pressure/compaction_p_ref)>=0"
+      - "(1+(compaction_pressure/compaction_p_ref))>0"
+      - "isfinite(preform_thickness) and isfinite(compaction_k) and isfinite(compaction_pressure) and isfinite(compaction_p_ref)"
+    calibration:
+      required: true
+      storage_path: "manufacturing/calibration/composites_compaction_law_template/calibration.yaml"
+      parameters:
+        - { id: "compaction_k", unit: "m" }
+        - { id: "compaction_p_ref", unit: "Pa" }
+      data_requirements:
+        - "Measured thickness vs compaction_pressure for the preform architecture (temperature/humidity/process state recorded)."
+        - "Calibration scope and validity bounds documented in calibration artifact (no thresholds stored in mathlib)."
+    outputs: [{ id: "compacted_thickness", unit: "m" }]
+
+  - id: "structures_beam_bending_stress"
+    domain: "structures"
+    purpose: "Beam bending stress at distance c from neutral axis: sigma = M*c/I."
+    equations:
+      - { name: "bending_stress", expr: "bending_moment*neutral_axis_c/second_moment_i", variables: ["bending_moment", "neutral_axis_c", "second_moment_i"] }
+    constraints: ["neutral_axis_c>0", "second_moment_i>0", "(second_moment_i)!=0", "isfinite(bending_moment) and isfinite(neutral_axis_c) and isfinite(second_moment_i)"]
+    outputs: [{ id: "bending_stress", unit: "Pa" }]
+
+  - id: "structures_beam_shear_stress"
+    domain: "structures"
+    purpose: "Beam shear stress: tau = V*Q/(I*b)."
+    equations:
+      - { name: "shear_stress", expr: "shear_force*first_moment_q/(second_moment_i*section_width)", variables: ["shear_force", "first_moment_q", "second_moment_i", "section_width"] }
+    constraints: ["second_moment_i>0", "section_width>0", "(second_moment_i*section_width)!=0", "isfinite(shear_force) and isfinite(first_moment_q) and isfinite(second_moment_i) and isfinite(section_width)"]
+    outputs: [{ id: "shear_stress", unit: "Pa" }]
+
+  - id: "structures_plate_buckling_stress_template"
+    domain: "structures"
+    purpose: "Plate buckling critical stress template with explicit k input."
+    equations:
+      - { name: "plate_buckling_stress", expr: "(buckling_k*(pi^2)*youngs_modulus/(12*(1-(poisson_ratio^2))))*((plate_thickness/plate_span)^2)", variables: ["buckling_k", "youngs_modulus", "poisson_ratio", "plate_thickness", "plate_span"], assumptions: ["Linear elastic thin plate theory template; plate_span is characteristic dimension for the chosen k."] }
+    constraints: ["buckling_k>0", "youngs_modulus>0", "plate_thickness>0", "plate_span>0", "(1-(poisson_ratio^2))!=0", "(1-(poisson_ratio^2))>0", "isfinite(buckling_k) and isfinite(youngs_modulus) and isfinite(poisson_ratio) and isfinite(plate_thickness) and isfinite(plate_span)"]
+    outputs: [{ id: "plate_buckling_stress", unit: "Pa" }]
+
+research_sources:
+  policy:
+    media_allowed_only_under_research_leads: true
+    models_must_not_reference_research_leads: true
+    forbid_media_for_coefficients_or_thresholds: true
+  research_leads:
+    media: []
+  authoritative:
+    verification_policy:
+      status_values: ["to_verify", "verified"]
+      require_verification_before_production_use: true
+      forbid_unverified_for_coefficients: true
+    entries:
+      - id: "ref_si_brochure"
+        type: "standard"
+        status: "to_verify"
+        citation: { title: "The International System of Units (SI) — Brochure", authors: [], organization: "BIPM", year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Used for unit definitions and conventions only."]
+      - id: "ref_gum_uncertainty"
+        type: "standard"
+        status: "to_verify"
+        citation: { title: "Guide to the Expression of Uncertainty in Measurement (GUM)", authors: [], organization: "JCGM", year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Used for uncertainty combination concepts (RSS, coverage factor usage)."]
+      - id: "ref_vat_jacobs_curve"
+        type: "paper_or_book"
+        status: "to_verify"
+        citation: { title: "Working curve / Jacobs model for photopolymerization depth of cure", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Model is template; requires local calibration for Ec and Dp."]
+      - id: "ref_pbf_process_fundamentals"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation: { title: "Powder bed fusion process fundamentals (energy density formulations)", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Energy density forms are algebraic primitives; no thresholds in mathlib."]
+      - id: "ref_waam_heat_input"
+        type: "standard_or_handbook"
+        status: "to_verify"
+        citation: { title: "Arc welding heat input calculation (electrical power / travel speed)", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Heat input is a primitive; coupling efficiency is explicit input."]
+      - id: "ref_binderjet_shrinkage"
+        type: "standard_or_handbook"
+        status: "to_verify"
+        citation: { title: "Sintering/binder-jet linear shrinkage and scale compensation methods", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Linear shrinkage is calibrated; compensation formula is purely algebraic."]
+      - id: "ref_laser_cutting_thermal_models"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation: { title: "Laser cutting fundamentals: absorbed energy, kerf, and HAZ scaling", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Kerf/HAZ are templates requiring calibration; absorbed heat/length is a primitive."]
+      - id: "ref_waterjet_cutting_models"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation: { title: "Abrasive waterjet cutting fundamentals: hydraulic power, kerf, taper", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Kerf/taper/V-cut are templates requiring calibration."]
+      - id: "ref_lidar_tof_principles"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation: { title: "Time-of-flight LiDAR range equation and timing-jitter-limited precision", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Range and range-noise primitives; c_light treated as constant."]
+      - id: "ref_pointcloud_planning"
+        type: "practice_note"
+        status: "to_verify"
+        citation: { title: "Point cloud acquisition planning: density, size, and I/O budgeting", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Deterministic planning primitives only; no performance thresholds."]
+      - id: "ref_risf_sine_law"
+        type: "paper_or_review"
+        status: "to_verify"
+        citation: { title: "Incremental sheet forming sine law thickness relation", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Used for sine-law thickness/thinning ratio model; applicability must be validated per material/process."]
+      - id: "ref_risf_scallop_geometry"
+        type: "textbook_or_practice"
+        status: "to_verify"
+        citation: { title: "Scallop height geometry for ball-end/toolpath stepover", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Exact circle geometry and small-step approximation."]
+      - id: "ref_risf_force_models_aerens_family"
+        type: "paper_or_review"
+        status: "to_verify"
+        citation: { title: "Aerens-family empirical force models for incremental sheet forming", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["This mathlib contains only an empirical template; coefficients must be calibrated."]
+      - id: "ref_robot_compliance_calibration"
+        type: "practice_note"
+        status: "to_verify"
+        citation: { title: "Robot structural compliance identification and validation", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Linear compliance model; calibration required and validity bounds documented externally."]
+      - id: "ref_textile_tex"
+        type: "standard"
+        status: "to_verify"
+        citation: { title: "Tex system for yarn linear density (definition and usage)", authors: [], organization: "ISO", year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Used only for the dimensional definition of tex and the 1 tex = 1 g/km relationship."]
+      - id: "ref_textile_structural_composites_3d_woven"
+        type: "textbook_or_review"
+        status: "to_verify"
+        citation: { title: "3D woven textile composites: architecture, areal mass, and volume fraction fundamentals", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Supports the algebraic areal-mass and volume-fraction bookkeeping; any constitutive/strength models are out of scope for this mathlib v0."]
+      - id: "ref_crimp_effects_textile_composites"
+        type: "paper_or_review"
+        status: "to_verify"
+        citation: { title: "Crimp/undulation effects in textile composites (property reduction trends)", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Mathlib includes only a template exponential decay; calibration required for the specific architecture and crimp definition."]
+      - id: "ref_preform_compaction_models"
+        type: "paper_or_review"
+        status: "to_verify"
+        citation: { title: "Textile preform compaction response models (pressure–thickness relationships)", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Mathlib includes only a logarithmic template; calibration required and validity bounds must be captured externally."]
+      - id: "ref_beam_theory_bending_and_shear"
+        type: "textbook"
+        status: "to_verify"
+        citation: { title: "Strength of Materials / Beam theory (bending and shear stress relations)", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Supports sigma = M*c/I and tau = V*Q/(I*b) identities (algebraic primitives)."]
+      - id: "ref_classical_plate_buckling"
+        type: "textbook_or_standard"
+        status: "to_verify"
+        citation: { title: "Classical thin plate buckling theory (elastic buckling of plates)", authors: [], organization: null, year: null, identifiers: { doi: null, isbn: null, url: null } }
+        notes: ["Supports the template buckling expression with explicit k input; k selection and acceptance criteria are out of scope."]
+
+tripwires:
+  intent: "Fail-fast guardrails for determinism, safety, and scope integrity."
+  severity_levels: ["info", "warn", "error"]
+  invariants:
+    - id: "only_allowed_top_level_keys"
+      severity: "error"
+      description: "File must contain only the allowed top-level keys."
+      check: { type: "yaml_top_level_keys_exact", allowed: ["meta", "units", "conventions", "variable_registry", "models", "research_sources", "tripwires"] }
+    - id: "forbid_yaml_anchors"
+      severity: "error"
+      description: "No YAML anchors/aliases (canonicalization and hashing stability)."
+      check: { type: "forbid_yaml_anchors", enabled: true }
+    - id: "hashing_must_exclude_meta_build"
+      severity: "error"
+      description: "Canonical hashing must exclude meta.build only (reproducible content hashes)."
+      check: { type: "hash_config_matches", include_sections: ["meta", "units", "conventions", "variable_registry", "models", "research_sources", "tripwires"], exclude_paths: ["meta.build"] }
+    - id: "forbid_non_finite"
+      severity: "error"
+      description: "No NaN/Inf in any numeric field; expression evaluation must forbid non-finite intermediates."
+      check: { type: "numeric_finiteness", nan_policy: "forbidden", inf_policy: "forbidden", forbid_non_finite_intermediates: true }
+    - id: "domains_must_be_allowlisted"
+      severity: "error"
+      description: "All declared domains must be in conventions.domains.allowed_domains."
+      check: { type: "domain_allowlist_enforced", allowlist_path: "conventions.domains.allowed_domains", fields: ["variable_registry[].domains[]", "models[].domain"] }
+    - id: "units_must_exist"
+      severity: "error"
+      description: "All referenced unit IDs must exist in units.base_units or units.derived_units."
+      check: { type: "unit_reference_integrity", unit_id_paths: ["variable_registry[].unit", "models[].outputs[].unit", "models[].calibration.parameters[].unit"] }
+    - id: "identifiers_must_match_patterns"
+      severity: "error"
+      description: "All ids must match configured patterns and must not use reserved prefixes."
+      check:
+        type: "identifier_policy"
+        patterns:
+          variable_id_pattern_path: "conventions.identifiers.variable_id_pattern"
+          model_id_pattern_path: "conventions.identifiers.model_id_pattern"
+          source_id_pattern_path: "conventions.identifiers.source_id_pattern"
+        reserved_prefixes_path: "conventions.identifiers.reserved_prefixes"
+        fields:
+          - { kind: "variable", path: "variable_registry[].id" }
+          - { kind: "model", path: "models[].id" }
+          - { kind: "source", path: "research_sources.authoritative.entries[].id" }
+    - id: "expression_language_guardrails"
+      severity: "error"
+      description: "Expressions must use only allowlisted operators/functions/constants and must not contain denylisted tokens/patterns."
+      check:
+        type: "expression_safety"
+        expr_paths: ["models[].equations[].expr"]
+        allowlist_path: "conventions.expression_language.allowlist"
+        denylist_path: "conventions.expression_language.denylist"
+        safety_guards_path: "conventions.expression_language.safety_guards"
+    - id: "all_models_outputs_declared_in_registry"
+      severity: "error"
+      description: "Every model output id must exist in variable_registry and unit must match."
+      check: { type: "model_outputs_match_registry", registry_path: "variable_registry", outputs_path: "models[].outputs" }
+    - id: "all_equation_variables_declared_in_registry"
+      severity: "error"
+      description: "Every variable referenced by a model equation must exist in variable_registry."
+      check: { type: "equation_variables_in_registry", registry_path: "variable_registry", variables_path: "models[].equations[].variables" }
+    - id: "no_thresholds_or_acceptance_criteria"
+      severity: "error"
+      description: "Mathlib must not contain acceptance thresholds/limits; those belong in process specs and calibration artifacts."
+      check:
+        type: "forbid_semantic_patterns"
+        paths: ["meta", "units", "conventions", "variable_registry", "models", "research_sources", "tripwires"]
+        patterns:
+          - "(?i)\\b(acceptance|reject|pass\\/fail|tolerance\\s*band|upper\\s*limit|lower\\s*limit|spec\\s*limit|CpK|Cpk|sigma\\s*level)\\b"
+    - id: "calibration_required_models_must_have_storage_path"
+      severity: "error"
+      description: "If model.calibration.required is true, it must include storage_path under conventions.paths.calibration_storage_root."
+      check:
+        type: "calibration_storage_policy"
+        required_flag_path: "models[].calibration.required"
+        storage_path_path: "models[].calibration.storage_path"
+        root_path: "conventions.paths.calibration_storage_root"
+    - id: "forbid_unverified_coefficients"
+      severity: "error"
+      description: "Coefficient-kind variables must not be used unless their owning model is explicitly marked calibration.required=true."
+      check:
+        type: "coefficients_require_calibration"
+        coefficient_kind: "coefficient"
+        registry_path: "variable_registry"
+        model_equations_path: "models[].equations"
+        calibration_required_path: "models[].calibration.required"
+    - id: "research_sources_must_not_be_required_at_runtime"
+      severity: "error"
+      description: "Models must not reference research leads/media sources in executable paths; only documentation linkage allowed."
+      check:
+        type: "forbid_cross_reference"
+        forbidden_source_groups: ["research_sources.research_leads"]
+        expr_paths: ["models[].equations[].expr", "models[].constraints[]", "models[].equations[].assumptions[]"]
+  lint:
+    canonicalization_expectations:
+      map_key_order: "lexicographic"
+      line_endings: "LF"
+      string_normalization: "NFC"
+      forbid_implicit_units: true
+    required_fields:
+      variable_registry: ["id", "unit", "kind", "domains", "domain_constraints"]
+      models: ["id", "domain", "purpose", "equations", "constraints", "outputs"]
+      research_sources_entries: ["id", "type", "status", "citation"]
+  runtime_fail_fast:
+    evaluation:
+      enforce_domain_constraints: true
+      enforce_model_constraints: true
+      abort_on_first_error: true
+      error_on_missing_variable_value: true
+      error_on_unknown_unit: true
