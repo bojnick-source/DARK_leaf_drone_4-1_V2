@@ -5,6 +5,11 @@ import sys
 from pathlib import Path
 from typing import Any, List, Tuple
 
+try:
+    import yaml  # type: ignore
+except ImportError:  # pragma: no cover - handled in runtime
+    yaml = None
+
 EXPECTED_KEYS = [
     "meta",
     "units",
@@ -15,24 +20,24 @@ EXPECTED_KEYS = [
     "tripwires",
 ]
 EXPECTED_TITLE = "MANUFACTURING MATHLIB V0"
+EXPECTED_SPEC_RELATIVE = "manufacturing/mathlib_v0.yaml"
 
 
 def _print_pyyaml_hint() -> None:
     print('FAIL: / -> PyYAML missing; install with "python -m pip install PyYAML"')
 
 
-def _load_yaml(path: Path) -> Any:
-    try:
-        import yaml  # type: ignore
-    except ImportError:
+def _load_yaml(path: Path) -> Tuple[Any | None, str | None]:
+    if yaml is None:
         _print_pyyaml_hint()
         sys.exit(1)
     try:
-        return yaml.safe_load(path.read_text(encoding="utf-8"))
+        return yaml.safe_load(path.read_text(encoding="utf-8")), None
     except FileNotFoundError:
-        return None
-    except Exception as exc:  # noqa: BLE001
-        return exc
+        return None, f"File not found: {path.as_posix()}"
+    except yaml.YAMLError as exc:
+        message = f"YAML parse error in {path.as_posix()}: {exc}"
+        return None, message
 
 
 def _add_error(errors: List[Tuple[str, str]], path: str, message: str) -> None:
@@ -69,14 +74,11 @@ def _validate_meta_title(data: Any, errors: List[Tuple[str, str]]) -> None:
 def validate_mathlib(path: Path) -> List[Tuple[str, str]]:
     errors: List[Tuple[str, str]] = []
     if not path.is_file():
-        _add_error(errors, "/", f"file not found: {path}")
+        _add_error(errors, "/", f"File not found: {path}")
         return errors
-    data = _load_yaml(path)
-    if isinstance(data, Exception):
-        _add_error(errors, "/", f"YAML parse error: {data}")
-        return errors
-    if data is None:
-        _add_error(errors, "/", "YAML document is empty or unreadable")
+    data, parse_error = _load_yaml(path)
+    if parse_error is not None:
+        _add_error(errors, "/", parse_error)
         return errors
     _validate_top_level(data, errors)
     _validate_meta_title(data, errors)
@@ -94,8 +96,8 @@ def main() -> int:
             print(f"FAIL: {path_str} -> {message}")
         return 1
     output_path = path.as_posix()
-    if output_path.endswith("manufacturing/mathlib_v0.yaml"):
-        output_path = "manufacturing/mathlib_v0.yaml"
+    if output_path.endswith(EXPECTED_SPEC_RELATIVE):
+        output_path = EXPECTED_SPEC_RELATIVE
     print(f"PASS: {output_path}")
     return 0
 
