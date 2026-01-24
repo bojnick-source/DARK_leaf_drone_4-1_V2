@@ -6245,7 +6245,7 @@ tripwires:
     - { id: "EQUATION_SAFETY", intent: "Expressions must conform to conventions.expression_language allowlist/denylist and must satisfy required domain guards for divide/sqrt/ln/log10/exp.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
     - { id: "NUMERIC_SANITY", intent: "Forbid NaN/Inf, forbid non-finite intermediates, and canonicalize negative zero.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
     - { id: "CALIBRATION_REQUIRED", intent: "Empirical templates must declare calibration with explicit requirements and storage_path; non-empirical models must not declare calibration.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
-    - { id: "DETERMINISM_CANON", intent: "Determinism rules must be explicit and hashing must exclude meta.build while covering all other sections.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }3
+    - { id: "DETERMINISM_CANON", intent: "Determinism rules must be explicit and hashing must exclude meta.build while covering all other sections.", severity_by_profile: { STRICT: "FAIL", DEVELOPMENT: "FAIL", OFF: "OFF" } }
 meta:
   title: "MANUFACTURING MATHLIB V0"
   schema: { id: "manufacturing.mathlib", version: "0" }

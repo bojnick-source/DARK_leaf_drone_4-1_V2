@@ -25,3 +25,5 @@ jobs:
         run: python -m mypy src
       - name: Test
         run: python -m pytest
+      - name: Validate mathlib
+        run: python3 tools/validate_mathlib_v0.py manufacturing/mathlib_v0.yaml
