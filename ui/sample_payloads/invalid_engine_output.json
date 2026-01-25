@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-01-01T21:59:00Z",
+  "determinism": {
+    "is_deterministic": false,
+    "markers": []
+  },
+  "engine": {
+    "name": "DARK leaf drone"
+  },
+  "summary": {
+    "status": "incomplete",
+    "score": 10.1
+  },
+  "artifacts": {
+    "report_path": "reports/run-2026-01-01-0001/report.json"
+  }
+}

@@ -1,0 +1,128 @@
+:root {
+  color-scheme: light;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  background: #f6f7fb;
+  color: #18212f;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+
+.subtitle {
+  margin-top: 8px;
+  color: #4b5565;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  gap: 6px;
+}
+
+input[type="text"],
+input[type="file"] {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d0d6e0;
+  background: #fff;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #1f6feb;
+  background: #1f6feb;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button.ghost {
+  background: transparent;
+  color: #1f6feb;
+}
+
+.status {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.status__card,
+.data__card,
+.errors,
+.error-panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.status__card ul {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.data {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.diagnostics {
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+.success {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.failure {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+pre {
+  background: #f4f6fa;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.error-panel {
+  border: 1px solid #b91c1c;
+  background: #fff5f5;
+  margin-top: 16px;
+}
+
+.app-shell {
+  display: block;
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "run-2026-01-01-0002",
+  "generated_at": "2026-01-01T22:05:00Z",
+  "determinism": {
+    "is_deterministic": true,
+    "markers": ["fixed_seed"]
+  },
+  "engine": {
+    "name": "DARK leaf drone",
+    "version": "4.1.0"
+  },
+  "summary": {
+    "status": "complete",
+    "score": 88.7,
+    "notes": "Stable run."
+  },
+  "metrics": {
+    "energy_consumption": 11.2,
+    "hover_efficiency": 0.93,
+    "flight_time": 40.0
+  },
+  "artifacts": {
+    "report_path": "reports/run-2026-01-01-0002/report.json",
+    "metrics_path": "reports/run-2026-01-01-0002/metrics.json"
+  }
+}

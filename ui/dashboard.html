@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Daily Dashboard</title>
+    <link rel="stylesheet" href="./dashboard.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+        background: #f6f7fb;
+        color: #18212f;
+      }
+      main {
+        padding: 24px;
+      }
+      .fallback {
+        background: #fff4e6;
+        border: 1px solid #f7b955;
+        padding: 12px;
+        border-radius: 8px;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/ajv@8/dist/ajv.min.js" defer></script>
+    <script src="./dashboard.js" defer></script>
+  </head>
+  <body>
+    <main class="page">
+      <h1>Daily Dashboard</h1>
+      <p class="subtitle">Contract-driven view of engine output snapshots.</p>
+      <noscript>
+        <div class="fallback">
+          JavaScript is required to load the schema and payload diagnostics. Start a local server
+          with <code>python -m http.server 8000</code> and open
+          <code>http://localhost:8000/ui/dashboard.html</code>.
+        </div>
+      </noscript>
+      <section id="diagnostics" class="status__card">
+        <h2>Diagnostics</h2>
+        <p>Resolved URLs, fetch status, and error details will appear here.</p>
+      </section>
+      <section id="status" class="status__card">Loading…</section>
+      <main id="app" class="app-shell">
+        <section class="status">
+          <div class="status__card">
+            <h2>Trust Signals</h2>
+            <ul>
+              <li><strong>Validation:</strong> <span id="validationStatus">Awaiting data</span></li>
+              <li><strong>Schema version:</strong> <span id="schemaVersion">—</span></li>
+              <li><strong>Run ID:</strong> <span id="runId">—</span></li>
+              <li><strong>Determinism:</strong> <span id="determinism">—</span></li>
+              <li><strong>Determinism markers:</strong> <span id="markers">—</span></li>
+            </ul>
+          </div>
+          <div class="status__card">
+            <h2>Missing-field diagnostics</h2>
+            <ul id="missingFields" class="diagnostics">
+              <li>No validation results yet.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="data">
+          <div class="data__card">
+            <h2>Summary</h2>
+            <div id="summary"></div>
+          </div>
+          <div class="data__card">
+            <h2>Metrics</h2>
+            <div id="metrics"></div>
+          </div>
+          <div class="data__card">
+            <h2>Artifacts</h2>
+            <div id="artifacts"></div>
+          </div>
+        </section>
+
+        <section class="errors">
+          <h2>Validation errors</h2>
+          <ul id="errorList" class="diagnostics">
+            <li>No errors to report.</li>
+          </ul>
+        </section>
+      </main>
+      <section class="status__card controls">
+        <h2>Controls</h2>
+        <label class="control">
+          Load output JSON
+          <input id="payloadFile" type="file" accept="application/json" />
+        </label>
+        <div class="button-row">
+          <button id="loadSample" type="button">Load sample payload</button>
+          <button id="loadInvalid" type="button" class="ghost">Load invalid payload</button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

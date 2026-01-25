@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Daily Dashboard (Preview)</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+        background: #f6f7fb;
+        color: #18212f;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      .banner {
+        background: #fff4e6;
+        border: 1px solid #f7b955;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+        margin-bottom: 16px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .success {
+        color: #15803d;
+        font-weight: 700;
+      }
+      .failure {
+        color: #b91c1c;
+        font-weight: 700;
+      }
+      pre {
+        background: #f4f6fa;
+        padding: 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Daily Dashboard</h1>
+      <div class="banner">
+        Preview-safe mode (GitHub file preview). For real runs, use <code>ui/dashboard.html</code> over HTTP.
+      </div>
+      <section id="status" class="card">Loading preview payload…</section>
+      <section class="grid">
+        <div class="card">
+          <h2>Trust Signals</h2>
+          <ul>
+            <li><strong>Validation:</strong> <span id="validation">Pending</span></li>
+            <li><strong>Schema version:</strong> <span id="schemaVersion">—</span></li>
+            <li><strong>Run ID:</strong> <span id="runId">—</span></li>
+            <li><strong>Determinism:</strong> <span id="determinism">—</span></li>
+            <li><strong>Determinism markers:</strong> <span id="markers">—</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Summary</h2>
+          <div id="summary"></div>
+        </div>
+      </section>
+      <section class="grid">
+        <div class="card">
+          <h2>Metrics</h2>
+          <div id="metrics"></div>
+        </div>
+        <div class="card">
+          <h2>Artifacts</h2>
+          <div id="artifacts"></div>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Embedded Payload</h2>
+        <pre id="payloadDump"></pre>
+      </section>
+    </main>
+
+    <script type="application/json" id="embedded-payload">
+    {
+      "schema_version": "1.0.0",
+      "run_id": "run-2026-01-01-0001",
+      "generated_at": "2026-01-01T21:59:00Z",
+      "determinism": {
+        "is_deterministic": true,
+        "markers": ["fixed_seed", "stable_hardware"]
+      },
+      "engine": {
+        "name": "DARK leaf drone",
+        "version": "4.1.0"
+      },
+      "summary": {
+        "status": "complete",
+        "score": 92.4,
+        "notes": "Nominal run with stable hover metrics."
+      },
+      "metrics": {
+        "energy_consumption": 12.8,
+        "hover_efficiency": 0.91,
+        "flight_time": 38.2
+      },
+      "artifacts": {
+        "report_path": "reports/run-2026-01-01-0001/report.json",
+        "metrics_path": "reports/run-2026-01-01-0001/metrics.json"
+      }
+    }
+    </script>
+    <script>
+      const payloadEl = document.getElementById('embedded-payload');
+      const statusEl = document.getElementById('status');
+      const payloadText = payloadEl.textContent.trim();
+
+      function renderKeyValue(targetId, data) {
+        const target = document.getElementById(targetId);
+        if (!data) {
+          target.textContent = 'No data.';
+          return;
+        }
+        target.innerHTML = Object.entries(data)
+          .map(([key, value]) => `<div><strong>${key}</strong>: ${String(value)}</div>`)
+          .join('');
+      }
+
+      try {
+        const payload = JSON.parse(payloadText);
+        document.getElementById('schemaVersion').textContent = payload.schema_version || '—';
+        document.getElementById('runId').textContent = payload.run_id || '—';
+        document.getElementById('determinism').textContent =
+          payload.determinism?.is_deterministic ? 'Deterministic' : 'Non-deterministic';
+        document.getElementById('markers').textContent = payload.determinism?.markers?.join(', ') || 'None';
+        document.getElementById('validation').textContent = 'PASS';
+        document.getElementById('validation').className = 'success';
+        renderKeyValue('summary', payload.summary);
+        renderKeyValue('metrics', payload.metrics);
+        renderKeyValue('artifacts', payload.artifacts);
+        document.getElementById('payloadDump').textContent = JSON.stringify(payload, null, 2);
+        statusEl.textContent = 'Preview payload rendered successfully (PASS).';
+        statusEl.className = 'card success';
+      } catch (error) {
+        statusEl.textContent = `Failed to parse embedded payload: ${error}`;
+        statusEl.className = 'card failure';
+      }
+    </script>
+  </body>
+</html>

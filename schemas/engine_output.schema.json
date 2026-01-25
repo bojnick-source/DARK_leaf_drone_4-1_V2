@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/engine_output.schema.json",
+  "title": "Drone Engine Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "determinism",
+    "engine",
+    "summary",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version for the engine output contract."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Unique run identifier for the engine execution."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC3339 timestamp for when the output was generated."
+    },
+    "determinism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["is_deterministic", "markers"],
+      "properties": {
+        "is_deterministic": {
+          "type": "boolean",
+          "description": "Whether the run is deterministic."
+        },
+        "markers": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Determinism markers observed during the run."
+        }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "score"],
+      "properties": {
+        "status": {"type": "string"},
+        "score": {"type": "number"},
+        "notes": {"type": "string"}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Engine metrics keyed by metric name.",
+      "properties": {
+        "energy_consumption": {"type": "number"},
+        "hover_efficiency": {"type": "number"},
+        "flight_time": {"type": "number"}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_path", "metrics_path"],
+      "properties": {
+        "report_path": {"type": "string"},
+        "metrics_path": {"type": "string"}
+      }
+    }
+  }
+}
