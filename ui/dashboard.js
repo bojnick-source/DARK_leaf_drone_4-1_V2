@@ -96,12 +96,12 @@ function attachHandlers() {
 
   if (btnValidate) {
     btnValidate.addEventListener("click", () => {
+      if (!currentPayload) {
+        setStatus("WARN", STATUS_COLORS.warn);
+        showNotice("Validation skipped", "Load a payload before running validation.");
+        return;
+      }
       if (window.validateDashboardPayload) {
-        if (!currentPayload) {
-          setStatus("WARN", STATUS_COLORS.warn);
-          showNotice("Validation skipped", "Load a payload before running validation.");
-          return;
-        }
         try {
           const result = window.validateDashboardPayload(currentPayload);
           showNotice("Validation complete", result || "Validation executed.");
@@ -140,7 +140,7 @@ function attachHandlers() {
 
 function handleGlobalError(message) {
   setStatus("FAIL", STATUS_COLORS.fail);
-  showNotice("Dashboard error", message);
+  showNotice("Dashboard error", String(message));
 }
 
 window.addEventListener("error", (event) => {
