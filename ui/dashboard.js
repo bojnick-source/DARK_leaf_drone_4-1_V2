@@ -1,9 +1,17 @@
-const notice = document.getElementById("notice");
-const statusPill = document.getElementById("statusPill");
-const clockPill = document.getElementById("clockPill");
-const modePill = document.getElementById("modePill");
-const schemaPill = document.getElementById("schemaPill");
-const payloadPill = document.getElementById("payloadPill");
+const $ = (id) => document.getElementById(id);
+const safeText = (el, value) => {
+  if (!el) {
+    return;
+  }
+  el.textContent = String(value);
+};
+const notice = $("notice");
+const statusPill = $("statusPill");
+const selfTestPill = $("selfTestPill");
+const clockPill = $("clockPill");
+const modePill = $("modePill");
+const schemaPill = $("schemaPill");
+const payloadPill = $("payloadPill");
 const SAMPLE_FETCH_TIMEOUT_MS = 5000;
 const STATUS_COLORS = {
   ready: "#1f2937",
@@ -16,11 +24,10 @@ const STATUS_COLORS = {
 let currentPayload = null;
 
 function setStatus(label, tone) {
-  if (!statusPill) {
-    return;
+  safeText(statusPill, `STATUS: ${label}`);
+  if (statusPill) {
+    statusPill.style.background = tone;
   }
-  statusPill.textContent = `STATUS: ${label}`;
-  statusPill.style.background = tone;
 }
 
 function showNotice(title, message) {
@@ -29,27 +36,24 @@ function showNotice(title, message) {
   }
   const titleEl = document.createElement("div");
   titleEl.className = "title";
-  titleEl.textContent = title;
+  titleEl.textContent = String(title);
   const hintEl = document.createElement("div");
   hintEl.className = "hint";
-  hintEl.textContent = message;
+  hintEl.textContent = String(message);
   notice.replaceChildren(titleEl, hintEl);
 }
 
 function updateClock() {
-  if (!clockPill) {
-    return;
-  }
   const now = new Date();
   const time = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  clockPill.textContent = `TIME: ${time}`;
+  safeText(clockPill, `TIME: ${time}`);
 }
 
 function attachHandlers() {
-  const btnLoadSample = document.getElementById("btnLoadSample");
-  const btnValidate = document.getElementById("btnValidate");
-  const btnHelp = document.getElementById("btnHelp");
-  const btnHome = document.getElementById("btnHome");
+  const btnLoadSample = $("btnLoadSample");
+  const btnValidate = $("btnValidate");
+  const btnHelp = $("btnHelp");
+  const btnHome = $("btnHome");
 
   if (btnLoadSample) {
     btnLoadSample.addEventListener("click", async () => {
@@ -76,13 +80,9 @@ function attachHandlers() {
         }
         const payload = await response.json();
         currentPayload = payload;
-        if (payloadPill) {
-          payloadPill.textContent = "PAYLOAD: SAMPLE";
-        }
-        if (schemaPill) {
-          const schemaLabel = payload.schema ? String(payload.schema) : "(unknown)";
-          schemaPill.textContent = `SCHEMA: ${schemaLabel}`;
-        }
+        safeText(payloadPill, "PAYLOAD: SAMPLE");
+        const schemaLabel = payload.schema ? String(payload.schema) : "(unknown)";
+        safeText(schemaPill, `SCHEMA: ${schemaLabel}`);
         showNotice("Sample loaded", "Sample payload retrieved successfully.");
         setStatus("OK", STATUS_COLORS.ok);
       } catch (error) {
@@ -97,6 +97,11 @@ function attachHandlers() {
   if (btnValidate) {
     btnValidate.addEventListener("click", () => {
       if (window.validateDashboardPayload) {
+        if (!currentPayload) {
+          setStatus("WARN", STATUS_COLORS.warn);
+          showNotice("Validation skipped", "Load a payload before running validation.");
+          return;
+        }
         try {
           const result = window.validateDashboardPayload(currentPayload);
           showNotice("Validation complete", result || "Validation executed.");
@@ -135,7 +140,7 @@ function attachHandlers() {
 
 function handleGlobalError(message) {
   setStatus("FAIL", STATUS_COLORS.fail);
-  showNotice("Dashboard error", String(message));
+  showNotice("Dashboard error", message);
 }
 
 window.addEventListener("error", (event) => {
@@ -152,15 +157,29 @@ window.addEventListener("unhandledrejection", (event) => {
 
 let clockIntervalId;
 
-window.addEventListener("DOMContentLoaded", () => {
-  if (modePill) {
-    modePill.textContent = "MODE: SHELL";
+function renderSelfTest() {
+  const hasMenu = Boolean($("menuBar"));
+  const hasTask = Boolean($("taskBar"));
+  const now = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const message = `UI loaded · ${now} · Menu: ${hasMenu ? "YES" : "NO"} · Task: ${hasTask ? "YES" : "NO"}`;
+  safeText(selfTestPill, `SELF-TEST: ${message}`);
+}
+
+function init() {
+  try {
+    safeText(modePill, "MODE: SHELL");
+    updateClock();
+    clockIntervalId = setInterval(updateClock, 1000);
+    attachHandlers();
+    setStatus("READY", STATUS_COLORS.ready);
+    renderSelfTest();
+  } catch (error) {
+    console.error("Dashboard init failed", error);
+    handleGlobalError(error.message || error);
   }
-  updateClock();
-  clockIntervalId = setInterval(updateClock, 1000);
-  attachHandlers();
-  setStatus("READY", STATUS_COLORS.ready);
-});
+}
+
+window.addEventListener("DOMContentLoaded", init);
 
 window.addEventListener("beforeunload", () => {
   if (clockIntervalId) {
