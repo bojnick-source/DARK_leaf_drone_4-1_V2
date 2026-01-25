@@ -1,6 +1,7 @@
 :root {
   color-scheme: dark;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --bar-offset: 90px;
 }
 
 body {
@@ -61,7 +62,7 @@ body {
 }
 
 #appShell {
-  padding: 90px 20px 90px;
+  padding: var(--bar-offset) 20px var(--bar-offset);
 }
 
 #notice {

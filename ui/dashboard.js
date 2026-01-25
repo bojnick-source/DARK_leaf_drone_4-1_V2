@@ -4,6 +4,16 @@ const clockPill = document.getElementById("clockPill");
 const modePill = document.getElementById("modePill");
 const schemaPill = document.getElementById("schemaPill");
 const payloadPill = document.getElementById("payloadPill");
+const SAMPLE_FETCH_TIMEOUT_MS = 5000;
+const STATUS_COLORS = {
+  ready: "#1f2937",
+  info: "#1e3a8a",
+  warn: "#7c2d12",
+  ok: "#14532d",
+  fail: "#7f1d1d",
+  loading: "#92400e"
+};
+let currentPayload = null;
 
 function setStatus(label, tone) {
   if (!statusPill) {
@@ -31,7 +41,7 @@ function updateClock() {
     return;
   }
   const now = new Date();
-  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const time = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   clockPill.textContent = `TIME: ${time}`;
 }
 
@@ -39,28 +49,47 @@ function attachHandlers() {
   const btnLoadSample = document.getElementById("btnLoadSample");
   const btnValidate = document.getElementById("btnValidate");
   const btnHelp = document.getElementById("btnHelp");
+  const btnHome = document.getElementById("btnHome");
 
   if (btnLoadSample) {
     btnLoadSample.addEventListener("click", async () => {
-      setStatus("LOADING", "#92400e");
+      setStatus("LOADING", STATUS_COLORS.loading);
       showNotice("Loading sample...", "Attempting to fetch sample payload.");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), SAMPLE_FETCH_TIMEOUT_MS);
       try {
-        const response = await fetch("./sample_payload.json", { cache: "no-store" });
+        const response = await fetch("./sample_payload.json", {
+          cache: "no-store",
+          signal: controller.signal
+        });
         if (!response.ok) {
           throw new Error(`Sample payload request failed (${response.status})`);
         }
+        const contentType = response.headers.get("content-type") || "";
+        const normalizedType = contentType.toLowerCase().split(";")[0].trim();
+        const isJson =
+          normalizedType === "application/json" ||
+          normalizedType === "text/json" ||
+          normalizedType.endsWith("+json");
+        if (!isJson) {
+          throw new Error("Sample payload response was not JSON");
+        }
         const payload = await response.json();
+        currentPayload = payload;
         if (payloadPill) {
           payloadPill.textContent = "PAYLOAD: SAMPLE";
         }
         if (schemaPill) {
-          schemaPill.textContent = payload.schema ? `SCHEMA: ${payload.schema}` : "SCHEMA: (unknown)";
+          const schemaLabel = payload.schema ? String(payload.schema) : "(unknown)";
+          schemaPill.textContent = `SCHEMA: ${schemaLabel}`;
         }
         showNotice("Sample loaded", "Sample payload retrieved successfully.");
-        setStatus("OK", "#14532d");
+        setStatus("OK", STATUS_COLORS.ok);
       } catch (error) {
-        setStatus("FAIL", "#7f1d1d");
+        setStatus("FAIL", STATUS_COLORS.fail);
         showNotice("Sample load failed", `${error.message}`);
+      } finally {
+        clearTimeout(timeoutId);
       }
     });
   }
@@ -69,15 +98,15 @@ function attachHandlers() {
     btnValidate.addEventListener("click", () => {
       if (window.validateDashboardPayload) {
         try {
-          const result = window.validateDashboardPayload();
+          const result = window.validateDashboardPayload(currentPayload);
           showNotice("Validation complete", result || "Validation executed.");
-          setStatus("OK", "#14532d");
+          setStatus("OK", STATUS_COLORS.ok);
         } catch (error) {
-          setStatus("FAIL", "#7f1d1d");
+          setStatus("FAIL", STATUS_COLORS.fail);
           showNotice("Validation error", `${error.message}`);
         }
       } else {
-        setStatus("WARN", "#7c2d12");
+        setStatus("WARN", STATUS_COLORS.warn);
         showNotice("Validator not wired yet", "Hook up validateDashboardPayload() to enable validation.");
       }
     });
@@ -85,17 +114,27 @@ function attachHandlers() {
 
   if (btnHelp) {
     btnHelp.addEventListener("click", () => {
-      setStatus("INFO", "#1e3a8a");
+      setStatus("INFO", STATUS_COLORS.info);
       showNotice(
         "Local run tips",
-        "Serve the ui folder with a simple HTTP server (e.g. 'python -m http.server') and open /ui/dashboard.html."
+        "Serve the ui folder with a simple HTTP server (e.g. 'python -m http.server') and open /dashboard.html."
+      );
+    });
+  }
+
+  if (btnHome) {
+    btnHome.addEventListener("click", () => {
+      setStatus("READY", STATUS_COLORS.ready);
+      showNotice(
+        "Dashboard Shell Loaded",
+        "If you see this but no data, open Console logs or run via local server."
       );
     });
   }
 }
 
 function handleGlobalError(message) {
-  setStatus("FAIL", "#7f1d1d");
+  setStatus("FAIL", STATUS_COLORS.fail);
   showNotice("Dashboard error", String(message));
 }
 
@@ -104,15 +143,27 @@ window.addEventListener("error", (event) => {
 });
 
 window.addEventListener("unhandledrejection", (event) => {
-  handleGlobalError(event.reason ? event.reason.message || event.reason : "Unhandled promise rejection");
+  let message = "Unhandled promise rejection";
+  if (event.reason) {
+    message = event.reason.message || String(event.reason);
+  }
+  handleGlobalError(message);
 });
+
+let clockIntervalId;
 
 window.addEventListener("DOMContentLoaded", () => {
   if (modePill) {
     modePill.textContent = "MODE: SHELL";
   }
   updateClock();
-  setInterval(updateClock, 1000);
+  clockIntervalId = setInterval(updateClock, 1000);
   attachHandlers();
-  setStatus("READY", "#1f2937");
+  setStatus("READY", STATUS_COLORS.ready);
+});
+
+window.addEventListener("beforeunload", () => {
+  if (clockIntervalId) {
+    clearInterval(clockIntervalId);
+  }
 });
