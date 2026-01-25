@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DARK_leaf_drone — Daily Dashboard</title>
+  <link rel="stylesheet" href="./dashboard.css">
+</head>
+<body>
+  <header id="menuBar">
+    <div class="brand">DARK_leaf_drone — Daily Dashboard</div>
+    <nav class="menu">
+      <button id="btnHome" type="button">Home</button>
+      <button id="btnLoadSample" type="button">Load Sample</button>
+      <button id="btnValidate" type="button">Validate</button>
+      <button id="btnHelp" type="button">Help</button>
+    </nav>
+  </header>
+
+  <main id="appShell">
+    <section id="notice">
+      <div class="title">Dashboard Shell Loaded</div>
+      <div class="hint">If you see this but no data, open Console logs or run via local server.</div>
+    </section>
+    <section id="app"></section>
+  </main>
+
+  <footer id="taskBar">
+    <div class="left">
+      <span class="pill" id="modePill">MODE: SHELL</span>
+      <span class="pill" id="schemaPill">SCHEMA: (pending)</span>
+      <span class="pill" id="payloadPill">PAYLOAD: (pending)</span>
+    </div>
+    <div class="right">
+      <span class="pill" id="statusPill">STATUS: READY</span>
+      <span class="pill" id="clockPill">TIME: --:--</span>
+    </div>
+  </footer>
+
+  <script src="./dashboard.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0f1115;
+  color: #f5f7ff;
+}
+
+#menuBar,
+#taskBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  background: #101820;
+  color: #f5f7ff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+#menuBar {
+  top: 0;
+}
+
+#taskBar {
+  bottom: 0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+#menuBar .brand {
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.menu {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.menu button {
+  background: #1d4ed8;
+  border: none;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menu button:hover {
+  background: #2563eb;
+}
+
+#appShell {
+  padding: 90px 20px 90px;
+}
+
+#notice {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  max-width: 720px;
+}
+
+#notice .title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+#notice .hint {
+  font-size: 14px;
+  color: #cbd5f5;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #1f2937;
+  border: 1px solid #334155;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+#taskBar .left,
+#taskBar .right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
