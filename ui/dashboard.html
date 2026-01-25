@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="./dashboard.css">
 </head>
 <body>
-  <header id="menuBar">
+  <header id="menuBar" class="glass glass--thick">
     <div class="brand">DARK_leaf_drone — Daily Dashboard</div>
     <nav class="menu">
       <button id="btnHome" type="button">Home</button>
@@ -23,10 +23,69 @@
       <div class="title">Dashboard Shell Loaded</div>
       <div class="hint">If you see this but no data, open Console logs or run via local server.</div>
     </section>
-    <section id="app"></section>
+    <section id="app">
+      <div id="dashboardGrid">
+        <aside class="panel glass glass--thick" id="panelTree">
+          <div class="panel-header">
+            <span>Feature Tree</span>
+            <span class="panel-tag">CAD</span>
+          </div>
+          <ul class="tree">
+            <li class="tree-item active">
+              <span class="caret">▾</span>
+              <span>Airframe</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Wing Assembly</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Rotor Array</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Payload Bay</span>
+            </li>
+          </ul>
+          <div class="panel-section">
+            <div class="section-title">Parameters</div>
+            <div class="param-row"><span>Span</span><span>1.20 m</span></div>
+            <div class="param-row"><span>Mass</span><span>2.40 kg</span></div>
+            <div class="param-row"><span>Battery</span><span>4.2 Ah</span></div>
+          </div>
+        </aside>
+
+        <section class="panel glass glass--thin" id="panelViewport">
+          <div class="panel-header">
+            <span>Model Viewport</span>
+            <span class="panel-tag accent">3D</span>
+          </div>
+          <div class="viewport-canvas">
+            <div class="viewport-label">No live model loaded</div>
+          </div>
+        </section>
+
+        <aside class="panel glass glass--thick" id="panelInspector">
+          <div class="panel-header">
+            <span>Simulation Inspector</span>
+            <span class="panel-tag accent">RUN</span>
+          </div>
+          <div class="stat-row"><span>Thrust</span><span>—</span></div>
+          <div class="stat-row"><span>Lift</span><span>—</span></div>
+          <div class="stat-row"><span>Efficiency</span><span>—</span></div>
+          <div class="panel-section">
+            <div class="section-title">Telemetry</div>
+            <svg class="sparkline" viewBox="0 0 120 36" aria-hidden="true">
+              <path d="M2 28 L20 18 L38 24 L56 12 L74 16 L92 8 L118 14" />
+            </svg>
+          </div>
+        </aside>
+      </div>
+    </section>
   </main>
 
-  <footer id="taskBar">
+  <footer id="taskBar" class="glass glass--thick">
     <div class="left">
       <span class="pill" id="modePill">MODE: SHELL</span>
       <span class="pill" id="schemaPill">SCHEMA: (pending)</span>

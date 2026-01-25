@@ -23,10 +23,15 @@ const STATUS_COLORS = {
 };
 let currentPayload = null;
 
-function setStatus(label, tone) {
+function setStatus(label, tone, state = null) {
   safeText(statusPill, `STATUS: ${label}`);
   if (statusPill) {
     statusPill.style.background = tone;
+    if (state) {
+      statusPill.dataset.state = state;
+    } else {
+      statusPill.removeAttribute("data-state");
+    }
   }
 }
 
@@ -57,7 +62,7 @@ function attachHandlers() {
 
   if (btnLoadSample) {
     btnLoadSample.addEventListener("click", async () => {
-      setStatus("LOADING", STATUS_COLORS.loading);
+      setStatus("LOADING", STATUS_COLORS.loading, "warn");
       showNotice("Loading sample...", "Attempting to fetch sample payload.");
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), SAMPLE_FETCH_TIMEOUT_MS);
@@ -84,9 +89,9 @@ function attachHandlers() {
         const schemaLabel = payload.schema ? String(payload.schema) : "(unknown)";
         safeText(schemaPill, `SCHEMA: ${schemaLabel}`);
         showNotice("Sample loaded", "Sample payload retrieved successfully.");
-        setStatus("OK", STATUS_COLORS.ok);
+        setStatus("OK", STATUS_COLORS.ok, "ok");
       } catch (error) {
-        setStatus("FAIL", STATUS_COLORS.fail);
+        setStatus("FAIL", STATUS_COLORS.fail, "fail");
         showNotice("Sample load failed", `${error.message}`);
       } finally {
         clearTimeout(timeoutId);
@@ -97,7 +102,7 @@ function attachHandlers() {
   if (btnValidate) {
     btnValidate.addEventListener("click", () => {
       if (!currentPayload) {
-        setStatus("WARN", STATUS_COLORS.warn);
+        setStatus("WARN", STATUS_COLORS.warn, "warn");
         showNotice("Validation skipped", "Load a payload before running validation.");
         return;
       }
@@ -105,13 +110,13 @@ function attachHandlers() {
         try {
           const result = window.validateDashboardPayload(currentPayload);
           showNotice("Validation complete", result || "Validation executed.");
-          setStatus("OK", STATUS_COLORS.ok);
+          setStatus("OK", STATUS_COLORS.ok, "ok");
         } catch (error) {
-          setStatus("FAIL", STATUS_COLORS.fail);
+          setStatus("FAIL", STATUS_COLORS.fail, "fail");
           showNotice("Validation error", `${error.message}`);
         }
       } else {
-        setStatus("WARN", STATUS_COLORS.warn);
+        setStatus("WARN", STATUS_COLORS.warn, "warn");
         showNotice("Validator not wired yet", "Hook up validateDashboardPayload() to enable validation.");
       }
     });
@@ -119,7 +124,7 @@ function attachHandlers() {
 
   if (btnHelp) {
     btnHelp.addEventListener("click", () => {
-      setStatus("INFO", STATUS_COLORS.info);
+      setStatus("INFO", STATUS_COLORS.info, "info");
       showNotice(
         "Local run tips",
         "Serve the ui folder with a simple HTTP server (e.g. 'python -m http.server') and open /dashboard.html."
@@ -129,7 +134,7 @@ function attachHandlers() {
 
   if (btnHome) {
     btnHome.addEventListener("click", () => {
-      setStatus("READY", STATUS_COLORS.ready);
+      setStatus("READY", STATUS_COLORS.ready, "ok");
       showNotice(
         "Dashboard Shell Loaded",
         "If you see this but no data, open Console logs or run via local server."
@@ -139,7 +144,7 @@ function attachHandlers() {
 }
 
 function handleGlobalError(message) {
-  setStatus("FAIL", STATUS_COLORS.fail);
+  setStatus("FAIL", STATUS_COLORS.fail, "fail");
   showNotice("Dashboard error", String(message));
 }
 
@@ -171,7 +176,7 @@ function init() {
     updateClock();
     clockIntervalId = setInterval(updateClock, 1000);
     attachHandlers();
-    setStatus("READY", STATUS_COLORS.ready);
+    setStatus("READY", STATUS_COLORS.ready, "ok");
     renderSelfTest();
   } catch (error) {
     console.error("Dashboard init failed", error);
