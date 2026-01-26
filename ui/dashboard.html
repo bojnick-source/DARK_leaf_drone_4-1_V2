@@ -11,7 +11,10 @@
   <header id="menuBar" class="glass glass--thick">
     <div class="brand">DARK_leaf_drone — Daily Dashboard</div>
     <nav class="menu">
-      <button id="btnHome" type="button">Home</button>
+      <button id="tabCad" type="button" data-tab="cad" class="active">CAD</button>
+      <button id="tabSim" type="button" data-tab="sim">SIM</button>
+      <button id="tabInsights" type="button" data-tab="insights">INSIGHTS</button>
+      <button id="btnExport" type="button">Export Image</button>
       <button id="btnLoadSample" type="button">Load Sample</button>
       <button id="btnValidate" type="button">Validate</button>
       <button id="btnHelp" type="button">Help</button>
@@ -24,10 +27,10 @@
       <div class="hint">If you see this but no data, open Console logs or run via local server.</div>
     </section>
     <section id="app">
-      <div id="dashboardGrid">
-        <aside class="panel glass glass--thick" id="panelTree">
+      <div id="dashboardGrid" data-tab-panel="cad" class="tab-panel active">
+        <aside class="panel glass glass--thick" id="panelCadLayers">
           <div class="panel-header">
-            <span>Feature Tree</span>
+            <span>Layers</span>
             <span class="panel-tag">CAD</span>
           </div>
           <ul class="tree">
@@ -48,6 +51,23 @@
               <span>Payload Bay</span>
             </li>
           </ul>
+        </aside>
+
+        <section class="panel glass glass--thin" id="panelCadViewport">
+          <div class="panel-header">
+            <span>Model Viewport</span>
+            <span class="panel-tag accent">3D</span>
+          </div>
+          <div class="viewport-canvas">
+            <div class="viewport-label">CAD viewport placeholder</div>
+          </div>
+        </section>
+
+        <aside class="panel glass glass--thick" id="panelCadInspector">
+          <div class="panel-header">
+            <span>Inspector</span>
+            <span class="panel-tag accent">CAD</span>
+          </div>
           <div class="panel-section">
             <div class="section-title">Parameters</div>
             <div class="param-row"><span>Span</span><span>1.20 m</span></div>
@@ -55,30 +75,102 @@
             <div class="param-row"><span>Battery</span><span>4.2 Ah</span></div>
           </div>
         </aside>
+      </div>
 
-        <section class="panel glass glass--thin" id="panelViewport">
+      <div id="simGrid" data-tab-panel="sim" class="tab-panel">
+        <aside class="panel glass glass--thick">
           <div class="panel-header">
-            <span>Model Viewport</span>
-            <span class="panel-tag accent">3D</span>
+            <span>Layers</span>
+            <span class="panel-tag">SIM</span>
+          </div>
+          <ul class="tree">
+            <li class="tree-item active">
+              <span class="caret">▾</span>
+              <span>Load Cases</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Wind Tunnel</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Thermal Sweep</span>
+            </li>
+          </ul>
+        </aside>
+
+        <section class="panel glass glass--thin">
+          <div class="panel-header">
+            <span>Simulation Viewport</span>
+            <span class="panel-tag accent">SIM</span>
           </div>
           <div class="viewport-canvas">
-            <div class="viewport-label">No live model loaded</div>
+            <div class="viewport-label">Simulation viewport placeholder</div>
           </div>
         </section>
 
-        <aside class="panel glass glass--thick" id="panelInspector">
+        <aside class="panel glass glass--thick">
           <div class="panel-header">
-            <span>Simulation Inspector</span>
+            <span>Simulation Viewer</span>
             <span class="panel-tag accent">RUN</span>
           </div>
-          <div class="stat-row"><span>Thrust</span><span>—</span></div>
-          <div class="stat-row"><span>Lift</span><span>—</span></div>
-          <div class="stat-row"><span>Efficiency</span><span>—</span></div>
-          <div class="panel-section">
-            <div class="section-title">Telemetry</div>
-            <svg class="sparkline" viewBox="0 0 120 36" aria-hidden="true">
-              <path d="M2 28 L20 18 L38 24 L56 12 L74 16 L92 8 L118 14" />
-            </svg>
+          <div class="stat-row"><span>Solver</span><span>Standby</span></div>
+          <div class="stat-row"><span>Frames</span><span>0</span></div>
+          <div class="stat-row"><span>Energy</span><span>—</span></div>
+        </aside>
+      </div>
+
+      <div id="insightsGrid" data-tab-panel="insights" class="tab-panel">
+        <aside class="panel glass glass--thick">
+          <div class="panel-header">
+            <span>Layers / Filters</span>
+            <span class="panel-tag">INS</span>
+          </div>
+          <div class="param-row"><span>Mission Set</span><span>Alpha</span></div>
+          <div class="param-row"><span>Altitude</span><span>480 m</span></div>
+          <div class="param-row"><span>Payload</span><span>Nominal</span></div>
+        </aside>
+
+        <section class="panel glass glass--thin">
+          <div class="panel-header">
+            <span>Stability Radar</span>
+            <span class="panel-tag accent">RADAR</span>
+          </div>
+          <svg class="radar" viewBox="0 0 140 140" aria-hidden="true">
+            <circle cx="70" cy="70" r="50" />
+            <circle cx="70" cy="70" r="30" />
+            <circle cx="70" cy="70" r="10" />
+            <polygon points="70,18 108,62 92,110 48,108 32,56" />
+          </svg>
+          <div class="panel-header">
+            <span>Trajectory Confidence</span>
+            <span class="panel-tag accent">CONF</span>
+          </div>
+          <svg class="sparkline" viewBox="0 0 120 36" aria-hidden="true">
+            <path d="M2 30 L20 18 L38 22 L56 14 L74 16 L92 10 L118 12" />
+          </svg>
+        </section>
+
+        <aside class="panel glass glass--thick">
+          <div class="panel-header">
+            <span>Thermal Map</span>
+            <span class="panel-tag accent">THERM</span>
+          </div>
+          <div class="viewport-canvas heat">
+            <div class="viewport-label">Thermal grid placeholder</div>
+          </div>
+          <div class="panel-header">
+            <span>Global Activity</span>
+            <span class="panel-tag accent">LIVE</span>
+          </div>
+          <div class="stat-row"><span>Nodes</span><span>14</span></div>
+          <div class="stat-row"><span>Alerts</span><span>0</span></div>
+          <div class="panel-header">
+            <span>Health</span>
+            <span class="panel-tag accent">OK</span>
+          </div>
+          <div class="health-meter">
+            <div class="health-fill"></div>
           </div>
         </aside>
       </div>
@@ -87,7 +179,7 @@
 
   <footer id="taskBar" class="glass glass--thick">
     <div class="left">
-      <span class="pill" id="modePill">MODE: SHELL</span>
+      <span class="pill" id="modePill">MODE: CAD</span>
       <span class="pill" id="schemaPill">SCHEMA: (pending)</span>
       <span class="pill" id="payloadPill">PAYLOAD: (pending)</span>
     </div>

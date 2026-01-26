@@ -12,3 +12,7 @@ python -m http.server
 ```
 
 Then open `http://localhost:8000/dashboard.html` in your browser.
+
+## Preview-safe shell
+
+Open `ui/dashboard_preview.html` for a single-file fallback preview that renders menu/task bars and placeholder panels without external assets.

@@ -5,13 +5,17 @@ const safeText = (el, value) => {
   }
   el.textContent = String(value);
 };
-const notice = $("notice");
-const statusPill = $("statusPill");
-const selfTestPill = $("selfTestPill");
-const clockPill = $("clockPill");
-const modePill = $("modePill");
-const schemaPill = $("schemaPill");
-const payloadPill = $("payloadPill");
+function getElementById(id) {
+  return document.getElementById(id);
+}
+
+let notice;
+let statusPill;
+let selfTestPill;
+let clockPill;
+let modePill;
+let schemaPill;
+let payloadPill;
 const SAMPLE_FETCH_TIMEOUT_MS = 5000;
 const STATUS_COLORS = {
   ready: "#1f2937",
@@ -22,6 +26,13 @@ const STATUS_COLORS = {
   loading: "#92400e"
 };
 let currentPayload = null;
+const TAB_STORAGE_KEY = "daily-dashboard-tab";
+const TAB_OPTIONS = ["cad", "sim", "insights"];
+const TAB_MODE_LABELS = {
+  cad: "CAD",
+  sim: "SIM",
+  insights: "INSIGHTS"
+};
 
 function setStatus(label, tone, state = null) {
   safeText(statusPill, `STATUS: ${label}`);
@@ -55,10 +66,11 @@ function updateClock() {
 }
 
 function attachHandlers() {
-  const btnLoadSample = $("btnLoadSample");
-  const btnValidate = $("btnValidate");
-  const btnHelp = $("btnHelp");
-  const btnHome = $("btnHome");
+  const btnLoadSample = getElementById("btnLoadSample");
+  const btnValidate = getElementById("btnValidate");
+  const btnHelp = getElementById("btnHelp");
+  const btnExport = getElementById("btnExport");
+  const tabButtons = document.querySelectorAll("[data-tab]");
 
   if (btnLoadSample) {
     btnLoadSample.addEventListener("click", async () => {
@@ -132,15 +144,21 @@ function attachHandlers() {
     });
   }
 
-  if (btnHome) {
-    btnHome.addEventListener("click", () => {
-      setStatus("READY", STATUS_COLORS.ready, "ok");
-      showNotice(
-        "Dashboard Shell Loaded",
-        "If you see this but no data, open Console logs or run via local server."
-      );
+  if (btnExport) {
+    btnExport.addEventListener("click", () => {
+      exportLayoutJson();
     });
   }
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.tab;
+      if (!target) {
+        return;
+      }
+      setActiveTab(target);
+    });
+  });
 }
 
 function handleGlobalError(message) {
@@ -163,16 +181,82 @@ window.addEventListener("unhandledrejection", (event) => {
 let clockIntervalId;
 
 function renderSelfTest() {
-  const hasMenu = Boolean($("menuBar"));
-  const hasTask = Boolean($("taskBar"));
+  const hasMenu = Boolean(getElementById("menuBar"));
+  const hasTask = Boolean(getElementById("taskBar"));
   const now = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const message = `UI loaded · ${now} · Menu: ${hasMenu ? "YES" : "NO"} · Task: ${hasTask ? "YES" : "NO"}`;
   safeText(selfTestPill, `SELF-TEST: ${message}`);
 }
 
+function setActiveTab(tabName, updateUrl = true) {
+  try {
+    if (!TAB_OPTIONS.includes(tabName)) {
+      throw new Error(`Unknown tab: ${tabName}`);
+    }
+    const panels = document.querySelectorAll("[data-tab-panel]");
+    panels.forEach((panel) => {
+      const isActive = panel.dataset.tabPanel === tabName;
+      panel.classList.toggle("active", isActive);
+    });
+    document.querySelectorAll("[data-tab]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.tab === tabName);
+    });
+    const label = TAB_MODE_LABELS[tabName] || "CAD";
+    safeText(modePill, `MODE: ${label}`);
+    if (updateUrl) {
+      window.location.hash = `#${tabName}`;
+    }
+    localStorage.setItem(TAB_STORAGE_KEY, tabName);
+  } catch (error) {
+    console.error("Tab update failed", error);
+    showNotice("Tab update failed", String(error.message || error));
+    setStatus("FAIL", STATUS_COLORS.fail, "fail");
+  }
+}
+
+function getInitialTab() {
+  const hash = window.location.hash.replace("#", "");
+  if (TAB_OPTIONS.includes(hash)) {
+    return hash;
+  }
+  const stored = localStorage.getItem(TAB_STORAGE_KEY);
+  if (TAB_OPTIONS.includes(stored)) {
+    return stored;
+  }
+  return "cad";
+}
+
+function exportLayoutJson() {
+  const currentTab = document.querySelector("[data-tab].active")?.dataset.tab || getInitialTab();
+  const payload = {
+    tab: currentTab,
+    timestamp: new Date().toISOString(),
+    status: statusPill ? statusPill.textContent : "STATUS: READY"
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `dashboard-${currentTab}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  setStatus("EXPORTED", STATUS_COLORS.ok, "ok");
+  showNotice("Export complete", "Layout JSON exported.");
+}
+
 function init() {
   try {
-    safeText(modePill, "MODE: SHELL");
+    notice = getElementById("notice");
+    statusPill = getElementById("statusPill");
+    selfTestPill = getElementById("selfTestPill");
+    clockPill = getElementById("clockPill");
+    modePill = getElementById("modePill");
+    schemaPill = getElementById("schemaPill");
+    payloadPill = getElementById("payloadPill");
+    const initialTab = getInitialTab();
+    setActiveTab(initialTab, false);
     updateClock();
     clockIntervalId = setInterval(updateClock, 1000);
     attachHandlers();
