@@ -453,7 +453,7 @@
 
   function clearFallbackNodes() {
     const fallbacks = chromeTabs.querySelectorAll('[data-fallback="true"]');
-    for (const n of Array.from(fallbacks)) n.remove();
+    for (const n of fallbacks) n.remove();
   }
 
   function getActiveWorkspaceTitle() {
@@ -540,7 +540,7 @@
     clearFallbackNodes();
 
     const existing = chromeTabs.querySelectorAll(".wsTab");
-    for (const e of Array.from(existing)) e.remove();
+    for (const e of existing) e.remove();
 
     const base = 1000;
 
@@ -1014,10 +1014,10 @@
       const svg = root.querySelector("svg.tabSvg");
       if (!(svg instanceof SVGElement)) throw invariant("tplWorkspaceTab missing svg.tabSvg");
       const use = root.querySelector('use[href="#chromeTabPath"]');
-      if (!(use instanceof SVGElement)) throw invariant("tplWorkspaceTab missing use#chromeTabPath");
+      if (!(use instanceof SVGElement)) throw invariant('tplWorkspaceTab missing use[href="#chromeTabPath"]');
       const title = root.querySelector(".wsTitle");
       if (!(title instanceof HTMLElement)) throw invariant("tplWorkspaceTab missing .wsTitle");
-      const close = t.querySelector(".wsClose");
+      const close = root.querySelector(".wsClose");
       if (!(close instanceof HTMLButtonElement)) throw invariant("tplWorkspaceTab missing .wsClose");
     });
 
