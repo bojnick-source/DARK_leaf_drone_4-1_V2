@@ -148,6 +148,7 @@
   const diagnosticsDump = mustId("diagnosticsDump");
   const insights3d = /** @type {HTMLElement} */ (mustId("insights3d"));
   const appShell = mustId("appShell");
+  const appGrid = /** @type {HTMLElement} */ (mustId("app"));
 
   // Taskbar pills
   const modePill = mustId("modePill");
@@ -164,8 +165,6 @@
   const cadToolbar = mustId("cadToolbar");
   const subTabStrip = mustId("subTabStrip");
   const taskBar = mustId("taskBar");
-  const plotIds = ["plotScatter3d", "plotSurface3d", "plotTrajectory3d"];
-  const plots = Object.fromEntries(plotIds.map((id) => [id, mustId(id)]));
 
   /* =========================
      2) Fail-loud + announcements
@@ -713,12 +712,14 @@
   let engineDataLoaded = false;
   let insightsResizeWired = false;
 
+  const plotIds = ["plotScatter3d", "plotSurface3d", "plotTrajectory3d"];
+  const plots = Object.fromEntries(plotIds.map((id) => [id, mustId(id)]));
+
   function updateInsightsVisibility() {
     const show = activeMode === MODE_INSIGHTS;
     insights3d.hidden = !show;
     toggleClass(appShell, "mode-insights", show);
-    const appGrid = document.getElementById("app");
-    if (appGrid instanceof HTMLElement) appGrid.hidden = show;
+    appGrid.hidden = show;
     if (show) renderInsights3d();
   }
 
@@ -894,7 +895,7 @@
       x: scatter.x || [],
       y: scatter.y || [],
       z: scatter.z || [],
-      marker: { size: 3, color: scatter.z || [], colorscale: "Viridis" },
+      marker: { size: 3, color: (scatter.z && scatter.z.length ? scatter.z : scatter.x || []), colorscale: "Viridis" },
     }] : emptyData().scatter;
 
     const surfaceTrace = surface ? [{
