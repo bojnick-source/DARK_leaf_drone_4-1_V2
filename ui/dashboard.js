@@ -640,6 +640,7 @@
   /* =========================
      8) Status pills + mode
      ========================= */
+  const MODE_INSIGHTS = "INSIGHTS";
   let activeMode = "CAD";
 
   function setMode(mode) {
@@ -713,7 +714,7 @@
   let insightsResizeWired = false;
 
   function updateInsightsVisibility() {
-    const show = activeMode === "INSIGHTS";
+    const show = activeMode === MODE_INSIGHTS;
     insights3d.hidden = !show;
     toggleClass(appShell, "mode-insights", show);
     const appGrid = document.getElementById("app");
@@ -826,7 +827,7 @@
 
   function resizeInsights() {
     if (!window.Plotly) return;
-    plotIds.forEach((id) => Plotly.redraw(plots[id]));
+    plotIds.forEach((id) => Plotly.relayout(plots[id], {}));
   }
 
   function wirePlotResizes() {
@@ -883,6 +884,7 @@
     const surface = data?.insights?.surface3d;
     const trajectory = data?.insights?.trajectory3d;
     if (!scatter && !surface && !trajectory) {
+      toast("Insights data missing; using existing visuals");
       return;
     }
     const scatterTrace = scatter ? [{
