@@ -558,7 +558,7 @@
       title.textContent = ws.title;
 
       const closeBtn = tab.querySelector(".wsClose");
-      if (!(closeBtn instanceof HTMLButtonElement)) throw invariant("tplWorkspaceTab missing .wsClose");
+      if (!(closeBtn instanceof HTMLElement)) throw invariant("tplWorkspaceTab missing .wsClose");
 
       const isActive = ws.id === activeWorkspaceId;
       tab.setAttribute("aria-selected", isActive ? "true" : "false");
@@ -1018,7 +1018,7 @@
       const title = root.querySelector(".wsTitle");
       if (!(title instanceof HTMLElement)) throw invariant("tplWorkspaceTab missing .wsTitle");
       const close = root.querySelector(".wsClose");
-      if (!(close instanceof HTMLButtonElement)) throw invariant("tplWorkspaceTab missing .wsClose");
+      if (!(close instanceof HTMLElement)) throw invariant("tplWorkspaceTab missing .wsClose");
     });
 
     check("Workspace tabs rendered + active", () => {
