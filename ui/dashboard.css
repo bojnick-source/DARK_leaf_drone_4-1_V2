@@ -33,7 +33,7 @@ body {
   overflow: hidden;
 
   /* HARDENED APP LAYOUT:
-     Rows: chrome, menubar, seams, toolbar, subtabs, content(1fr), (taskbar is fixed overlay)
+     Rows: chrome, menubar, seams, toolbar, subtabs, content(1fr). Taskbar is fixed overlay.
   */
   display: grid;
   grid-template-rows:
@@ -145,6 +145,14 @@ button:disabled {
   /* Taskbar reserved inset (space so content doesn’t hide under taskbar) */
   --taskbar-h: 44px;
   --taskbar-gap: 10px;
+  --taskbar-safe-gap: 8px;
+
+  /* Popup spacing */
+  --popup-edge-gap: 24px;
+  --popup-height-gap: 120px;
+
+  /* Grain texture */
+  --grain-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSIzIiB5PSI2IiBmaWxsPSJyZ2JhKDAsMCwwLDAuMTUpIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iMTQiIHk9IjE0IiBmaWxsPSJyZ2JhKDAsMCwwLDAuMTApIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iMjIiIHk9IjkiIGZpbGw9InJnYmEoMCwwLDAsMC4xMikiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSIzMCIgeT0iMTciIGZpbGw9InJnYmEoMCwwLDAsMC4xNCkiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSI3IiB5PSIyNyIgZmlsbD0icmdiYSgwLDAsMCwwLjEyKSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjE5IiB5PSIyMyIgZmlsbD0icmdiYSgwLDAsMCwwLjE0KSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjI4IiB5PSIzMCIgZmlsbD0icmdiYSgwLDAsMCwwLjExKSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjM1IiB5PSIzNCIgZmlsbD0icmdiYSgwLDAsMCwwLjEzKSIvPjwvc3ZnPg==");
 }
 
 @media (prefers-color-scheme: dark) {
@@ -220,10 +228,9 @@ button:disabled {
   pointer-events: none;
 }
 #sceneLayer::before {
-  /* subtle grain via layered gradients */
-  background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,0.008), rgba(0,0,0,0.008) 1px, transparent 1px, transparent 2px),
-    repeating-linear-gradient(90deg, rgba(0,0,0,0.006), rgba(0,0,0,0.006) 1px, transparent 1px, transparent 3px);
+  background-image: var(--grain-image);
+  background-repeat: repeat;
+  background-size: 120px 120px;
   opacity: 0.35;
   mix-blend-mode: soft-light;
 }
@@ -568,7 +575,7 @@ button:disabled {
   left: 0;
 
   /* HARDEN: avoid clipping */
-  max-width: min(320px, calc(100vw - 24px));
+  max-width: min(320px, calc(100vw - var(--popup-edge-gap)));
   min-width: 230px;
 
   padding: 8px;
@@ -582,7 +589,7 @@ button:disabled {
   display: none;
   z-index: 999;
   overflow: auto;
-  max-height: min(360px, calc(100vh - 120px));
+  max-height: min(360px, calc(100vh - var(--popup-height-gap)));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -923,7 +930,7 @@ dialog.modal::backdrop {
   position: fixed;
   left: 10px;
   right: 10px;
-  bottom: calc(var(--taskbar-h) + var(--taskbar-gap) + 8px);
+  bottom: calc(var(--taskbar-h) + var(--taskbar-gap) + var(--taskbar-safe-gap));
   z-index: 999;
   border-radius: var(--r-xl);
   padding: 12px 14px;
