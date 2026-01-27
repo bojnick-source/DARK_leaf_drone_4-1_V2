@@ -238,9 +238,8 @@ END HEADER CONTRACT
         data-invariant="required"
       >
         <!-- NO-JS FALLBACK TAB (SVG silhouette parity) -->
-        <button
+        <div
           class="wsTab wsTabFallback"
-          type="button"
           role="tab"
           aria-selected="true"
           aria-disabled="true"
@@ -259,7 +258,7 @@ END HEADER CONTRACT
               <span aria-hidden="true">×</span>
             </button>
           </div>
-        </button>
+        </div>
 
         <span class="chromeTabsHint" data-fallback="true">Enable JavaScript for full workspace tabs.</span>
       </div>
@@ -443,7 +442,7 @@ END HEADER CONTRACT
 
     <!-- Templates -->
     <template id="tplWorkspaceTab">
-      <button class="wsTab" type="button" role="tab" aria-selected="false" data-component="wsTab" data-wire="wsTab">
+      <div class="wsTab" role="tab" aria-selected="false" data-component="wsTab" data-wire="wsTab">
         <svg class="tabSvg" viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true" focusable="false">
           <use href="#chromeTabPath" class="tabFill"></use>
           <use href="#chromeTabPath" class="tabStroke"></use>
@@ -451,11 +450,11 @@ END HEADER CONTRACT
         <div class="tabContent" data-component="tabContent" data-wire="tabContent">
           <span class="wsDot" aria-hidden="true" data-component="wsDot" data-wire="wsDot"></span>
           <span class="wsTitle" data-component="wsTitle" data-wire="wsTitle"></span>
-          <button class="wsClose" type="button" aria-label="Close workspace" data-component="wsClose" data-wire="wsClose">
-            <span aria-hidden="true">×</span>
-          </button>
         </div>
-      </button>
+        <button class="wsClose" type="button" aria-label="Close workspace" data-component="wsClose" data-wire="wsClose">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
     </template>
 
     <template id="tplModal">
