@@ -1,11 +1,12 @@
 :root {
   color-scheme: dark;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Tahoma, Geneva, Verdana, sans-serif;
-  --menu-h: 68px;
+  --menu-h: 64px;
+  --chrome-h: 42px;
   --task-h: 72px;
-  --glass-blur: 18px;
-  --glass-alpha: 0.18;
-  --glass-border: 0.22;
+  --glass-blur: 22px;
+  --glass-alpha: 0.14;
+  --glass-border: 0.25;
   --glass-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
   --glass-radius: 18px;
   --grid-col-min: 200px;
@@ -21,6 +22,21 @@
   --accent-violet: #7c5cff;
   --text-strong: #f4f7ff;
   --text-soft: #c7d2fe;
+  --tabHeight: 32px;
+  --tabRadius: 12px;
+  --tabOverlap: 18px;
+  --tabPadX: 18px;
+  --tabBorderHairline: 1px;
+  --tabActiveShadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+  --tabInactiveOpacity: 0.85;
+  --glassTint: rgba(20, 26, 38, 0.65);
+  --glassBorder: rgba(255, 255, 255, 0.2);
+  --glassSpecular: rgba(255, 255, 255, 0.25);
+  --glassNoiseOpacity: 0.08;
+  --bgBase: #0b0f14;
+  --bgAccentA: #1b2a4a;
+  --bgAccentB: #101827;
+  --backplateTint: rgba(76, 132, 255, 0.24);
 }
 
 *,
@@ -31,7 +47,7 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #101827 0%, #0b0f14 45%, #070a10 100%);
+  background: radial-gradient(circle at top, var(--bgAccentB) 0%, var(--bgBase) 45%, #070a10 100%);
   color: var(--text-strong);
   min-height: 100vh;
 }
@@ -48,7 +64,10 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 0);
+  background-image:
+    radial-gradient(circle at top left, rgba(70, 120, 255, 0.18), transparent 45%),
+    radial-gradient(circle at 70% 10%, rgba(124, 92, 255, 0.16), transparent 50%),
+    radial-gradient(rgba(255, 255, 255, var(--glassNoiseOpacity)) 1px, transparent 0);
   background-size: 160px 160px;
   background-position: 0 0;
   pointer-events: none;
@@ -67,7 +86,7 @@ body::before {
   position: fixed;
   left: 0;
   right: 0;
-  background: rgba(13, 18, 27, 0.7);
+  background: var(--glassTint);
   color: var(--text-strong);
   display: flex;
   align-items: center;
@@ -76,12 +95,12 @@ body::before {
   padding: 12px 18px;
   z-index: 1000;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
 }
 
 #menuBar {
-  top: 0;
+  top: var(--chrome-h);
   min-height: var(--menu-h);
 }
 
@@ -96,49 +115,251 @@ body::before {
   justify-content: flex-end;
 }
 
+.menu-panels {
+  pointer-events: none;
+}
+
+.menu-panel.active {
+  pointer-events: auto;
+}
+
 #menuBar .brand {
   font-weight: 700;
   letter-spacing: 0.4px;
 }
 
-.menu {
+#chromeStrip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--chrome-h);
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: linear-gradient(180deg, rgba(30, 36, 52, 0.95), rgba(16, 20, 30, 0.9));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 1200;
+}
+
+.workspace-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.workspace-tab {
+  position: relative;
+  height: var(--tabHeight);
+  margin-right: calc(var(--tabOverlap) * -1);
+  padding: 0 var(--tabPadX);
+  color: var(--text-soft);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+
+.workspace-tab .tab-shape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: rgba(30, 36, 52, 0.8);
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: var(--tabBorderHairline);
+}
+
+.workspace-tab .tab-title {
+  position: relative;
+  z-index: 2;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.workspace-tab .tab-close {
+  position: relative;
+  z-index: 2;
+  font-size: 12px;
+  opacity: 0.6;
+  padding: 0 6px;
+  border-radius: 6px;
+}
+
+.workspace-tab .tab-rename {
+  position: relative;
+  z-index: 3;
+  background: rgba(20, 26, 38, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-strong);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 12px;
+  width: 120px;
+}
+
+.workspace-tab:hover .tab-close {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.workspace-tab.active {
+  color: var(--text-strong);
+  z-index: 3;
+}
+
+.workspace-tab.active .tab-shape {
+  fill: rgba(36, 48, 72, 0.9);
+  stroke: rgba(255, 255, 255, 0.18);
+  filter: drop-shadow(var(--tabActiveShadow));
+}
+
+.workspace-tab:not(.active) {
+  opacity: var(--tabInactiveOpacity);
+}
+
+.workspace-add {
+  margin-left: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(30, 36, 52, 0.6);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+#tripwireBanner {
+  position: sticky;
+  top: var(--chrome-h);
+  margin: calc(var(--chrome-h) + 8px) 20px 0;
+  padding: 10px 14px;
+  background: rgba(255, 59, 59, 0.15);
+  border: 1px solid rgba(255, 59, 59, 0.4);
+  color: #ffd5d5;
+  border-radius: 12px;
+  z-index: 999;
+}
+
+.menu-bar {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
+  align-items: center;
 }
 
-.menu button {
-  background: rgba(42, 76, 200, 0.35);
-  border: 1px solid rgba(88, 130, 255, 0.4);
+.menu-trigger {
+  background: rgba(30, 36, 52, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-strong);
-  padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
+  padding: 6px 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 
-.menu button:hover {
-  background: rgba(76, 119, 255, 0.5);
-  border-color: rgba(125, 165, 255, 0.75);
-  transform: translateY(-1px);
+.menu-panels {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 16px;
+  display: flex;
+  gap: 12px;
+  z-index: 1500;
 }
 
-.menu button:active {
-  transform: translateY(1px);
+.menu-panel {
+  min-width: 200px;
+  padding: 10px;
+  background: rgba(20, 26, 38, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  display: none;
 }
 
-.menu button.active {
+.menu-panel.active {
+  display: grid;
+  gap: 6px;
+}
+
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(30, 36, 52, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.shortcut {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+#modeToolbar {
+  position: sticky;
+  top: calc(var(--chrome-h) + var(--menu-h) + 8px);
+  margin: calc(var(--chrome-h) + var(--menu-h) + 8px) 20px 0;
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  z-index: 900;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.mode-tabs button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(36, 48, 72, 0.5);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.mode-tabs button.active {
   border-color: rgba(56, 243, 255, 0.85);
   color: var(--accent-cyan);
-  box-shadow: 0 0 18px rgba(56, 243, 255, 0.35);
+  box-shadow: 0 0 12px rgba(56, 243, 255, 0.3);
+}
+
+.mode-tools {
+  display: none;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mode-tools.active {
+  display: flex;
+}
+
+.tool-button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(18, 24, 36, 0.6);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.mode-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 #appShell {
-  padding: calc(var(--menu-h) + 20px) 20px calc(var(--task-h) + 20px);
+  padding: calc(var(--chrome-h) + var(--menu-h) + 120px) 20px calc(var(--task-h) + 20px);
   min-height: 100vh;
   background: linear-gradient(180deg, rgba(12, 16, 24, 0.95) 0%, rgba(10, 13, 20, 0.9) 100%);
   position: relative;
@@ -213,11 +434,22 @@ body::before {
 
 .glass {
   border-radius: var(--glass-radius);
-  border: 1px solid rgba(255, 255, 255, var(--glass-border));
-  background: rgba(20, 26, 38, var(--glass-alpha));
+  border: 1px solid var(--glassBorder);
+  background: var(--glassTint);
   box-shadow: 0 25px 55px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(var(--glass-blur)) saturate(160%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--glassSpecular), transparent 35%);
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .glass--thin {
@@ -241,7 +473,8 @@ body::before {
 
   #menuBar,
   #taskBar,
-  #notice {
+  #notice,
+  #modeToolbar {
     background: rgba(18, 24, 36, 0.92);
   }
 }

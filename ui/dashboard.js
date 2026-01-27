@@ -16,6 +16,8 @@ let clockPill;
 let modePill;
 let schemaPill;
 let payloadPill;
+let tripwireBanner;
+let jsonFileInput;
 const SAMPLE_FETCH_TIMEOUT_MS = 5000;
 const STATUS_COLORS = {
   ready: "#1f2937",
@@ -33,6 +35,8 @@ const TAB_MODE_LABELS = {
   sim: "SIM",
   insights: "INSIGHTS"
 };
+const WORKSPACE_STORAGE_KEY = "darkleaf.workspaces.v1";
+let activeWorkspaceId = "ws-1";
 
 function setStatus(label, tone, state = null) {
   safeText(statusPill, `STATUS: ${label}`);
@@ -71,6 +75,12 @@ function attachHandlers() {
   const btnHelp = getElementById("btnHelp");
   const btnExport = getElementById("btnExport");
   const tabButtons = document.querySelectorAll("[data-tab]");
+  const menuTriggers = document.querySelectorAll(".menu-trigger");
+  const menuPanels = document.querySelectorAll(".menu-panel");
+  const menuActions = document.querySelectorAll("[data-action]");
+  const workspaceTabs = document.querySelectorAll(".workspace-tab");
+  const workspaceAdd = getElementById("workspaceAdd");
+  const modeToolButtons = document.querySelectorAll("[data-mode-tools] [data-action]");
 
   if (btnLoadSample) {
     btnLoadSample.addEventListener("click", async () => {
@@ -159,6 +169,56 @@ function attachHandlers() {
       setActiveTab(target);
     });
   });
+
+  menuTriggers.forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.menu;
+      toggleMenu(target);
+    });
+  });
+
+  menuActions.forEach((button) => {
+    button.addEventListener("click", () => {
+      handleMenuAction(button.dataset.action);
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".menu-panel") && !event.target.closest(".menu-trigger")) {
+      closeMenus();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeMenus();
+    }
+  });
+
+  workspaceTabs.forEach((tab) => {
+    tab.addEventListener("click", (event) => {
+      if (event.target.classList.contains("tab-close")) {
+        closeWorkspace(tab.dataset.workspace);
+        return;
+      }
+      setActiveWorkspace(tab.dataset.workspace);
+    });
+    tab.addEventListener("dblclick", () => {
+      startWorkspaceRename(tab);
+    });
+  });
+
+  if (workspaceAdd) {
+    workspaceAdd.addEventListener("click", () => {
+      addWorkspace();
+    });
+  }
+
+  modeToolButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      handleMenuAction(button.dataset.action);
+    });
+  });
 }
 
 function handleGlobalError(message) {
@@ -201,8 +261,12 @@ function setActiveTab(tabName, updateUrl = true) {
     document.querySelectorAll("[data-tab]").forEach((button) => {
       button.classList.toggle("active", button.dataset.tab === tabName);
     });
+    document.querySelectorAll("[data-mode-tools]").forEach((tools) => {
+      tools.classList.toggle("active", tools.dataset.modeTools === tabName);
+    });
     const label = TAB_MODE_LABELS[tabName] || "CAD";
     safeText(modePill, `MODE: ${label}`);
+    updateWorkspaceTab(tabName);
     if (updateUrl) {
       window.location.hash = `#${tabName}`;
     }
@@ -233,17 +297,296 @@ function exportLayoutJson() {
     timestamp: new Date().toISOString(),
     status: statusPill ? statusPill.textContent : "STATUS: READY"
   };
+  downloadJson(payload, `dashboard-${currentTab}.json`);
+  setStatus("EXPORTED", STATUS_COLORS.ok, "ok");
+  showNotice("Export complete", "Layout JSON exported.");
+}
+
+function toggleMenu(menuId) {
+  const panels = document.querySelectorAll(".menu-panel");
+  panels.forEach((panel) => {
+    const isTarget = panel.dataset.menuPanel === menuId;
+    panel.classList.toggle("active", isTarget && !panel.classList.contains("active"));
+    if (!isTarget) {
+      panel.classList.remove("active");
+    }
+  });
+}
+
+function closeMenus() {
+  document.querySelectorAll(".menu-panel").forEach((panel) => panel.classList.remove("active"));
+}
+
+function handleMenuAction(action) {
+  switch (action) {
+    case "open-json":
+      if (jsonFileInput) {
+        jsonFileInput.click();
+      }
+      break;
+    case "export-diagnostics":
+      exportDiagnostics();
+      break;
+    case "self-test":
+      runTripwires();
+      break;
+    case "reset-layout":
+      showNotice("Layout reset", "Layout reset stub executed.");
+      setStatus("RESET", STATUS_COLORS.info, "info");
+      break;
+    default:
+      break;
+  }
+  closeMenus();
+}
+
+function exportDiagnostics() {
+  const payload = {
+    timestamp: new Date().toISOString(),
+    workspace: activeWorkspaceId,
+    tab: document.querySelector("[data-tab].active")?.dataset.tab || getInitialTab(),
+    status: statusPill ? statusPill.textContent : "STATUS: READY",
+    mode: modePill ? modePill.textContent : "MODE: UNKNOWN",
+    validation: currentPayload ? "payload-loaded" : "no-payload"
+  };
+  downloadJson(payload, `diagnostics-${activeWorkspaceId}.json`);
+  showNotice("Diagnostics exported", "Exported diagnostics JSON.");
+  setStatus("DIAGNOSTICS", STATUS_COLORS.ok, "ok");
+}
+
+function downloadJson(payload, filename) {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `dashboard-${currentTab}.json`;
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
-  setStatus("EXPORTED", STATUS_COLORS.ok, "ok");
-  showNotice("Export complete", "Layout JSON exported.");
+}
+
+function addWorkspace() {
+  const workspaceId = `ws-${Date.now()}`;
+  const workspace = {
+    id: workspaceId,
+    title: "New Workspace",
+    tab: getInitialTab()
+  };
+  const state = loadWorkspaceState();
+  state.tabs.push(workspace);
+  state.activeId = workspaceId;
+  saveWorkspaceState(state);
+  renderWorkspaces(state.tabs);
+  setActiveWorkspace(workspaceId);
+}
+
+function closeWorkspace(workspaceId) {
+  const state = loadWorkspaceState();
+  if (state.tabs.length <= 1) {
+    showNotice("Workspace locked", "At least one workspace must remain open.");
+    return;
+  }
+  const filtered = state.tabs.filter((tab) => tab.id !== workspaceId);
+  state.tabs = filtered;
+  if (state.activeId === workspaceId) {
+    state.activeId = filtered[0].id;
+  }
+  saveWorkspaceState(state);
+  renderWorkspaces(filtered);
+  if (activeWorkspaceId === workspaceId) {
+    setActiveWorkspace(state.activeId);
+  }
+}
+
+function setActiveWorkspace(workspaceId) {
+  const state = loadWorkspaceState();
+  const target = state.tabs.find((tab) => tab.id === workspaceId);
+  if (!target) {
+    return;
+  }
+  activeWorkspaceId = workspaceId;
+  state.activeId = workspaceId;
+  saveWorkspaceState(state);
+  renderWorkspaces(state.tabs);
+  if (target.tab) {
+    setActiveTab(target.tab);
+  }
+}
+
+function startWorkspaceRename(tabEl) {
+  const titleEl = tabEl.querySelector(".tab-title");
+  if (!titleEl) {
+    return;
+  }
+  const currentText = titleEl.textContent;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = currentText;
+  input.className = "tab-rename";
+  tabEl.appendChild(input);
+  input.focus();
+  input.select();
+  const finalize = (commit) => {
+    input.remove();
+    if (commit) {
+      updateWorkspaceTitle(tabEl.dataset.workspace, input.value);
+    }
+  };
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      finalize(true);
+    }
+    if (event.key === "Escape") {
+      finalize(false);
+    }
+  });
+  input.addEventListener("blur", () => finalize(true));
+}
+
+function updateWorkspaceTitle(workspaceId, title) {
+  const state = loadWorkspaceState();
+  const target = state.tabs.find((tab) => tab.id === workspaceId);
+  if (target) {
+    target.title = title || target.title;
+    saveWorkspaceState(state);
+    renderWorkspaces(state.tabs);
+  }
+}
+
+function loadWorkspaceState() {
+  const stored = localStorage.getItem(WORKSPACE_STORAGE_KEY);
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return { version: 1, activeId: parsed[0]?.id || "ws-1", tabs: parsed };
+      }
+      return parsed;
+    } catch (error) {
+      console.error("Workspace load failed", error);
+    }
+  }
+  return {
+    version: 1,
+    activeId: "ws-1",
+    tabs: [
+      { id: "ws-1", title: "Daily Dashboard", tab: "cad" },
+      { id: "ws-2", title: "Run Review", tab: "sim" },
+      { id: "ws-3", title: "Comparison", tab: "insights" }
+    ]
+  };
+}
+
+function saveWorkspaceState(state) {
+  localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(state));
+}
+
+function renderWorkspaces(workspaces) {
+  const container = document.getElementById("workspaceTabs");
+  if (!container) {
+    return;
+  }
+  container.querySelectorAll(".workspace-tab").forEach((tab) => tab.remove());
+  workspaces.forEach((workspace) => {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = `workspace-tab${workspace.id === activeWorkspaceId ? " active" : ""}`;
+    tab.dataset.workspace = workspace.id;
+    tab.innerHTML = `
+      <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z" />
+      </svg>
+      <span class="tab-title">${workspace.title}</span>
+      <span class="tab-close" aria-label="Close workspace">×</span>
+    `;
+    tab.addEventListener("click", (event) => {
+      if (event.target.classList.contains("tab-close")) {
+        closeWorkspace(workspace.id);
+        return;
+      }
+      setActiveWorkspace(workspace.id);
+    });
+    tab.addEventListener("dblclick", () => {
+      startWorkspaceRename(tab);
+    });
+    container.insertBefore(tab, document.getElementById("workspaceAdd"));
+  });
+}
+
+function updateWorkspaceTab(tabName) {
+  const state = loadWorkspaceState();
+  const target = state.tabs.find((tab) => tab.id === activeWorkspaceId);
+  if (target) {
+    target.tab = tabName;
+    saveWorkspaceState(state);
+  }
+}
+
+function runTripwires() {
+  const failures = [];
+  if (!getElementById("chromeStrip")) {
+    failures.push("Chrome strip missing");
+  }
+  const workspaceCount = document.querySelectorAll(".workspace-tab").length;
+  if (workspaceCount < 1) {
+    failures.push("No workspace tabs");
+  }
+  const activeWorkspace = document.querySelector(".workspace-tab.active");
+  if (!activeWorkspace) {
+    failures.push("Active workspace missing");
+  }
+  if (activeWorkspace) {
+    const zIndex = Number(window.getComputedStyle(activeWorkspace).zIndex || 0);
+    if (zIndex < 2) {
+      failures.push("Active workspace z-index low");
+    }
+  }
+  const fileMenu = document.querySelector("[data-menu-panel='file']");
+  toggleMenu("file");
+  if (!fileMenu?.classList.contains("active")) {
+    failures.push("Menu open failed");
+  }
+  const escEvent = new KeyboardEvent("keydown", { key: "Escape" });
+  document.dispatchEvent(escEvent);
+  if (fileMenu?.classList.contains("active")) {
+    failures.push("Menu Esc close failed");
+  }
+  if (!getElementById("taskBar")) {
+    failures.push("Taskbar missing");
+  }
+  const currentMode = modePill?.textContent || "";
+  if (!currentMode.includes("MODE")) {
+    failures.push("Mode pill missing");
+  }
+  const originalTab = document.querySelector("[data-tab].active")?.dataset.tab || "cad";
+  setActiveTab("sim", false);
+  if (!modePill?.textContent.includes("SIM")) {
+    failures.push("Mode tab sync failed");
+  }
+  setActiveTab(originalTab, false);
+  if (failures.length > 0) {
+    showTripwireBanner(failures);
+  } else {
+    hideTripwireBanner();
+    showNotice("Self-test passed", "All UI tripwires passed.");
+    setStatus("OK", STATUS_COLORS.ok, "ok");
+  }
+}
+
+function showTripwireBanner(failures) {
+  if (!tripwireBanner) {
+    return;
+  }
+  tripwireBanner.hidden = false;
+  tripwireBanner.textContent = `Tripwire failures: ${failures.join(", ")}`;
+  setStatus("FAIL", STATUS_COLORS.fail, "fail");
+}
+
+function hideTripwireBanner() {
+  if (tripwireBanner) {
+    tripwireBanner.hidden = true;
+  }
 }
 
 function init() {
@@ -255,6 +598,29 @@ function init() {
     modePill = getElementById("modePill");
     schemaPill = getElementById("schemaPill");
     payloadPill = getElementById("payloadPill");
+    tripwireBanner = getElementById("tripwireBanner");
+    jsonFileInput = getElementById("jsonFileInput");
+    if (jsonFileInput) {
+      jsonFileInput.addEventListener("change", () => {
+        const file = jsonFileInput.files?.[0];
+        if (!file) {
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          showNotice("JSON loaded", `Loaded ${file.name}`);
+          setStatus("LOADED", STATUS_COLORS.ok, "ok");
+        };
+        reader.onerror = () => {
+          showNotice("JSON load failed", "Unable to read file.");
+          setStatus("FAIL", STATUS_COLORS.fail, "fail");
+        };
+        reader.readAsText(file);
+      });
+    }
+    const workspaceState = loadWorkspaceState();
+    activeWorkspaceId = workspaceState.activeId || workspaceState.tabs[0]?.id || "ws-1";
+    renderWorkspaces(workspaceState.tabs);
     const initialTab = getInitialTab();
     setActiveTab(initialTab, false);
     updateClock();
@@ -262,6 +628,7 @@ function init() {
     attachHandlers();
     setStatus("READY", STATUS_COLORS.ready, "ok");
     renderSelfTest();
+    runTripwires();
   } catch (error) {
     console.error("Dashboard init failed", error);
     handleGlobalError(error.message || error);
