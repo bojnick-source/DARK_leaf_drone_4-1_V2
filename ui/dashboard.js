@@ -823,7 +823,7 @@
 
   function resizeInsights() {
     if (!window.Plotly) return;
-    plotIds.forEach((id) => Plotly.Plots.resize(plots[id]));
+    plotIds.forEach((id) => Plotly.redraw(plots[id]));
   }
 
   function wirePlotResizes() {
@@ -845,18 +845,22 @@
     });
   }
 
+  function applyInsightsSample() {
+    if (engineDataLoaded) {
+      toast("Engine data loaded; sample not applied");
+      return;
+    }
+    sampleLoaded = true;
+    insightsRendered = false;
+    renderInsights3d();
+    toast("Loaded sample insights");
+  }
+
   function wireInsightsSample() {
     document.querySelectorAll("[data-action=\"insights.sample\"]").forEach((btn) => {
       if (!(btn instanceof HTMLButtonElement)) return;
       btn.addEventListener("click", () => {
-        if (engineDataLoaded) {
-          toast("Engine data loaded; sample not applied");
-          return;
-        }
-        sampleLoaded = true;
-        insightsRendered = false;
-        renderInsights3d();
-        toast("Loaded sample insights");
+        applyInsightsSample();
       });
     });
   }
@@ -1379,10 +1383,7 @@
         toast("Daily Dashboard UI (HTML V9 / CSS V2 / JS V4). Export diagnostics for proof.");
         break;
       case "insights.sample":
-        sampleLoaded = true;
-        insightsRendered = false;
-        renderInsights3d();
-        toast("Loaded sample insights");
+        applyInsightsSample();
         break;
       default:
         toast(`Unknown action: ${action}`);
