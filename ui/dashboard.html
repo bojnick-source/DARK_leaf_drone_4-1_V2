@@ -7,7 +7,7 @@ ENTERPRISE HEADER CONTRACT (MUST BE SET AS HTTP RESPONSE HEADERS)
 ================================================================================
 REQUIRED (match exactly; keep in sync with meta tags below):
   Content-Security-Policy:
-    default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:;
+    default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self'; img-src 'self' data:;
     font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none';
     frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;
 
@@ -30,7 +30,7 @@ COPY/PASTE SERVER CONFIG EXAMPLES
 --------------------------------------------------------------------------------
 
 (1) NGINX (location block)
-  add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;" always;
+  add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;" always;
   add_header Permissions-Policy "accelerometer=(), ambient-light-sensor=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), vr=(), xr-spatial-tracking=()" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header Referrer-Policy "no-referrer" always;
@@ -39,7 +39,7 @@ COPY/PASTE SERVER CONFIG EXAMPLES
   # add_header Cross-Origin-Embedder-Policy "require-corp" always;  # optional
 
 (2) Apache (.htaccess)
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;"
   Header always set Permissions-Policy "accelerometer=(), ambient-light-sensor=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), vr=(), xr-spatial-tracking=()"
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "no-referrer"
@@ -51,7 +51,7 @@ COPY/PASTE SERVER CONFIG EXAMPLES
   [[headers]]
     for = "/*"
     [headers.values]
-      Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;"
+      Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;"
       Permissions-Policy = "accelerometer=(), ambient-light-sensor=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), vr=(), xr-spatial-tracking=()"
       X-Content-Type-Options = "nosniff"
       Referrer-Policy = "no-referrer"
@@ -61,7 +61,7 @@ COPY/PASTE SERVER CONFIG EXAMPLES
 
 (4) Node/Express (server middleware)
   app.use((req,res,next)=>{
-    res.setHeader("Content-Security-Policy","default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;");
+    res.setHeader("Content-Security-Policy","default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; block-all-mixed-content;");
     res.setHeader("Permissions-Policy","accelerometer=(), ambient-light-sensor=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), vr=(), xr-spatial-tracking=()");
     res.setHeader("X-Content-Type-Options","nosniff");
     res.setHeader("Referrer-Policy","no-referrer");
@@ -120,7 +120,7 @@ END HEADER CONTRACT
       http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
-        script-src 'self';
+        script-src 'self' https://cdn.plot.ly;
         style-src 'self';
         img-src 'self' data:;
         font-src 'self';
@@ -136,6 +136,7 @@ END HEADER CONTRACT
     <title>DARK_leaf_drone — Daily Dashboard</title>
 
     <link rel="stylesheet" href="./dashboard.css" />
+    <script src="https://cdn.plot.ly/plotly-2.30.0.min.js" defer></script>
     <script src="./dashboard.js" defer></script>
   </head>
 
@@ -404,6 +405,59 @@ END HEADER CONTRACT
         <section class="glass panel" data-fallback="true">
           <div class="panelTitle">Inspector</div>
           <div class="panelMuted">Fallback view (JS not running).</div>
+        </section>
+      </section>
+
+      <section id="insights3d" class="insightsGrid" aria-label="Insights 3D" hidden data-component="insights3d" data-wire="insights3d">
+        <section class="glass panel insightsPanel">
+          <div class="panelHeader">
+            <div>
+              <div class="panelTitle">3D Scatter</div>
+              <div class="panelMuted">Axes: X / Y / Z</div>
+            </div>
+            <button class="ghostBtn exportBtn" type="button" data-export="plotScatter3d">Export PNG</button>
+          </div>
+          <div class="panelBody">
+            <div class="plotMount" id="plotScatter3d"></div>
+            <div class="plotFallback" data-fallback="plotScatter3d" hidden>
+              3D unavailable (CDN blocked). <a href="https://cdn.plot.ly" target="_blank" rel="noreferrer">Check CDN</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass panel insightsPanel">
+          <div class="panelHeader">
+            <div>
+              <div class="panelTitle">3D Surface</div>
+              <div class="panelMuted">Axes: X / Y / Height</div>
+            </div>
+            <button class="ghostBtn exportBtn" type="button" data-export="plotSurface3d">Export PNG</button>
+          </div>
+          <div class="panelBody">
+            <div class="plotMount" id="plotSurface3d"></div>
+            <div class="plotFallback" data-fallback="plotSurface3d" hidden>
+              3D unavailable (CDN blocked). <a href="https://cdn.plot.ly" target="_blank" rel="noreferrer">Check CDN</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass panel insightsPanel">
+          <div class="panelHeader">
+            <div>
+              <div class="panelTitle">3D Trajectory</div>
+              <div class="panelMuted">Axes: X / Y / Z</div>
+            </div>
+            <div class="panelActions">
+              <button class="ghostBtn loadSampleBtn" type="button" data-action="insights.sample">Load Sample</button>
+              <button class="ghostBtn exportBtn" type="button" data-export="plotTrajectory3d">Export PNG</button>
+            </div>
+          </div>
+          <div class="panelBody">
+            <div class="plotMount" id="plotTrajectory3d"></div>
+            <div class="plotFallback" data-fallback="plotTrajectory3d" hidden>
+              3D unavailable (CDN blocked). <a href="https://cdn.plot.ly" target="_blank" rel="noreferrer">Check CDN</a>
+            </div>
+          </div>
         </section>
       </section>
 

@@ -824,6 +824,85 @@ button:disabled {
 .panelTitle { font-weight: 900; margin-bottom: 8px; }
 .panelMuted { font-size: 12.5px; color: var(--muted); }
 
+.insightsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.insightsPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 280px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.panelActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.panelBody {
+  position: relative;
+  flex: 1;
+  min-height: 220px;
+}
+
+.plotMount {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.plotFallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--muted);
+}
+
+.plotFallback a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+@media (prefers-color-scheme: dark) {
+  .plotMount {
+    background: rgba(20, 26, 46, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .plotFallback {
+    background: rgba(20, 26, 46, 0.6);
+  }
+}
+
+@media (max-width: 1060px) {
+  .insightsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Diagnostics */
 .diagnosticsHost {
   border-radius: var(--r-xl);

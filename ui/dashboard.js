@@ -146,6 +146,8 @@
   const btnExportDiag = /** @type {HTMLButtonElement} */ (mustId("btnExportDiag"));
 
   const diagnosticsDump = mustId("diagnosticsDump");
+  const insights3d = /** @type {HTMLElement} */ (mustId("insights3d"));
+  const appShell = mustId("appShell");
 
   // Taskbar pills
   const modePill = mustId("modePill");
@@ -162,7 +164,8 @@
   const cadToolbar = mustId("cadToolbar");
   const subTabStrip = mustId("subTabStrip");
   const taskBar = mustId("taskBar");
-  const appShell = mustId("appShell");
+  const plotIds = ["plotScatter3d", "plotSurface3d", "plotTrajectory3d"];
+  const plots = Object.fromEntries(plotIds.map((id) => [id, mustId(id)]));
 
   /* =========================
      2) Fail-loud + announcements
@@ -643,6 +646,7 @@
     activeMode = String(mode || "CAD").toUpperCase();
     setText(modePill, `MODE: ${activeMode}`);
     persistState();
+    updateInsightsVisibility();
   }
 
   function setSchemaVersion(v) {
@@ -697,6 +701,213 @@
     const first = subTabs[0];
     if (first) first.classList.add("active");
     if (!activeMode) setMode("CAD");
+    updateInsightsVisibility();
+  }
+
+  /* =========================
+     9.5) INSIGHTS 3D (Plotly)
+     ========================= */
+  let insightsRendered = false;
+  let sampleLoaded = false;
+  let engineDataLoaded = false;
+  let insightsResizeWired = false;
+
+  function updateInsightsVisibility() {
+    const show = activeMode === "INSIGHTS";
+    insights3d.hidden = !show;
+    toggleClass(appShell, "mode-insights", show);
+    const appGrid = document.getElementById("app");
+    if (appGrid instanceof HTMLElement) appGrid.hidden = show;
+    if (show) renderInsights3d();
+  }
+
+  function renderInsights3d() {
+    if (!window.Plotly) {
+      showInsightsFallback("Plotly unavailable");
+      return;
+    }
+    hideInsightsFallbacks();
+    if (insightsRendered) {
+      resizeInsights();
+      return;
+    }
+    const data = sampleLoaded ? sampleData() : emptyData();
+    Plotly.react(plots.plotScatter3d, data.scatter, plotLayout("Scatter 3D"), plotConfig());
+    Plotly.react(plots.plotSurface3d, data.surface, plotLayout("Surface 3D"), plotConfig());
+    Plotly.react(plots.plotTrajectory3d, data.trajectory, plotLayout("Trajectory 3D"), plotConfig());
+    insightsRendered = true;
+    wirePlotResizes();
+  }
+
+  function showInsightsFallback(reason) {
+    plotIds.forEach((id) => {
+      const fallback = document.querySelector(`[data-fallback="${id}"]`);
+      if (fallback instanceof HTMLElement) {
+        fallback.textContent = `3D unavailable: ${reason} (CDN blocked)`;
+        fallback.hidden = false;
+      }
+    });
+  }
+
+  function hideInsightsFallbacks() {
+    plotIds.forEach((id) => {
+      const fallback = document.querySelector(`[data-fallback="${id}"]`);
+      if (fallback instanceof HTMLElement) {
+        fallback.hidden = true;
+      }
+    });
+  }
+
+  function plotLayout(title) {
+    return {
+      title: { text: title, font: { size: 14 } },
+      margin: { l: 0, r: 0, t: 36, b: 0 },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      showlegend: true,
+      scene: {
+        xaxis: { title: "X", showgrid: true, zeroline: false },
+        yaxis: { title: "Y", showgrid: true, zeroline: false },
+        zaxis: { title: "Z", showgrid: true, zeroline: false },
+      },
+    };
+  }
+
+  function plotConfig() {
+    return { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["toImage"] };
+  }
+
+  function emptyData() {
+    return {
+      scatter: [{ type: "scatter3d", mode: "markers", name: "Points", x: [0], y: [0], z: [0], marker: { size: 3 } }],
+      surface: [{ type: "surface", name: "Surface", z: [[0, 0], [0, 0]], showscale: false, showlegend: true }],
+      trajectory: [{ type: "scatter3d", mode: "lines", name: "Path", x: [0], y: [0], z: [0], line: { width: 3 } }],
+    };
+  }
+
+  function sampleData() {
+    const pts = [];
+    for (let i = 0; i < 60; i++) {
+      pts.push([Math.sin(i / 6) * 5, Math.cos(i / 8) * 5, Math.sin(i / 4) * 3]);
+    }
+    const grid = [];
+    for (let y = -5; y <= 5; y++) {
+      const row = [];
+      for (let x = -5; x <= 5; x++) {
+        row.push(Math.sin(x / 2) * Math.cos(y / 2));
+      }
+      grid.push(row);
+    }
+    return {
+      scatter: [{
+        type: "scatter3d",
+        mode: "markers",
+        name: "Points",
+        x: pts.map((p) => p[0]),
+        y: pts.map((p) => p[1]),
+        z: pts.map((p) => p[2]),
+        marker: { size: 3, color: pts.map((p) => p[2]), colorscale: "Viridis" },
+      }],
+      surface: [{ type: "surface", name: "Surface", z: grid, colorscale: "Ice", showscale: false, showlegend: true }],
+      trajectory: [{
+        type: "scatter3d",
+        mode: "lines",
+        name: "Path",
+        x: pts.map((p) => p[0]),
+        y: pts.map((p) => p[1]),
+        z: pts.map((p) => p[2]),
+        line: { width: 4, color: "rgba(80,140,255,0.9)" },
+      }],
+    };
+  }
+
+  function resizeInsights() {
+    if (!window.Plotly) return;
+    plotIds.forEach((id) => Plotly.Plots.resize(plots[id]));
+  }
+
+  function wirePlotResizes() {
+    if (insightsResizeWired) return;
+    insightsResizeWired = true;
+    window.addEventListener("resize", () => {
+      resizeInsights();
+    });
+  }
+
+  function wirePlotExports() {
+    document.querySelectorAll("[data-export]").forEach((btn) => {
+      if (!(btn instanceof HTMLButtonElement)) return;
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-export") || "";
+        if (!window.Plotly || !plots[id]) return;
+        Plotly.downloadImage(plots[id], { format: "png", filename: id });
+      });
+    });
+  }
+
+  function wireInsightsSample() {
+    document.querySelectorAll("[data-action=\"insights.sample\"]").forEach((btn) => {
+      if (!(btn instanceof HTMLButtonElement)) return;
+      btn.addEventListener("click", () => {
+        if (engineDataLoaded) {
+          toast("Engine data loaded; sample not applied");
+          return;
+        }
+        sampleLoaded = true;
+        insightsRendered = false;
+        renderInsights3d();
+        toast("Loaded sample insights");
+      });
+    });
+  }
+
+  function applyInsightsFromData(data) {
+    if (!window.Plotly) {
+      showInsightsFallback("Plotly unavailable");
+      return;
+    }
+    hideInsightsFallbacks();
+    const scatter = data?.insights?.scatter3d;
+    const surface = data?.insights?.surface3d;
+    const trajectory = data?.insights?.trajectory3d;
+    if (!scatter && !surface && !trajectory) {
+      return;
+    }
+    const scatterTrace = scatter ? [{
+      type: "scatter3d",
+      mode: "markers",
+      name: "Points",
+      x: scatter.x || [],
+      y: scatter.y || [],
+      z: scatter.z || [],
+      marker: { size: 3, color: scatter.z || [], colorscale: "Viridis" },
+    }] : emptyData().scatter;
+
+    const surfaceTrace = surface ? [{
+      type: "surface",
+      name: "Surface",
+      z: surface.z || [[0]],
+      colorscale: "Ice",
+      showscale: false,
+      showlegend: true,
+    }] : emptyData().surface;
+
+    const trajectoryTrace = trajectory ? [{
+      type: "scatter3d",
+      mode: "lines",
+      name: "Path",
+      x: trajectory.x || [],
+      y: trajectory.y || [],
+      z: trajectory.z || [],
+      line: { width: 4, color: "rgba(80,140,255,0.9)" },
+    }] : emptyData().trajectory;
+
+    Plotly.react(plots.plotScatter3d, scatterTrace, plotLayout("Scatter 3D"), plotConfig());
+    Plotly.react(plots.plotSurface3d, surfaceTrace, plotLayout("Surface 3D"), plotConfig());
+    Plotly.react(plots.plotTrajectory3d, trajectoryTrace, plotLayout("Trajectory 3D"), plotConfig());
+    insightsRendered = true;
+    wirePlotResizes();
+    resizeInsights();
   }
 
   /* =========================
@@ -1081,6 +1292,7 @@
 
       const text = await f.text();
       const json = JSON.parse(text);
+      engineDataLoaded = true;
 
       perfMark("json:load:end");
       perfMeasure("json.load.ms", "json:load:start", "json:load:end");
@@ -1091,6 +1303,7 @@
         perfMark("json:validate:end");
         perfMeasure("json.validate.ms", "json:validate:start", "json:validate:end");
         applyValidationResult(result);
+        applyInsightsFromData(json);
       } else {
         DIAG.lastValidation = {
           ok: true,
@@ -1100,6 +1313,7 @@
         };
         setValidation(true, "JSON loaded (schema unavailable)");
         writeDiagnosticsDump();
+        applyInsightsFromData(json);
       }
 
       const schemaVer = json?.schema_version || json?.schemaVersion || json?.schema || "";
@@ -1164,6 +1378,12 @@
       case "help.about":
         toast("Daily Dashboard UI (HTML V9 / CSS V2 / JS V4). Export diagnostics for proof.");
         break;
+      case "insights.sample":
+        sampleLoaded = true;
+        insightsRendered = false;
+        renderInsights3d();
+        toast("Loaded sample insights");
+        break;
       default:
         toast(`Unknown action: ${action}`);
         break;
@@ -1221,6 +1441,8 @@
       wireActionDelegation();
       wireWorkspaceShortcuts();
       wireSubTabs();
+      wirePlotExports();
+      wireInsightsSample();
 
       renderWorkspaceTabs();
       updateMenuContextChip();
