@@ -151,8 +151,9 @@ button:disabled {
   --popup-edge-gap: 24px;
   --popup-height-gap: 120px;
 
-  /* Grain texture */
+  /* Grain texture (SVG noise pattern with scattered dots) */
   --grain-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSIzIiB5PSI2IiBmaWxsPSJyZ2JhKDAsMCwwLDAuMTUpIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iMTQiIHk9IjE0IiBmaWxsPSJyZ2JhKDAsMCwwLDAuMTApIi8+PHJlY3Qgd2lkdGg9IjEiIGhlaWdodD0iMSIgeD0iMjIiIHk9IjkiIGZpbGw9InJnYmEoMCwwLDAsMC4xMikiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSIzMCIgeT0iMTciIGZpbGw9InJnYmEoMCwwLDAsMC4xNCkiLz48cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4PSI3IiB5PSIyNyIgZmlsbD0icmdiYSgwLDAsMCwwLjEyKSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjE5IiB5PSIyMyIgZmlsbD0icmdiYSgwLDAsMCwwLjE0KSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjI4IiB5PSIzMCIgZmlsbD0icmdiYSgwLDAsMCwwLjExKSIvPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHg9IjM1IiB5PSIzNCIgZmlsbD0icmdiYSgwLDAsMCwwLjEzKSIvPjwvc3ZnPg==");
+  --grain-size: 120px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -230,7 +231,7 @@ button:disabled {
 #sceneLayer::before {
   background-image: var(--grain-image);
   background-repeat: repeat;
-  background-size: 120px 120px;
+  background-size: var(--grain-size) var(--grain-size);
   opacity: 0.35;
   mix-blend-mode: soft-light;
 }
