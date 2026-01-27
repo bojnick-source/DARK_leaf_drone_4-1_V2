@@ -732,11 +732,14 @@
       return;
     }
     const data = sampleLoaded ? sampleData() : emptyData();
-    Plotly.react(plots.plotScatter3d, data.scatter, plotLayout("Scatter 3D"), plotConfig());
-    Plotly.react(plots.plotSurface3d, data.surface, plotLayout("Surface 3D"), plotConfig());
-    Plotly.react(plots.plotTrajectory3d, data.trajectory, plotLayout("Trajectory 3D"), plotConfig());
-    insightsRendered = true;
-    wirePlotResizes();
+    requestAnimationFrame(() => {
+      Plotly.react(plots.plotScatter3d, data.scatter, plotLayout("Scatter 3D"), plotConfig());
+      Plotly.react(plots.plotSurface3d, data.surface, plotLayout("Surface 3D"), plotConfig());
+      Plotly.react(plots.plotTrajectory3d, data.trajectory, plotLayout("Trajectory 3D"), plotConfig());
+      insightsRendered = true;
+      wirePlotResizes();
+      resizeInsights();
+    });
   }
 
   function showInsightsFallback(reason) {
@@ -829,8 +832,13 @@
   function wirePlotResizes() {
     if (insightsResizeWired) return;
     insightsResizeWired = true;
+    let resizeHandle = null;
     window.addEventListener("resize", () => {
-      resizeInsights();
+      if (resizeHandle) cancelAnimationFrame(resizeHandle);
+      resizeHandle = requestAnimationFrame(() => {
+        resizeInsights();
+        resizeHandle = null;
+      });
     });
   }
 
