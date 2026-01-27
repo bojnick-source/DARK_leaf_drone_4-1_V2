@@ -221,7 +221,7 @@ END HEADER CONTRACT
       data-invariant="required"
     >
       <div class="chromeLeft" aria-label="App identity" data-component="chromeLeft" data-wire="chromeLeft">
-        <div class="brandMark" aria-label="DARK_leaf_drone">DARK_leaf_drone</div>
+        <div class="brandMark">DARK_leaf_drone</div>
       </div>
 
       <!-- Seam hooks -->
@@ -255,7 +255,9 @@ END HEADER CONTRACT
           <div class="tabContent">
             <span class="wsDot" aria-hidden="true"></span>
             <span class="wsTitle">Daily Dashboard</span>
-            <button class="wsClose" type="button" aria-label="Close workspace" title="Close" disabled>×</button>
+            <button class="wsClose" type="button" aria-label="Close workspace" disabled tabindex="-1">
+              <span aria-hidden="true">×</span>
+            </button>
           </div>
         </button>
 
@@ -354,10 +356,18 @@ END HEADER CONTRACT
     </section>
 
     <!-- Subtabs -->
-    <section id="subTabStrip" class="glass subTabs" aria-label="Mode tabs" data-component="subTabStrip" data-wire="subTabStrip" data-invariant="required">
-      <button class="subTab" type="button" data-subtab="cad">CAD</button>
-      <button class="subTab" type="button" data-subtab="sim">SIM</button>
-      <button class="subTab" type="button" data-subtab="insights">INSIGHTS</button>
+    <section
+      id="subTabStrip"
+      class="glass subTabs"
+      role="tablist"
+      aria-label="Mode tabs"
+      data-component="subTabStrip"
+      data-wire="subTabStrip"
+      data-invariant="required"
+    >
+      <button class="subTab" type="button" role="tab" aria-selected="true" data-subtab="cad">CAD</button>
+      <button class="subTab" type="button" role="tab" aria-selected="false" data-subtab="sim">SIM</button>
+      <button class="subTab" type="button" role="tab" aria-selected="false" data-subtab="insights">INSIGHTS</button>
       <div class="subTabSpacer" aria-hidden="true"></div>
       <button id="btnResetLayout" class="ghostBtn" type="button" data-action="layout.reset">Reset Layout</button>
     </section>
@@ -410,7 +420,9 @@ END HEADER CONTRACT
     <!-- Taskbar -->
     <footer id="taskBar" class="glass taskBar" aria-label="Status bar" data-component="taskBar" data-wire="taskBar" data-invariant="required">
       <div class="taskLeft">
-        <button id="btnHamburger" class="iconBtn" type="button" aria-label="Menu" title="Menu">≡</button>
+        <button id="btnHamburger" class="iconBtn" type="button" aria-label="Menu" aria-expanded="false">
+          <span aria-hidden="true">≡</span>
+        </button>
         <span class="pill" id="modePill">MODE: CAD</span>
         <span class="pill" id="schemaPill">SCHEMA: —</span>
         <span class="pill" id="validationPill">VALIDATION: —</span>
@@ -439,7 +451,9 @@ END HEADER CONTRACT
         <div class="tabContent" data-component="tabContent" data-wire="tabContent">
           <span class="wsDot" aria-hidden="true" data-component="wsDot" data-wire="wsDot"></span>
           <span class="wsTitle" data-component="wsTitle" data-wire="wsTitle"></span>
-          <button class="wsClose" type="button" aria-label="Close workspace" title="Close" data-component="wsClose" data-wire="wsClose">×</button>
+          <button class="wsClose" type="button" aria-label="Close workspace" data-component="wsClose" data-wire="wsClose">
+            <span aria-hidden="true">×</span>
+          </button>
         </div>
       </button>
     </template>
@@ -448,7 +462,9 @@ END HEADER CONTRACT
       <dialog class="glass modal" aria-label="Dialog" data-component="modal" data-wire="modal">
         <div class="modalHeader" data-component="modalHeader" data-wire="modalHeader">
           <div class="modalTitle" data-component="modalTitle" data-wire="modalTitle"></div>
-          <button class="iconBtn modalClose" type="button" aria-label="Close dialog" data-component="modalClose" data-wire="modalClose">×</button>
+          <button class="iconBtn modalClose" type="button" aria-label="Close dialog" data-component="modalClose" data-wire="modalClose">
+            <span aria-hidden="true">×</span>
+          </button>
         </div>
         <div class="modalBody" data-component="modalBody" data-wire="modalBody"></div>
       </dialog>
