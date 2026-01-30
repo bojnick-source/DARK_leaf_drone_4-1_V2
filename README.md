@@ -44,3 +44,23 @@ sfcs-mdp package --build-id BUILD_0001
 ```
 
 Packaging only produces `acceptance_data_package.zip` when all gates pass.
+
+## Daily Dashboard UI
+
+The UI shell lives in `ui/` and can be previewed by running a static server:
+
+```bash
+cd ui
+python -m http.server
+```
+
+Then open `http://localhost:8000/dashboard.html`.
+
+### Evaluate color QA
+
+```bash
+sfcs-mdp color-qa --report path/to/color_profile_scene.json
+```
+
+The report must include ICC profile metadata (or sRGB fallback), output transform mode, and
+the patch set required by the visual QA contract.
