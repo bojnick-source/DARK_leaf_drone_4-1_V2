@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://darkleaf.local/schemas/engine_output.schema.json",
+  "title": "Engine Output Schema (placeholder)",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "type": ["string", "number"] }
+  }
+}
