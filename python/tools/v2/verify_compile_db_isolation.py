@@ -73,16 +73,14 @@ def main() -> int:
         if args.require_present:
             print(
                 "[verify-compile-db] missing compile_commands.json "
-                "(required for presence checks): "
-                f"{compile_db_path}",
+                f"(required for presence checks): {compile_db_path}",
                 file=sys.stderr,
             )
             return 1
         # No compile DB and only absence expectations: treat as empty and pass.
         print(
             "[verify-compile-db] compile_commands.json not found; "
-            "treating as empty for absence checks: "
-            f"{compile_db_path}"
+            f"treating as empty for absence checks: {compile_db_path}"
         )
         paths = []
     else:
