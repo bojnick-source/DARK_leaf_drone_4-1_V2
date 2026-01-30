@@ -2,9 +2,7 @@
      This version bakes the “server-header enforcement” contract INTO FILE 1 as an auditable, copy/paste-able block.
      (HTML cannot force HTTP response headers; this is the correct way to make it provably 100/100 in deployment.)
 
-================================================================================
 ENTERPRISE HEADER CONTRACT (MUST BE SET AS HTTP RESPONSE HEADERS)
-================================================================================
 REQUIRED (match exactly; keep in sync with meta tags below):
   Content-Security-Policy:
     default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self'; img-src 'self' data:;
@@ -71,9 +69,7 @@ COPY/PASTE SERVER CONFIG EXAMPLES
     next();
   });
 
-================================================================================
 END HEADER CONTRACT
-================================================================================
 -->
 <!doctype html>
 <html lang="en" class="no-js" data-ui="darkleaf-dashboard" data-ui-version="9.0.0">
@@ -528,4 +524,293 @@ END HEADER CONTRACT
       </div>
     </noscript>
   </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DARK_leaf_drone — Daily Dashboard</title>
+  <link rel="stylesheet" href="./dashboard.css">
+</head>
+<body>
+  <div id="chromeStrip">
+    <div class="workspace-tabs" id="workspaceTabs" aria-label="Workspaces">
+      <button class="workspace-tab active" data-workspace="ws-1" type="button">
+        <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z" />
+        </svg>
+        <span class="tab-title">Daily Dashboard</span>
+        <span class="tab-close" aria-label="Close workspace">×</span>
+      </button>
+      <button class="workspace-tab" data-workspace="ws-2" type="button">
+        <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z" />
+        </svg>
+        <span class="tab-title">Run Review</span>
+        <span class="tab-close" aria-label="Close workspace">×</span>
+      </button>
+      <button class="workspace-tab" data-workspace="ws-3" type="button">
+        <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z" />
+        </svg>
+        <span class="tab-title">Comparison</span>
+        <span class="tab-close" aria-label="Close workspace">×</span>
+      </button>
+      <button id="workspaceAdd" class="workspace-add" type="button" aria-label="New Workspace">+</button>
+    </div>
+  </div>
+
+  <div id="tripwireBanner" role="alert" hidden></div>
+
+  <header id="menuBar" class="glass glass--thick">
+    <div class="brand">DARK_leaf_drone — Daily Dashboard</div>
+    <nav class="menu-bar" aria-label="Menu bar">
+      <button class="menu-trigger" type="button" data-menu="file">File</button>
+      <button class="menu-trigger" type="button" data-menu="edit">Edit</button>
+      <button class="menu-trigger" type="button" data-menu="view">View</button>
+      <button class="menu-trigger" type="button" data-menu="tools">Tools</button>
+      <button class="menu-trigger" type="button" data-menu="help">Help</button>
+    </nav>
+    <div class="menu-panels">
+      <div class="menu-panel" data-menu-panel="file">
+        <button class="menu-item" type="button" data-action="open-json">
+          Open JSON…
+          <span class="shortcut">⌘O</span>
+        </button>
+        <button class="menu-item" type="button" data-action="export-diagnostics">
+          Export Diagnostics
+          <span class="shortcut">⇧⌘D</span>
+        </button>
+      </div>
+      <div class="menu-panel" data-menu-panel="edit">
+        <button class="menu-item" type="button">Undo<span class="shortcut">⌘Z</span></button>
+        <button class="menu-item" type="button">Redo<span class="shortcut">⇧⌘Z</span></button>
+      </div>
+      <div class="menu-panel" data-menu-panel="view">
+        <button class="menu-item" type="button">Zoom In<span class="shortcut">⌘+</span></button>
+        <button class="menu-item" type="button">Zoom Out<span class="shortcut">⌘−</span></button>
+      </div>
+      <div class="menu-panel" data-menu-panel="tools">
+        <button class="menu-item" type="button" data-action="self-test">
+          Self-Test
+          <span class="shortcut">⌥⌘T</span>
+        </button>
+      </div>
+      <div class="menu-panel" data-menu-panel="help">
+        <button class="menu-item" type="button">Documentation<span class="shortcut">F1</span></button>
+      </div>
+    </div>
+  </header>
+
+  <div id="modeToolbar" class="glass glass--thin">
+    <div class="mode-tabs">
+      <button id="tabCad" type="button" data-tab="cad" class="active">CAD</button>
+      <button id="tabSim" type="button" data-tab="sim">SIM</button>
+      <button id="tabInsights" type="button" data-tab="insights">INSIGHTS</button>
+    </div>
+    <div class="mode-tools active" data-mode-tools="cad">
+      <button class="tool-button" type="button">Select</button>
+      <button class="tool-button" type="button">Move</button>
+      <button class="tool-button" type="button">Rotate</button>
+      <button class="tool-button" type="button">Measure</button>
+      <button class="tool-button" type="button">Grid</button>
+      <button class="tool-button" type="button">Layers</button>
+    </div>
+    <div class="mode-tools" data-mode-tools="sim">
+      <button class="tool-button" type="button">Play</button>
+      <button class="tool-button" type="button">Pause</button>
+      <button class="tool-button" type="button">Step</button>
+      <button class="tool-button" type="button">Orbit</button>
+      <button class="tool-button" type="button" data-action="reset-layout">Reset Layout</button>
+    </div>
+    <div class="mode-tools" data-mode-tools="insights">
+      <button class="tool-button" type="button">Overview</button>
+      <button class="tool-button" type="button">Trends</button>
+      <button class="tool-button" type="button">Heat</button>
+      <button class="tool-button" type="button">Map</button>
+      <button class="tool-button" type="button">Export</button>
+      <button class="tool-button" type="button" data-action="reset-layout">Reset Layout</button>
+    </div>
+    <div class="mode-actions">
+      <button id="btnExport" type="button">Export Image</button>
+      <button id="btnLoadSample" type="button">Load Sample</button>
+      <button id="btnValidate" type="button">Validate</button>
+      <button id="btnHelp" type="button">Help</button>
+    </div>
+  </div>
+
+  <main id="appShell">
+    <section id="notice">
+      <div class="title">Dashboard Shell Loaded</div>
+      <div class="hint">If you see this but no data, open Console logs or run via local server.</div>
+    </section>
+    <section id="app">
+      <div id="dashboardGrid" data-tab-panel="cad" class="tab-panel active">
+        <aside class="panel glass glass--thick" id="panelCadLayers">
+          <div class="panel-header">
+            <span>Layers</span>
+            <span class="panel-tag">CAD</span>
+          </div>
+          <ul class="tree">
+            <li class="tree-item active">
+              <span class="caret">▾</span>
+              <span>Airframe</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Wing Assembly</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Rotor Array</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Payload Bay</span>
+            </li>
+          </ul>
+        </aside>
+
+        <section class="panel glass glass--thin" id="panelCadViewport">
+          <div class="panel-header">
+            <span>Model Viewport</span>
+            <span class="panel-tag accent">3D</span>
+          </div>
+          <div class="viewport-canvas">
+            <div class="viewport-label">CAD viewport placeholder</div>
+          </div>
+        </section>
+
+        <aside class="panel glass glass--thick" id="panelCadInspector">
+          <div class="panel-header">
+            <span>Inspector</span>
+            <span class="panel-tag accent">CAD</span>
+          </div>
+          <div class="panel-section">
+            <div class="section-title">Parameters</div>
+            <div class="param-row"><span>Span</span><span>1.20 m</span></div>
+            <div class="param-row"><span>Mass</span><span>2.40 kg</span></div>
+            <div class="param-row"><span>Battery</span><span>4.2 Ah</span></div>
+          </div>
+        </aside>
+      </div>
+
+      <div id="simGrid" data-tab-panel="sim" class="tab-panel">
+        <aside class="panel glass glass--thick">
+          <div class="panel-header">
+            <span>Layers</span>
+            <span class="panel-tag">SIM</span>
+          </div>
+          <ul class="tree">
+            <li class="tree-item active">
+              <span class="caret">▾</span>
+              <span>Load Cases</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Wind Tunnel</span>
+            </li>
+            <li class="tree-item">
+              <span class="caret">▸</span>
+              <span>Thermal Sweep</span>
+            </li>
+          </ul>
+        </aside>
+
+        <section class="panel glass glass--thin">
+          <div class="panel-header">
+            <span>Simulation Viewport</span>
+            <span class="panel-tag accent">SIM</span>
+          </div>
+          <div class="viewport-canvas">
+            <div class="viewport-label">Simulation viewport placeholder</div>
+          </div>
+        </section>
+
+        <aside class="panel glass glass--thick">
+          <div class="panel-header">
+            <span>Simulation Viewer</span>
+            <span class="panel-tag accent">RUN</span>
+          </div>
+          <div class="stat-row"><span>Solver</span><span>Standby</span></div>
+          <div class="stat-row"><span>Frames</span><span>0</span></div>
+          <div class="stat-row"><span>Energy</span><span>—</span></div>
+        </aside>
+      </div>
+
+      <div id="insightsGrid" data-tab-panel="insights" class="tab-panel">
+        <aside class="panel glass glass--thick">
+          <div class="panel-header">
+            <span>Layers / Filters</span>
+            <span class="panel-tag">INS</span>
+          </div>
+          <div class="param-row"><span>Mission Set</span><span>Alpha</span></div>
+          <div class="param-row"><span>Altitude</span><span>480 m</span></div>
+          <div class="param-row"><span>Payload</span><span>Nominal</span></div>
+        </aside>
+
+        <section class="panel glass glass--thin">
+          <div class="panel-header">
+            <span>Stability Radar</span>
+            <span class="panel-tag accent">RADAR</span>
+          </div>
+          <svg class="radar" viewBox="0 0 140 140" aria-hidden="true">
+            <circle cx="70" cy="70" r="50" />
+            <circle cx="70" cy="70" r="30" />
+            <circle cx="70" cy="70" r="10" />
+            <polygon points="70,18 108,62 92,110 48,108 32,56" />
+          </svg>
+          <div class="panel-header">
+            <span>Trajectory Confidence</span>
+            <span class="panel-tag accent">CONF</span>
+          </div>
+          <svg class="sparkline" viewBox="0 0 120 36" aria-hidden="true">
+            <path d="M2 30 L20 18 L38 22 L56 14 L74 16 L92 10 L118 12" />
+          </svg>
+        </section>
+
+        <aside class="panel glass glass--thick">
+          <div class="panel-header">
+            <span>Thermal Map</span>
+            <span class="panel-tag accent">THERM</span>
+          </div>
+          <div class="viewport-canvas heat">
+            <div class="viewport-label">Thermal grid placeholder</div>
+          </div>
+          <div class="panel-header">
+            <span>Global Activity</span>
+            <span class="panel-tag accent">LIVE</span>
+          </div>
+          <div class="stat-row"><span>Nodes</span><span>14</span></div>
+          <div class="stat-row"><span>Alerts</span><span>0</span></div>
+          <div class="panel-header">
+            <span>Health</span>
+            <span class="panel-tag accent">OK</span>
+          </div>
+          <div class="health-meter">
+            <div class="health-fill"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer id="taskBar" class="glass glass--thick">
+    <div class="left">
+      <span class="pill" id="modePill">MODE: CAD</span>
+      <span class="pill" id="schemaPill">SCHEMA: (pending)</span>
+      <span class="pill" id="payloadPill">PAYLOAD: (pending)</span>
+    </div>
+    <div class="right">
+      <span class="pill" id="selfTestPill">SELF-TEST: --</span>
+      <span class="pill" id="statusPill">STATUS: READY</span>
+      <span class="pill" id="clockPill">TIME: --:--</span>
+    </div>
+  </footer>
+
+  <input id="jsonFileInput" type="file" accept="application/json" hidden>
+
+  <script src="./dashboard.js" defer></script>
+</body>
 </html>
