@@ -1,0 +1,5 @@
+{
+  "schema": "engine_output.schema.json",
+  "run_id": "RUN_SAMPLE",
+  "summary": {"status": "nominal", "module": "daily-dashboard"}
+}

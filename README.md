@@ -45,6 +45,17 @@ sfcs-mdp package --build-id BUILD_0001
 
 Packaging only produces `acceptance_data_package.zip` when all gates pass.
 
+## Daily Dashboard UI
+
+The UI shell lives in `ui/` and can be previewed by running a static server:
+
+```bash
+cd ui
+python -m http.server
+```
+
+Then open `http://localhost:8000/dashboard.html`.
+
 ### Evaluate color QA
 
 ```bash
