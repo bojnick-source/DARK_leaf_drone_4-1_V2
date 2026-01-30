@@ -6,3 +6,4 @@ __pycache__/
 records/
 quality/ncr/
 *.egg-info/
+build/

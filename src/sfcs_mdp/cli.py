@@ -5,6 +5,9 @@ import json
 import sys
 from pathlib import Path
 
+from pydantic import ValidationError
+
+from sfcs_mdp.color_qa import ColorProfileScene, evaluate_color_profile_scene
 from sfcs_mdp.model import BlockLevel
 from sfcs_mdp.runner import package_build, run_traveler, status_build
 from sfcs_mdp.validate import SpecValidationError, load_spec, validate_spec
@@ -58,6 +61,9 @@ def _build_parser() -> argparse.ArgumentParser:
     validate_parser = subparsers.add_parser("validate", help="Validate a manufacturing spec")
     validate_parser.add_argument("--spec", type=Path)
 
+    colorqa_parser = subparsers.add_parser("color-qa", help="Evaluate color QA report")
+    colorqa_parser.add_argument("--report", type=Path, required=True)
+
     run_parser = subparsers.add_parser("run", help="Run the traveler")
     _add_run_args(run_parser, include_simulate_flag=True)
 
@@ -89,6 +95,23 @@ def main() -> int:
             print(str(exc))
             return 1
         print("VALIDATION OK")
+        return 0
+
+    if args.command == "color-qa":
+        report_path = args.report
+        if not report_path.is_absolute():
+            report_path = Path.cwd() / report_path
+        if not report_path.is_file():
+            print(f"QA report not found: {report_path.as_posix()}")
+            return 1
+        try:
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+            scene = ColorProfileScene.model_validate(payload)
+            report = evaluate_color_profile_scene(scene)
+        except (ValueError, ValidationError) as exc:
+            print(f"QA REPORT INVALID: {exc}")
+            return 1
+        print(json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True))
         return 0
 
     if args.command == "run":
