@@ -62,3 +62,5 @@ sfcs-mdp package --build-id BUILD_0001
 ```
 
 Packaging only produces `acceptance_data_package.zip` when all gates pass.
+
+CLI commands append the numeric grading footer to each substantive output, including failures.
