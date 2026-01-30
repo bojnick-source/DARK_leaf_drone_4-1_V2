@@ -32,16 +32,14 @@ def run_batch(cli: str, inputs: Iterable[str], artifact_root: str | None = None)
 def main() -> int:
     parser = argparse.ArgumentParser(description="Batch runner for v2 engine CLI.")
     parser.add_argument(
-        "--cli",
-        default="v2_engine_cli",
-        help="Path to v2_engine_cli executable",
+        "--cli", default="v2_engine_cli", help="Path to v2_engine_cli executable"
     )
     parser.add_argument(
-        "--inputs-file",
-        type=Path,
-        help="File containing one canonical input per line",
+        "--inputs-file", type=Path, help="File containing one canonical input per line"
     )
-    parser.add_argument("--canonical-input", action="append", help="Inline canonical input string")
+    parser.add_argument(
+        "--canonical-input", action="append", help="Inline canonical input string"
+    )
     parser.add_argument("--artifact-root", help="Override artifact root for all runs")
     args = parser.parse_args()
 
