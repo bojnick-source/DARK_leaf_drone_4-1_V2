@@ -1,3 +1,4 @@
+from reidce.pico_gk import PicoGKResult, apply_pico_gk, generate_cad_ref
 from reidce.pipeline import (
     compile_inputs,
     evaluate_nominal,
@@ -22,6 +23,7 @@ from reidce.schemas import (
     SensitivityReport,
     UQSummary,
 )
+from reidce.topology import TopologyCandidate, generate_topology_candidates
 
 __all__ = [
     "BuildPacket",
@@ -37,11 +39,16 @@ __all__ = [
     "RunManifest",
     "SensitivityReport",
     "UQSummary",
+    "PicoGKResult",
+    "TopologyCandidate",
+    "apply_pico_gk",
     "compile_inputs",
     "evaluate_nominal",
     "evaluate_uq",
     "export_build_packet",
     "export_evidence_pack",
+    "generate_cad_ref",
+    "generate_topology_candidates",
     "gate_build_ready",
     "sensitivity",
 ]

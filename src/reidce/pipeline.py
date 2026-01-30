@@ -7,29 +7,42 @@ import platform
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Literal, Tuple
+
+from sfcs_mdp.hashutil import sha256_bytes, sha256_file
 
 from reidce.schemas import (
+    BudgetTotals,
     BuildPacket,
     BuildPacketCadPayload,
     BuildPacketCriticalFeature,
     BuildPacketTolerances,
     ConstraintEntry,
     ConstraintReport,
+    ContinuousMetricSummary,
+    EquilibriumSolverSpec,
     EvidencePack,
     EvidencePackArtifacts,
     GateDecision,
     GateKeyMetrics,
+    GeometryTolerances,
+    InspectionPlan,
+    KPIResults,
     ManifestArtifacts,
     ManifestInputsHash,
+    NominalEquilibrium,
     NominalResult,
+    Quantity,
     RunConfig,
     RunManifest,
     SensitivityReport,
+    UnitLiteral,
+    UQContinuousMetrics,
     UQSummary,
+    ValidationSummary,
+    WilsonCI,
     now_utc_iso,
 )
-from sfcs_mdp.hashutil import sha256_bytes, sha256_file
 
 
 @dataclass(frozen=True)
@@ -68,6 +81,10 @@ def _serialize_payload(payload: Any) -> str:
 
 def _hash_payload(payload: Any) -> str:
     return sha256_bytes(_serialize_payload(payload).encode("utf-8"))
+
+
+def _quantity(value: float, unit: UnitLiteral) -> Quantity:
+    return Quantity(value=value, unit=unit)
 
 
 def _wilson_halfwidth(probability: float, samples: int) -> float:
@@ -148,14 +165,14 @@ def evaluate_nominal(state: PipelineState) -> tuple[NominalResult, ConstraintRep
     deflection = (
         force_eq / (structure.stiffness.value or 1.0) if structure.stiffness.value else 0.0
     )
-    equilibrium = {
-        "converged": True,
-        "strain_star": {"value": 0.0, "unit": "ratio"},
-        "force_eq": {"value": force_eq, "unit": "N"},
-        "deflection_eq": {"value": deflection, "unit": "m"},
-        "residual_force": {"value": 0.0, "unit": "N"},
-        "solver": {"name": "brentq", "rtol": 1e-10, "atol": 1e-10, "maxiter": 200},
-    }
+    equilibrium = NominalEquilibrium(
+        converged=True,
+        strain_star=_quantity(0.0, "ratio"),
+        force_eq=_quantity(force_eq, "N"),
+        deflection_eq=_quantity(deflection, "m"),
+        residual_force=_quantity(0.0, "N"),
+        solver=EquilibriumSolverSpec(name="brentq", rtol=1e-10, atol=1e-10, maxiter=200),
+    )
     payload_ratio = 0.0
     if mission.payload_target.value and mission.payload_target.value > 0:
         payload_ratio = (force_eq / 9.81) / mission.payload_target.value
@@ -168,15 +185,15 @@ def evaluate_nominal(state: PipelineState) -> tuple[NominalResult, ConstraintRep
     nominal = NominalResult(
         schema_version="nominal.v1.0",
         equilibrium=equilibrium,
-        budgets={
-            "mass_total": {"value": mass_total, "unit": "kg"},
-            "power_total": {"value": power_total, "unit": "W"},
-            "energy_total": {"value": 0.0, "unit": "J"},
-        },
-        kpis={
-            "payload_ratio": {"value": payload_ratio, "unit": "ratio"},
-            "useful_work_n_per_w": {"value": 0.0, "unit": "ratio"},
-        },
+        budgets=BudgetTotals(
+            mass_total=_quantity(mass_total, "kg"),
+            power_total=_quantity(power_total, "W"),
+            energy_total=_quantity(0.0, "J"),
+        ),
+        kpis=KPIResults(
+            payload_ratio=_quantity(payload_ratio, "ratio"),
+            useful_work_n_per_w=_quantity(0.0, "ratio"),
+        ),
         numerical_integrity=True,
     )
 
@@ -270,13 +287,17 @@ def evaluate_nominal(state: PipelineState) -> tuple[NominalResult, ConstraintRep
     return nominal, report
 
 
-def evaluate_uq(state: PipelineState, nominal: NominalResult, constraints: ConstraintReport) -> UQSummary:
+def evaluate_uq(
+    state: PipelineState,
+    nominal: NominalResult,
+    constraints: ConstraintReport,
+) -> UQSummary:
     mission = state.inputs.mission
     success = all(entry.passed for entry in constraints.constraints)
     success_probability = 1.0 if success else 0.0
     payload_ratio_probability = success_probability
     n_samples = 0
-    stop_reason = "max_samples_hit"
+    stop_reason: Literal["ci_met", "min_samples_not_met", "max_samples_hit"] = "max_samples_hit"
     halfwidth_success = 1.0
     halfwidth_payload = 1.0
     while n_samples < mission.statistical_sufficiency.uq_max_samples:
@@ -297,13 +318,13 @@ def evaluate_uq(state: PipelineState, nominal: NominalResult, constraints: Const
         n_samples=n_samples,
         stop_reason=stop_reason,
         success_probability=success_probability,
-        success_ci={"method": "wilson_95", "halfwidth": halfwidth_success},
+        success_ci=WilsonCI(method="wilson_95", halfwidth=halfwidth_success),
         payload_ratio_probability=payload_ratio_probability,
-        payload_ratio_ci={"method": "wilson_95", "halfwidth": halfwidth_payload},
-        continuous_metrics={
-            "force_margin_n": {"p05": 0.0, "p50": 0.0, "p95": 0.0},
-            "deflection_m": {"p05": 0.0, "p50": 0.0, "p95": 0.0},
-        },
+        payload_ratio_ci=WilsonCI(method="wilson_95", halfwidth=halfwidth_payload),
+        continuous_metrics=UQContinuousMetrics(
+            force_margin_n=ContinuousMetricSummary(p05=0.0, p50=0.0, p95=0.0),
+            deflection_m=ContinuousMetricSummary(p05=0.0, p50=0.0, p95=0.0),
+        ),
         numerical_integrity=True,
     )
     return uq_summary
@@ -413,19 +434,19 @@ def export_build_packet(
         process_id=process.process_id,
         cad_payload=BuildPacketCadPayload(type=cad.type, uri=cad.uri, sha256=cad.sha256),
         tolerances=_build_packet_tolerances(design.geometry.tolerances),
-        inspection_plan={
-            "methods": ["ct", "cmm"],
-            "acceptance_criteria": [
+        inspection_plan=InspectionPlan(
+            methods=["ct", "cmm"],
+            acceptance_criteria=[
                 "Nominal inspection plan.",
                 f"Material spec: {process.material.spec_ref or process.material.material_id}",
             ],
-        },
-        validation_summary={
-            "gate_decision_ref": "gate_decision.json#/",
-            "uq_summary_ref": "uq_summary.json#/",
-            "constraints_ref": "constraints.json#/",
-            "manifest_ref": "manifest.json#/",
-        },
+        ),
+        validation_summary=ValidationSummary(
+            gate_decision_ref="gate_decision.json#/",
+            uq_summary_ref="uq_summary.json#/",
+            constraints_ref="constraints.json#/",
+            manifest_ref="manifest.json#/",
+        ),
     )
     return build_packet
 
