@@ -32,6 +32,8 @@ def format_grading_footer(
 ) -> str:
     scores = breakdown or GradingBreakdown()
     total = scores.total
+    if total < 0.0 or total > 100.0:
+        raise ValueError("Total score must be between 0.00 and 100.00.")
     if total < 100.0 and corrected_version is None:
         raise ValueError("Corrected version required when total is below 100.00.")
 
@@ -55,6 +57,7 @@ def format_grading_footer(
 
     if total < 100.0:
         lines.append("Corrected version:")
-        lines.append(corrected_version or "")
+        assert corrected_version is not None
+        lines.append(corrected_version)
 
     return "\n".join(lines)

@@ -169,6 +169,7 @@ def main() -> int:
         return 0
 
     parser.print_help()
+    print(format_grading_footer())
     return 1
 
 
