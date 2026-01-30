@@ -1,0 +1,5 @@
+/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/4-1-drone-main/_codeql_build_dir/CMakeFiles/lift_engine.dir
+/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/4-1-drone-main/_codeql_build_dir/CMakeFiles/lift_cli.dir
+/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/4-1-drone-main/_codeql_build_dir/CMakeFiles/closeout_demo.dir
+/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/4-1-drone-main/_codeql_build_dir/CMakeFiles/edit_cache.dir
+/home/runner/work/DARK_leaf_drone_4-1_V2/DARK_leaf_drone_4-1_V2/4-1-drone-main/_codeql_build_dir/CMakeFiles/rebuild_cache.dir
