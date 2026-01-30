@@ -1,0 +1,40 @@
+aero_metrics_contract:
+  allowlist_required: true
+  metric_fields:
+    - "name"
+    - "value"
+  required_fields:
+    - "contract_version"
+    - "allowlist"
+    - "metrics"
+    - "tripwires"
+  tripwire_fields:
+    - "id"
+    - "metric"
+    - "min_allowed"
+    - "max_allowed"
+  version_prefix: "AERO_METRICS_1."
+generated_at: "1970-01-01T00:00:00Z"
+generated_by: "tools/generate_repo_facts.py"
+repo:
+  name: "DARK_leaf_drone_4-1_V2"
+  root: "."
+  workflows:
+    -
+      path: ".github/workflows/ci.yaml"
+      purpose: "python-ci"
+    -
+      path: ".github/workflows/ci.yml"
+      purpose: "cmake-ci"
+verification:
+  cmake:
+    build: "cmake --build build"
+    configure_off: "cmake -S . -B build -DENABLE_V2_ENGINE=OFF"
+    configure_on: "cmake -S . -B build -DENABLE_V2_ENGINE=ON"
+    test: "ctest --test-dir build"
+  python:
+    install: "python -m pip install .[dev]"
+    lint: "python -m ruff check ."
+    mathlib_validate: "python3 tools/validate_mathlib_v0.py manufacturing/mathlib_v0.yaml"
+    tests: "python -m pytest"
+    type_check: "python -m mypy src"
