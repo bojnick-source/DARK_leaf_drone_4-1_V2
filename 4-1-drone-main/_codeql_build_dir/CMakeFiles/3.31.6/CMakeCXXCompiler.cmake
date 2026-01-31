@@ -1,4 +1,4 @@
-set(CMAKE_CXX_COMPILER "/home/runner/work/DARK_leaf_drone_4-1_V2/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++")
+set(CMAKE_CXX_COMPILER "c++")
 set(CMAKE_CXX_COMPILER_ARG1 "")
 set(CMAKE_CXX_COMPILER_ID "GNU")
 set(CMAKE_CXX_COMPILER_VERSION "13.3.0")
