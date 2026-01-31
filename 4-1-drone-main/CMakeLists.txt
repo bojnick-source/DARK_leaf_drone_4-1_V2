@@ -23,9 +23,6 @@ add_library(lift_engine
   # Physics
   cpp/engine/physics/disk_area.cpp
   cpp/engine/physics/hover_momentum.cpp
-  # Analysis
-  cpp/engine/analysis/closeout_eval.cpp
-  cpp/engine/analysis/closeout_json.cpp
 )
 
 target_include_directories(lift_engine PUBLIC
