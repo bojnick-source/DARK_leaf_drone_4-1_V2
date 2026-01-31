@@ -1,0 +1,9 @@
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/*.o
+/*.obj
+/*.out
+/*.log
+/*.tmp
+/v2_studio

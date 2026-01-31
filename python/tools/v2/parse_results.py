@@ -7,6 +7,12 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any, Dict
+
+
+def parse_run_output(path: Path) -> Dict[str, Any]:
+    data = json.loads(path.read_text())
+    return data
 
 
 def main() -> int:
@@ -15,9 +21,12 @@ def main() -> int:
     args = parser.parse_args()
 
     data = json.loads(args.run_output.read_text())
+    data = parse_run_output(args.run_output)
     json.dump(data, fp=sys.stdout, indent=2)
     return 0
 
 
 if __name__ == "__main__":
+    import sys
+
     sys.exit(main())

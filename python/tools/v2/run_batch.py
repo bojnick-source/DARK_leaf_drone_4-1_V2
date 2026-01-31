@@ -35,9 +35,7 @@ def main() -> int:
         "--cli", default="v2_engine_cli", help="Path to v2_engine_cli executable"
     )
     parser.add_argument(
-        "--inputs-file",
-        type=Path,
-        help="File containing one canonical input per line",
+        "--inputs-file", type=Path, help="File containing one canonical input per line"
     )
     parser.add_argument(
         "--canonical-input", action="append", help="Inline canonical input string"
@@ -58,9 +56,7 @@ def main() -> int:
         inputs.extend(args.canonical_input)
 
     if not inputs:
-        parser.error(
-            "provide at least one canonical input via --inputs-file or --canonical-input"
-        )
+        parser.error("provide at least one canonical input via --inputs-file or --canonical-input")
 
     outputs = run_batch(args.cli, inputs, args.artifact_root)
     json.dump(outputs, fp=sys.stdout, indent=2)
@@ -68,4 +64,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    import sys
+
     sys.exit(main())

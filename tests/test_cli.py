@@ -92,3 +92,16 @@ def test_color_qa_cli_invalid_payload(
     assert main() == 1
     output = capsys.readouterr().out
     assert "QA REPORT INVALID" in output
+def test_cli_validate_outputs_grading_footer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    spec_dir = tmp_path / "manufacturing"
+    spec_dir.mkdir()
+    spec_path = spec_dir / "sfcs_drone_mdp_v0.yaml"
+    spec_path.write_text("meta: {}\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("sys.argv", ["sfcs-mdp", "validate"])
+    assert main() == 1
+    output = capsys.readouterr().out
+    assert "VALIDATION FAILED" in output
+    assert "Total: 100.00/100.00" in output
