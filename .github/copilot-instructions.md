@@ -7,7 +7,7 @@ This repository contains the DARK_leaf_drone_4-1_V2 project - improved drone com
 ## Tech Stack
 
 ### Languages & Frameworks
-- **Python**: 3.11+ (primary language for CLI and tools)
+- **Python**: 3.11+ minimum, 3.12 target (primary language for CLI and tools)
 - **C++**: C++20 (for physics engine and performance-critical components)
 - **CMake**: 3.20+ (build system for C++ components)
 
@@ -87,10 +87,10 @@ python -m http.server
 ## Coding Conventions
 
 ### Python
+- **Python version**: 3.11+ minimum, 3.12 for development/tooling
 - **Line length**: 100 characters (enforced by ruff)
-- **Target version**: Python 3.12
-- **Linting**: Use ruff with select rules ["B", "E", "F", "I"]
-- **Type checking**: Required with mypy (ignore missing imports allowed)
+- **Linting**: Use ruff with select rules ["B", "E", "F", "I"], targeting Python 3.12
+- **Type checking**: Required with mypy for Python 3.12 (ignore missing imports allowed)
 - Follow existing patterns in `src/sfcs_mdp/` and `src/reidce/`
 - Use `pydantic` for data validation and configuration models
 - Prefer type hints on all functions
