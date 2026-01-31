@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / "tools" / "repo_facts.yaml"
 
@@ -61,7 +61,9 @@ def _build_facts(repo_root: Path) -> dict[str, Any]:
                 "lint": "python -m ruff check .",
                 "type_check": "python -m mypy src",
                 "tests": "python -m pytest",
-                "mathlib_validate": "python3 tools/validate_mathlib_v0.py manufacturing/mathlib_v0.yaml",
+                "mathlib_validate": (
+                    "python3 tools/validate_mathlib_v0.py manufacturing/mathlib_v0.yaml"
+                ),
             },
             "cmake": {
                 "configure_off": "cmake -S . -B build -DENABLE_V2_ENGINE=OFF",
@@ -98,7 +100,9 @@ def _check_output(path: Path, content: str) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate repo facts YAML.")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--check", action="store_true", help="Verify repo_facts.yaml is up-to-date.")
+    parser.add_argument(
+        "--check", action="store_true", help="Verify repo_facts.yaml is up-to-date."
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
