@@ -1,133 +1,137 @@
-# GitHub Copilot Instructions for DARK_leaf_drone_4-1_V2
+# Copilot Repository Instructions
 
-## Project Overview
+## Overview
 
-This repository contains improved drone computational engineering software with two main components:
+This repository contains the DARK_leaf_drone_4-1_V2 project - improved drone computational engineering software with a manufacturing digital thread/traveler runner system.
 
-1. **Python CLI Tool (`sfcs-mdp`)**: Manufacturing digital thread/traveler runner for the SFCS (Smart Factory Control System)
-2. **C++ Engine**: Drone physics and analysis engine with computational components
+## Tech Stack
 
-## Repository Structure
+### Languages & Frameworks
+- **Python**: 3.11+ minimum, 3.12 target (primary language for CLI and tools)
+- **C++**: C++20 (for physics engine and performance-critical components)
+- **CMake**: 3.20+ (build system for C++ components)
 
-- `src/sfcs_mdp/` - Python CLI implementation for manufacturing digital thread
-- `v2/engine/` - C++ v2 drone engine
-- `external/4-1-drone/` - Vendored C++ code for legacy drone engine
-- `manufacturing/` - YAML specifications for manufacturing processes
-- `tests/` - Python test suite
+### Key Dependencies
+- Python: `pydantic` (2.7.4), `PyYAML` (6.0.2)
+- Development tools: `pytest`, `ruff`, `mypy`
+
+## Project Structure
+
+- `src/sfcs_mdp/` - Main Python package for SFCS manufacturing digital thread
+- `src/reidce/` - REIDCE component
+- `tests/` - Test suite (pytest-based)
+- `v2/engine/` - V2 C++ physics engine
+- `external/4-1-drone/` - Vendor code (isolated static library)
+- `manufacturing/` - Manufacturing specifications and configurations
 - `ui/` - Dashboard UI (static HTML/JS)
-- `tools/` - Validation scripts
+- `tools/` - Build and validation tools
+- `python/tools/v2/` - V2-specific Python tools
 
-## Code Style and Linting
+## Build and Test Commands
 
-### Python
-- **Formatter/Linter**: Use `ruff` with line length 100
-- **Type Checker**: Use `mypy` with Python 3.12 type hints
-- **Python Version**: 3.11+ (target 3.12)
-- Follow existing patterns in `src/sfcs_mdp/`
-- Use Pydantic for data validation and models
-- Keep functions focused and well-typed
+### Python Components
 
-### C++
-- **Standard**: C++20
-- **CMake**: Minimum version 3.20
-- Follow existing patterns in `v2/engine/`
-- Keep headers in `include/`, implementation in `src/`
-
-## Testing
-
-- **Framework**: pytest
-- **Location**: All tests in `tests/` directory
-- **Run tests**: `python -m pytest`
-- **Add tests** for new CLI commands and validation logic
-- Test files follow pattern `test_*.py`
-
-## Build and Development
-
-### Python Component
 ```bash
-# Install with dev dependencies
+# Install dependencies (including dev tools)
 python -m pip install .[dev]
 
-# Lint code
+# Run linter (ruff)
 python -m ruff check .
 
-# Type check
+# Run type checker (mypy)
 python -m mypy src
 
 # Run tests
 python -m pytest
 
-# Validate manufacturing spec
+# Validate mathlib
 python3 tools/validate_mathlib_v0.py manufacturing/mathlib_v0.yaml
 ```
 
-### C++ Component
+### C++ Components
+
 ```bash
-# Build
-mkdir build && cd build
-cmake ..
-make
+# Configure and build
+cmake -S . -B build
+cmake --build build
 
 # Run tests
-ctest
+ctest --test-dir build
 ```
 
-### UI Preview
+### Manufacturing Digital Thread (sfcs-mdp CLI)
+
+```bash
+# Validate spec
+sfcs-mdp validate --spec manufacturing/sfcs_drone_mdp_v0.yaml
+
+# Run traveler
+sfcs-mdp run --spec manufacturing/sfcs_drone_mdp_v0.yaml --build-id BUILD_0001 --rev-tag REV_A
+
+# Simulated build mode (development/testing)
+sfcs-mdp simulate --spec manufacturing/sfcs_drone_mdp_v0.yaml --build-id BUILD_0001 --rev-tag REV_A
+
+# Check status and package
+sfcs-mdp status --build-id BUILD_0001
+sfcs-mdp package --build-id BUILD_0001
+```
+
+### UI Development
+
 ```bash
 cd ui
 python -m http.server
-# Open http://localhost:8000/dashboard.html
+# Then open http://localhost:8000/dashboard.html
 ```
 
-## CLI Commands
-
-The `sfcs-mdp` CLI provides several commands:
-
-- `validate` - Validate manufacturing spec
-- `run` - Execute manufacturing traveler
-- `simulate` - Run in simulation mode (dev/testing)
-- `status` - Check build status
-- `package` - Package build artifacts
-- `color-qa` - Evaluate color QA reports
-
-Default spec location: `manufacturing/sfcs_drone_mdp_v0.yaml`
-
-## Key Dependencies
+## Coding Conventions
 
 ### Python
-- `pydantic==2.7.4` - Data validation
-- `PyYAML==6.0.2` - YAML parsing
+- **Python version**: 3.11+ minimum, 3.12 for development/tooling
+- **Line length**: 100 characters (enforced by ruff)
+- **Linting**: Use ruff with select rules ["B", "E", "F", "I"], targeting Python 3.12
+- **Type checking**: Required with mypy for Python 3.12 (ignore missing imports allowed)
+- Follow existing patterns in `src/sfcs_mdp/` and `src/reidce/`
+- Use `pydantic` for data validation and configuration models
+- Prefer type hints on all functions
 
-### Development
-- `pytest==8.3.0` - Testing
-- `ruff==0.5.6` - Linting
-- `mypy==1.11.1` - Type checking
+### C++
+- **Standard**: C++20, no compiler extensions
+- **Naming**: Follow existing conventions in `v2/engine/` and `external/4-1-drone/`
+- Keep vendor code (`external/4-1-drone/`) isolated as a static library
+- Do not modify vendor code unless absolutely necessary
 
-## Manufacturing Digital Thread
+### General
+- Always run linters and tests before committing changes
+- Keep commits focused and minimal
+- Update documentation when changing CLI interfaces or APIs
 
-The manufacturing component implements a deterministic, auditable pipeline for SFCS drone production:
+## Manufacturing Domain Context
 
-- Specs are YAML-based in `manufacturing/`
-- Supports block-level execution and gating
-- Creates evidence artifacts and signoffs
-- Simulation mode for development/testing
-- Packaging requires all gates to pass
+This project implements a deterministic, auditable manufacturing traveler pipeline (SFCS - Shop Floor Control System). Key concepts:
+
+- **Digital Thread**: Traceable record of manufacturing steps and evidence
+- **Traveler**: Manufacturing process specification with acceptance criteria
+- **Block Levels**: Progressive stages (e.g., `BLOCK_0_STRUCTURE_ONLY`)
+- **Evidence & Signoffs**: Required for gate passage and packaging
+- **Simulation Mode**: Development/testing mode with dummy evidence (creates `SIMULATION_NOTICE.txt`)
+
+String-based acceptance criteria require manual signoff artifacts. Packaging only produces `acceptance_data_package.zip` when all gates pass.
 
 ## Important Notes
 
-- **Minimal changes**: Make surgical, focused changes
-- **Test coverage**: Add tests for new functionality
-- **Type safety**: Always use type hints in Python
-- **Validation**: Manufacturing specs must validate before use
-- **Simulation**: Use `--simulate` flag for testing, never in production
-- **Evidence**: All production runs must create proper evidence artifacts
+- Do not modify files in `external/4-1-drone/` without explicit instruction (vendor code)
+- Manufacturing specs in `manufacturing/` are critical - validate any changes with mathlib validator
+- The `records/` and `quality/ncr/` directories are in `.gitignore` - runtime data only
+- UI is static HTML/JS - keep it simple and preview changes locally
+- Color QA reports must include ICC profile metadata or sRGB fallback
 
-## CI Pipeline
+## CI/CD
 
-The CI runs on every push and PR:
-1. Lint with ruff
-2. Type check with mypy
-3. Run pytest test suite
-4. Validate mathlib spec
+GitHub Actions workflow (`.github/workflows/ci.yaml`) runs:
+1. Python linting (ruff)
+2. Type checking (mypy)
+3. Test suite (pytest)
+4. Mathlib validation
 
 All checks must pass before merging.
