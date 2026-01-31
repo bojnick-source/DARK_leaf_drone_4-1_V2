@@ -29,10 +29,10 @@ Hardening:
 */
 
 #include "engine/core/errors.hpp"
-#include "engine/core/settings.hpp"
 
 namespace lift {
 
+struct EvalSettings;
 // Hover results for a single evaluation point.
 struct HoverMomentumResult {
   double thrust_N = 0.0;
