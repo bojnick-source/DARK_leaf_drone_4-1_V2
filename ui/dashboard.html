@@ -1,12 +1,16 @@
-<!-- ui/dashboard.html — PRIME-GRADE V9 (EFFECTIVE-100 + HEADER-ENFORCED “ENTERPRISE PERFECT”)
-     This version bakes the “server-header enforcement” contract INTO FILE 1 as an auditable, copy/paste-able block.
-     (HTML cannot force HTTP response headers; this is the correct way to make it provably 100/100 in deployment.)
+<!-- ui/dashboard.html — PRIME-GRADE V9
+     (EFFECTIVE-100 + HEADER-ENFORCED “ENTERPRISE PERFECT”)
+     This version bakes the “server-header enforcement” contract INTO FILE 1 as an auditable,
+     copy/paste-able block.
+     (HTML cannot force HTTP response headers; this is the correct way to make it provably 100/100
+     in deployment.)
 
 ENTERPRISE HEADER CONTRACT (MUST BE SET AS HTTP RESPONSE HEADERS)
 REQUIRED (match exactly; keep in sync with meta tags below):
   Content-Security-Policy:
-    default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self'; img-src 'self' data:;
-    font-src 'self'; connect-src 'self'; base-uri 'self'; frame-ancestors 'none';
+    default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self';
+    img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self';
+    frame-ancestors 'none';
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer
@@ -19,8 +23,17 @@ REQUIRED (match exactly; keep in sync with meta tags below):
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dark Leaf Drone — Daily Dashboard</title>
-    <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; frame-ancestors 'none';" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self' https://cdn.plot.ly;
+        style-src 'self';
+        img-src 'self' data:;
+        font-src 'self';
+        connect-src 'self';
+        base-uri 'self';
+        frame-ancestors 'none';"
+    />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta name="referrer" content="no-referrer" />
@@ -32,26 +45,39 @@ REQUIRED (match exactly; keep in sync with meta tags below):
       <div class="workspace-tabs" id="workspaceTabs" aria-label="Workspaces">
         <button class="workspace-tab active" data-workspace="ws-1" type="button">
           <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z" />
+            <path
+              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
+            />
           </svg>
           <span class="tab-title">Daily Dashboard</span>
           <span class="tab-close" aria-label="Close workspace">×</span>
         </button>
         <button class="workspace-tab" data-workspace="ws-2" type="button">
           <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z" />
+            <path
+              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
+            />
           </svg>
           <span class="tab-title">Run Review</span>
           <span class="tab-close" aria-label="Close workspace">×</span>
         </button>
         <button class="workspace-tab" data-workspace="ws-3" type="button">
           <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z" />
+            <path
+              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
+            />
           </svg>
           <span class="tab-title">Comparison</span>
           <span class="tab-close" aria-label="Close workspace">×</span>
         </button>
-        <button id="workspaceAdd" class="workspace-add" type="button" aria-label="New Workspace">+</button>
+        <button
+          id="workspaceAdd"
+          class="workspace-add"
+          type="button"
+          aria-label="New Workspace"
+        >
+          +
+        </button>
       </div>
     </div>
 
@@ -92,7 +118,10 @@ REQUIRED (match exactly; keep in sync with meta tags below):
           </button>
         </div>
         <div class="menu-panel" data-menu-panel="help">
-          <button class="menu-item" type="button">Documentation<span class="shortcut">F1</span></button>
+          <button class="menu-item" type="button">
+            Documentation
+            <span class="shortcut">F1</span>
+          </button>
         </div>
       </div>
     </header>
@@ -137,7 +166,9 @@ REQUIRED (match exactly; keep in sync with meta tags below):
     <main id="appShell">
       <section id="notice">
         <div class="title">Dashboard Shell Loaded</div>
-        <div class="hint">If you see this but no data, open Console logs or run via local server.</div>
+        <div class="hint">
+          If you see this but no data, open Console logs or run via local server.
+        </div>
       </section>
       <section id="app">
         <div id="dashboardGrid" data-tab-panel="cad" class="tab-panel active">
