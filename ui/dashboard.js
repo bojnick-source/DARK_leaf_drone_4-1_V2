@@ -62,7 +62,11 @@ function showNotice(title, message) {
 
 function updateClock() {
   const now = new Date();
-  const time = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const time = now.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
   safeText(clockPill, `TIME: ${time}`);
 }
 
@@ -136,7 +140,10 @@ function attachHandlers() {
         }
       } else {
         setStatus("WARN", STATUS_COLORS.warn, "warn");
-        showNotice("Validator not wired yet", "Hook up validateDashboardPayload() to enable validation.");
+        showNotice(
+          "Validator not wired yet",
+          "Hook up validateDashboardPayload() to enable validation."
+        );
       }
     });
   }
@@ -144,10 +151,11 @@ function attachHandlers() {
   if (btnHelp) {
     btnHelp.addEventListener("click", () => {
       setStatus("INFO", STATUS_COLORS.info, "info");
-      showNotice(
-        "Local run tips",
-        "Serve the ui folder with a simple HTTP server (e.g. 'python -m http.server') and open /dashboard.html."
-      );
+      const helpMessage = [
+        "Serve the ui folder with a simple HTTP server (e.g. 'python -m http.server')",
+        "and open /dashboard.html."
+      ].join(" ");
+      showNotice("Local run tips", helpMessage);
     });
   }
 
@@ -240,8 +248,17 @@ let clockIntervalId;
 function renderSelfTest() {
   const hasMenu = Boolean(document.getElementById("menuBar"));
   const hasTask = Boolean(document.getElementById("taskBar"));
-  const now = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  const message = `UI loaded · ${now} · Menu: ${hasMenu ? "YES" : "NO"} · Task: ${hasTask ? "YES" : "NO"}`;
+  const now = new Date().toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+  const message = [
+    "UI loaded",
+    now,
+    `Menu: ${hasMenu ? "YES" : "NO"}`,
+    `Task: ${hasTask ? "YES" : "NO"}`
+  ].join(" · ");
   safeText(selfTestPill, `SELF-TEST: ${message}`);
 }
 
@@ -288,7 +305,8 @@ function getInitialTab() {
 }
 
 function exportLayoutJson() {
-  const currentTab = document.querySelector("[data-tab].active")?.dataset.tab || getInitialTab();
+  const currentTab =
+    document.querySelector("[data-tab].active")?.dataset.tab || getInitialTab();
   const payload = {
     tab: currentTab,
     timestamp: new Date().toISOString(),
@@ -352,7 +370,9 @@ function exportDiagnostics() {
 }
 
 function downloadJson(payload, filename) {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json"
+  });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
