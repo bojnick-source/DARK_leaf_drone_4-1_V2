@@ -1,0 +1,2 @@
+/usr/bin/ar qc libv2_engine.a CMakeFiles/v2_engine.dir/src/engine.cpp.o CMakeFiles/v2_engine.dir/src/core/error.cpp.o CMakeFiles/v2_engine.dir/src/io/run_id.cpp.o CMakeFiles/v2_engine.dir/src/io/artifacts.cpp.o CMakeFiles/v2_engine.dir/src/io/json_emit.cpp.o
+/usr/bin/ranlib libv2_engine.a
