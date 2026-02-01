@@ -294,7 +294,6 @@ def run_traveler(
     _create_manifest(config, manifest_path)
     traveler_path = build_dir / "traveler.yaml"
     _create_traveler(spec.model_dump(mode="json"), traveler_path)
-    create_placeholder_file(build_dir / "hashes.txt")
     if simulate:
         ncr_path = resolve_path(
             config.repo_root, expand_placeholders("quality/ncr/<ncr_id>.yaml", placeholders)
