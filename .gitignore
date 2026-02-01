@@ -23,6 +23,7 @@ build-on/
 _codeql_build_dir/
 Testing/
 _codeql_detected_source_root
+.codeql_detected_source_root
 __pycache__/
 *.pyc
 .pytest_cache/
