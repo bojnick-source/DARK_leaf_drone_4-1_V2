@@ -1,3 +1,4 @@
+#include "engine/core/setting.hpp"
 #include "engine/physics/hover_momentum.hpp"
 
 #include <cmath>
