@@ -35,6 +35,11 @@ add_library(v2_engine STATIC
   src/calibration/calibrated_evaluator.cpp
   src/validity/types.cpp
   src/validity/conservative_ood_detector.cpp
+  src/engine.cpp
+  src/core/error.cpp
+  src/io/run_id.cpp
+  src/io/artifacts.cpp
+  src/io/json_emit.cpp
 )
 
 target_include_directories(v2_engine PUBLIC
@@ -63,13 +68,6 @@ target_compile_features(v2_engine PUBLIC cxx_std_20)
 # ---- Tests ----
 enable_testing()
 add_subdirectory(tests)
-add_library(v2_engine STATIC
-    src/engine.cpp
-    src/core/error.cpp
-    src/io/run_id.cpp
-    src/io/artifacts.cpp
-    src/io/json_emit.cpp
-)
 
 target_include_directories(v2_engine
     PUBLIC
