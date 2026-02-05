@@ -1,1 +1,1 @@
-/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/cpp_lineage_stamper_tests.dir/link.d CMakeFiles/cpp_lineage_stamper_tests.dir/tests/test_lineage_stamper.cpp.o -o cpp_lineage_stamper_tests  libcpp_lineage_stamper.a ../../v2/engine/libv2_engine.a
+/usr/bin/c++ CMakeFiles/cpp_lineage_stamper_tests.dir/tests/test_lineage_stamper.cpp.o -o cpp_lineage_stamper_tests  libcpp_lineage_stamper.a ../../v2/engine/libv2_engine.a 

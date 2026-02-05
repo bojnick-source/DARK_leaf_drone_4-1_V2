@@ -19,7 +19,7 @@ public:
     const char* name() const noexcept override {
         return "NotImplemented";
     }
-    
+
     std::string message(int) const override {
         return "Feature not yet implemented";
     }
@@ -36,10 +36,6 @@ inline std::error_code make_not_implemented_error() {
 
 /**
  * Stub function for evaluating candidates.
- * Returns a typed NotImplemented error.
- * 
- * DO NOT implement physics or solver calls.
- * DO NOT implement data translation logic.
  */
 std::error_code evaluate_candidate();
 

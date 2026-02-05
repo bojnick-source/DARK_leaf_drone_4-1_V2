@@ -24,6 +24,7 @@ const STATUS_COLORS = {
   fail: "#7f1d1d",
   loading: "#92400e"
 };
+const CAD_TILT_MAX_DEG = 12;
 let currentPayload = null;
 const TAB_STORAGE_KEY = "daily-dashboard-tab";
 const TAB_OPTIONS = ["cad", "sim", "insights"];
@@ -34,6 +35,111 @@ const TAB_MODE_LABELS = {
 };
 const WORKSPACE_STORAGE_KEY = "darkleaf.workspaces.v1";
 let activeWorkspaceId = "ws-1";
+
+function formatQuantity(quantity, fallback) {
+  if (!quantity || quantity.value === null || quantity.value === undefined || !quantity.unit) {
+    return fallback;
+  }
+  return `${quantity.value} ${quantity.unit}`;
+}
+
+function getGeometryPayload(payload) {
+  return (
+    payload?.design?.geometry ||
+    payload?.inputs?.design?.geometry ||
+    payload?.inputs?.geometry ||
+    payload?.geometry ||
+    payload?.cad?.geometry ||
+    null
+  );
+}
+
+function updateCadInspector(payload) {
+  const spanEl = getElementById("cadSpan");
+  const massEl = getElementById("cadMass");
+  const batteryEl = getElementById("cadBattery");
+  const envelopeEl = getElementById("cadEnvelope");
+  const actuatorEl = getElementById("cadActuator");
+  const toleranceEl = getElementById("cadTolerance");
+  const geometry = getGeometryPayload(payload);
+
+  if (spanEl) {
+    spanEl.textContent = formatQuantity(geometry?.envelope_max, spanEl.dataset.default || spanEl.textContent);
+  }
+  if (massEl) {
+    massEl.textContent = massEl.dataset.default || massEl.textContent;
+  }
+  if (batteryEl) {
+    batteryEl.textContent = batteryEl.dataset.default || batteryEl.textContent;
+  }
+  if (envelopeEl) {
+    envelopeEl.textContent = formatQuantity(geometry?.envelope_max, envelopeEl.dataset.default || envelopeEl.textContent);
+  }
+  if (actuatorEl) {
+    actuatorEl.textContent = formatQuantity(
+      geometry?.key_dimensions?.actuator_diameter,
+      actuatorEl.dataset.default || actuatorEl.textContent
+    );
+  }
+  if (toleranceEl) {
+    toleranceEl.textContent = formatQuantity(
+      geometry?.tolerances?.general_linear,
+      toleranceEl.dataset.default || toleranceEl.textContent
+    );
+  }
+}
+
+function initCadViewport() {
+  const cadViewport = getElementById("cadViewport");
+  if (!cadViewport) {
+    return;
+  }
+  let targetX = 0;
+  let targetY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let rafId;
+
+  const updateFrame = () => {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+    cadViewport.style.setProperty("--cad-tilt-x", `${currentY}deg`);
+    cadViewport.style.setProperty("--cad-tilt-y", `${currentX}deg`);
+    cadViewport.style.setProperty("--cad-shift-x", `${currentX * 0.7}px`);
+    cadViewport.style.setProperty("--cad-shift-y", `${currentY * 0.7}px`);
+    rafId = window.requestAnimationFrame(updateFrame);
+  };
+
+  const handlePointerMove = (event) => {
+    const rect = cadViewport.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width - 0.5;
+    const y = (event.clientY - rect.top) / rect.height - 0.5;
+    targetX = Math.max(Math.min(x * CAD_TILT_MAX_DEG * 2, CAD_TILT_MAX_DEG), -CAD_TILT_MAX_DEG);
+    targetY = Math.max(Math.min(-y * CAD_TILT_MAX_DEG * 2, CAD_TILT_MAX_DEG), -CAD_TILT_MAX_DEG);
+  };
+
+  const resetTilt = () => {
+    targetX = 0;
+    targetY = 0;
+  };
+
+  cadViewport.addEventListener("pointermove", handlePointerMove);
+  cadViewport.addEventListener("pointerleave", resetTilt);
+  cadViewport.addEventListener("pointerdown", (event) => {
+    cadViewport.setPointerCapture(event.pointerId);
+  });
+  cadViewport.addEventListener("pointerup", (event) => {
+    cadViewport.releasePointerCapture(event.pointerId);
+  });
+
+  rafId = window.requestAnimationFrame(updateFrame);
+
+  window.addEventListener("beforeunload", () => {
+    if (rafId) {
+      window.cancelAnimationFrame(rafId);
+    }
+  });
+}
 
 function setStatus(label, tone, state = null) {
   safeText(statusPill, `STATUS: ${label}`);
@@ -107,6 +213,7 @@ function attachHandlers() {
         safeText(payloadPill, "PAYLOAD: SAMPLE");
         const schemaLabel = payload.schema ? String(payload.schema) : "(unknown)";
         safeText(schemaPill, `SCHEMA: ${schemaLabel}`);
+        updateCadInspector(payload);
         showNotice("Sample loaded", "Sample payload retrieved successfully.");
         setStatus("OK", STATUS_COLORS.ok, "ok");
       } catch (error) {
@@ -299,15 +406,24 @@ function exportLayoutJson() {
   showNotice("Export complete", "Layout JSON exported.");
 }
 
-function toggleMenu(menuId) {
+function openMenu(menuId) {
   const panels = document.querySelectorAll(".menu-panel");
   panels.forEach((panel) => {
     const isTarget = panel.dataset.menuPanel === menuId;
-    panel.classList.toggle("active", isTarget && !panel.classList.contains("active"));
+    panel.classList.toggle("active", isTarget);
     if (!isTarget) {
       panel.classList.remove("active");
     }
   });
+}
+
+function toggleMenu(menuId) {
+  const target = document.querySelector(`.menu-panel[data-menu-panel='${menuId}']`);
+  if (target?.classList.contains("active")) {
+    closeMenus();
+    return;
+  }
+  openMenu(menuId);
 }
 
 function closeMenus() {
@@ -318,6 +434,7 @@ function handleMenuAction(action) {
   switch (action) {
     case "open-json":
       if (jsonFileInput) {
+        jsonFileInput.value = "";
         jsonFileInput.click();
       }
       break;
@@ -540,7 +657,7 @@ function runTripwires() {
     }
   }
   const fileMenu = document.querySelector("[data-menu-panel='file']");
-  toggleMenu("file");
+  openMenu("file");
   if (!fileMenu?.classList.contains("active")) {
     failures.push("Menu open failed");
   }
@@ -605,8 +722,19 @@ function init() {
         }
         const reader = new FileReader();
         reader.onload = () => {
-          showNotice("JSON loaded", `Loaded ${file.name}`);
-          setStatus("LOADED", STATUS_COLORS.ok, "ok");
+          try {
+            const parsed = JSON.parse(String(reader.result || ""));
+            currentPayload = parsed;
+            safeText(payloadPill, `PAYLOAD: ${file.name}`);
+            const schemaLabel = parsed?.schema ? String(parsed.schema) : "(unknown)";
+            safeText(schemaPill, `SCHEMA: ${schemaLabel}`);
+            updateCadInspector(parsed);
+            showNotice("JSON loaded", `Loaded ${file.name}`);
+            setStatus("LOADED", STATUS_COLORS.ok, "ok");
+          } catch (error) {
+            showNotice("JSON parse failed", "Unable to parse the selected file as JSON.");
+            setStatus("FAIL", STATUS_COLORS.fail, "fail");
+          }
         };
         reader.onerror = () => {
           showNotice("JSON load failed", "Unable to read file.");
@@ -623,6 +751,8 @@ function init() {
     updateClock();
     clockIntervalId = setInterval(updateClock, 1000);
     attachHandlers();
+    initCadViewport();
+    updateCadInspector(currentPayload);
     setStatus("READY", STATUS_COLORS.ready, "ok");
     renderSelfTest();
     runTripwires();

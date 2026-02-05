@@ -43,6 +43,9 @@ from reidce.schemas import (
     WilsonCI,
     now_utc_iso,
 )
+from reidce.memory import MemoryStore
+from reidce.pico_gk import apply_pico_gk
+from reidce.topology import recommend_topology
 
 
 @dataclass(frozen=True)
@@ -71,6 +74,40 @@ class PipelineArtifacts:
     build_packet: BuildPacket
     manifest: RunManifest
     evidence_pack: EvidencePack
+
+
+def _prepare_design_for_ai(design: Any, memory_store: MemoryStore | None) -> Any:
+    if not hasattr(design, "geometry") or not hasattr(design, "model_copy"):
+        return design
+
+    updated = apply_pico_gk(design)
+    if memory_store is not None and updated is not design:
+        cad_ref = getattr(updated.geometry, "cad_ref", None)
+        cad_payload = cad_ref.model_dump(mode="json") if cad_ref is not None else None
+        memory_store.log_event(
+            "pico_gk",
+            "Applied Pico GK CAD ref",
+            {
+                "design_id": getattr(updated, "design_id", None),
+                "cad_ref": cad_payload,
+            },
+        )
+
+    if getattr(updated, "domain", None) == "actuated_compliant_subsystem":
+        recommendation = recommend_topology(updated, memory_store=memory_store)
+        updated = recommendation.best.design
+        if memory_store is not None:
+            memory_store.log_event(
+                "topology_recommendation",
+                "Selected topology candidate",
+                {
+                    "design_id": getattr(updated, "design_id", None),
+                    "candidate": recommendation.best.name,
+                    "score": recommendation.scorecard.score,
+                },
+            )
+
+    return updated
 
 
 def _serialize_payload(payload: Any) -> str:
@@ -494,6 +531,28 @@ def export_manifest(
     )
 
 
+def _finalize_manifest(
+    state: PipelineState,
+    artifact_hashes: Dict[str, str],
+) -> tuple[RunManifest, str]:
+    manifest_seed = export_manifest(
+        state,
+        {
+            **artifact_hashes,
+            "manifest.json": "",
+        },
+    )
+    manifest_hash = _hash_payload(manifest_seed)
+    manifest = export_manifest(
+        state,
+        {
+            **artifact_hashes,
+            "manifest.json": manifest_hash,
+        },
+    )
+    return manifest, manifest_hash
+
+
 def write_artifacts(
     output_dir: Path,
     payloads: Dict[str, Any],
@@ -514,12 +573,45 @@ def build_pipeline(
     manufacturing_process: Any,
     run_config: RunConfig,
     output_dir: Path,
+    memory_store: MemoryStore | None = None,
 ) -> PipelineArtifacts:
+    design = _prepare_design_for_ai(design, memory_store)
     state = compile_inputs(design, mission, environment, manufacturing_process, run_config)
+    if memory_store is not None:
+        memory_store.log_event(
+            "pipeline_start",
+            "Started pipeline build",
+            {
+                "run_id": state.run_id,
+                "design_id": getattr(design, "design_id", None),
+                "seed": run_config.seed,
+            },
+        )
     nominal, constraints = evaluate_nominal(state)
     uq_summary = evaluate_uq(state, nominal, constraints)
     sensitivity_report = sensitivity(state)
     gate_decision = gate_build_ready(state, nominal, uq_summary, constraints, sensitivity_report)
+
+    if memory_store is not None:
+        failure_domains = [entry.domain for entry in constraints.constraints if not entry.passed]
+        memory_store.log_event(
+            "constraints",
+            "Evaluated constraints",
+            {
+                "run_id": state.run_id,
+                "failures": failure_domains,
+                "passed": all(entry.passed for entry in constraints.constraints),
+            },
+        )
+        memory_store.log_event(
+            "gate_decision",
+            "Computed gate decision",
+            {
+                "run_id": state.run_id,
+                "passed": gate_decision.passed,
+                "reasons": gate_decision.reasons,
+            },
+        )
 
     artifacts: Dict[str, Any] = {
         "nominal.json": nominal,
@@ -539,6 +631,7 @@ def build_pipeline(
             **artifact_hashes,
             "build_packet.json": "",
             "evidence_pack.json": "",
+            "manifest.json": "",
         },
     )
     build_packet = export_build_packet(state, constraints, gate_decision, manifest)
@@ -561,16 +654,20 @@ def build_pipeline(
     artifacts["evidence_pack.json"] = evidence_pack
     artifact_hashes.update(write_artifacts(output_dir, {"evidence_pack.json": evidence_pack}))
 
-    manifest = export_manifest(
-        state,
-        {
-            **artifact_hashes,
-            "manifest.json": "",
-        },
-    )
-    artifact_hashes.update(write_artifacts(output_dir, {"manifest.json": manifest}))
-    manifest = export_manifest(state, artifact_hashes)
-    artifact_hashes.update(write_artifacts(output_dir, {"manifest.json": manifest}))
+    manifest, manifest_hash = _finalize_manifest(state, artifact_hashes)
+    artifact_hashes["manifest.json"] = manifest_hash
+    write_artifacts(output_dir, {"manifest.json": manifest})
+
+    if memory_store is not None:
+        memory_store.log_event(
+            "pipeline_complete",
+            "Pipeline artifacts written",
+            {
+                "run_id": state.run_id,
+                "artifact_count": len(artifact_hashes),
+                "output_dir": str(output_dir),
+            },
+        )
 
     return PipelineArtifacts(
         nominal=nominal,

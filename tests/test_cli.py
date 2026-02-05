@@ -63,7 +63,10 @@ def test_color_qa_cli_success(
 ) -> None:
     report_path = tmp_path / "scene.json"
     report_path.write_text(json.dumps(_color_scene_payload()), encoding="utf-8")
-    monkeypatch.setattr("sys.argv", ["sfcs-mdp", "color-qa", "--report", report_path.as_posix()])
+    monkeypatch.setattr(
+        "sys.argv",
+        ["sfcs-mdp", "color-qa", "--report", report_path.as_posix()],
+    )
     assert main() == 0
     output = capsys.readouterr().out
     payload = json.loads(output)
@@ -74,7 +77,10 @@ def test_color_qa_cli_missing_file(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     missing = Path("missing.json")
-    monkeypatch.setattr("sys.argv", ["sfcs-mdp", "color-qa", "--report", missing.as_posix()])
+    monkeypatch.setattr(
+        "sys.argv",
+        ["sfcs-mdp", "color-qa", "--report", missing.as_posix()],
+    )
     assert main() == 1
     output = capsys.readouterr().out
     assert "QA report not found" in output
@@ -88,10 +94,15 @@ def test_color_qa_cli_invalid_payload(
         json.dumps({"icc_profile": {"profile_hash": None}, "patches": []}),
         encoding="utf-8",
     )
-    monkeypatch.setattr("sys.argv", ["sfcs-mdp", "color-qa", "--report", report_path.as_posix()])
+    monkeypatch.setattr(
+        "sys.argv",
+        ["sfcs-mdp", "color-qa", "--report", report_path.as_posix()],
+    )
     assert main() == 1
     output = capsys.readouterr().out
     assert "QA REPORT INVALID" in output
+
+
 def test_cli_validate_outputs_grading_footer(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

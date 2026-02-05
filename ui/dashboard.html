@@ -171,8 +171,77 @@ REQUIRED (match exactly; keep in sync with meta tags below):
               <span>Model Viewport</span>
               <span class="panel-tag accent">3D</span>
             </div>
-            <div class="viewport-canvas">
-              <div class="viewport-label">CAD viewport placeholder</div>
+            <div class="viewport-canvas cad-viewport" id="cadViewport">
+              <div class="cad-hud">
+                <div class="cad-hud-row">
+                  <span>GRID 0.1m</span>
+                  <span>MODE: ORBIT</span>
+                </div>
+                <div class="cad-hud-row">
+                  <span>AXIS: BODY</span>
+                  <span>LOD: HIGH</span>
+                </div>
+              </div>
+              <svg class="cad-grid" viewBox="0 0 800 420" aria-hidden="true">
+                <defs>
+                  <pattern id="cadGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(124, 92, 255, 0.35)" stroke-width="1" />
+                  </pattern>
+                  <linearGradient id="cadGlow" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0" stop-color="rgba(56, 243, 255, 0.35)" />
+                    <stop offset="1" stop-color="rgba(124, 92, 255, 0.15)" />
+                  </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#cadGrid)" />
+                <rect width="100%" height="100%" fill="url(#cadGlow)" opacity="0.2" />
+              </svg>
+              <svg class="cad-model" id="cadModelSvg" viewBox="0 0 800 420" role="img" aria-label="Drone CAD model">
+                <defs>
+                  <linearGradient id="fuseGradient" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0" stop-color="#3a4a72" />
+                    <stop offset="1" stop-color="#1d2433" />
+                  </linearGradient>
+                  <radialGradient id="rotorGlow" cx="0.5" cy="0.5" r="0.65">
+                    <stop offset="0" stop-color="rgba(56, 243, 255, 0.7)" />
+                    <stop offset="1" stop-color="rgba(56, 243, 255, 0.05)" />
+                  </radialGradient>
+                </defs>
+                <g class="model-shadow">
+                  <ellipse cx="400" cy="240" rx="190" ry="70" />
+                </g>
+                <g id="cadModelGroup" class="model-core">
+                  <rect x="140" y="198" width="520" height="24" rx="12" class="wing-core" />
+                  <rect x="380" y="92" width="40" height="236" rx="18" class="boom-core" />
+                  <ellipse cx="400" cy="210" rx="110" ry="58" class="body-core" />
+                  <rect x="368" y="170" width="64" height="80" rx="22" class="battery-core" />
+                  <circle cx="220" cy="210" r="54" class="rotor-core" />
+                  <circle cx="580" cy="210" r="54" class="rotor-core" />
+                  <circle cx="400" cy="90" r="46" class="rotor-core" />
+                  <circle cx="400" cy="330" r="46" class="rotor-core" />
+                  <circle cx="220" cy="210" r="22" class="rotor-hub" />
+                  <circle cx="580" cy="210" r="22" class="rotor-hub" />
+                  <circle cx="400" cy="90" r="18" class="rotor-hub" />
+                  <circle cx="400" cy="330" r="18" class="rotor-hub" />
+                </g>
+                <g class="model-outline">
+                  <ellipse cx="400" cy="210" rx="118" ry="66" />
+                  <rect x="140" y="198" width="520" height="24" rx="12" />
+                  <circle cx="220" cy="210" r="56" />
+                  <circle cx="580" cy="210" r="56" />
+                  <circle cx="400" cy="90" r="48" />
+                  <circle cx="400" cy="330" r="48" />
+                </g>
+              </svg>
+              <div class="cad-axis">
+                <span class="axis-x">X</span>
+                <span class="axis-y">Y</span>
+                <span class="axis-z">Z</span>
+              </div>
+              <div class="cad-legend">
+                <div class="legend-row"><span class="dot dot-cyan"></span>Airframe</div>
+                <div class="legend-row"><span class="dot dot-violet"></span>Rotors</div>
+                <div class="legend-row"><span class="dot dot-magenta"></span>Payload</div>
+              </div>
             </div>
           </section>
 
@@ -183,9 +252,15 @@ REQUIRED (match exactly; keep in sync with meta tags below):
             </div>
             <div class="panel-section">
               <div class="section-title">Parameters</div>
-              <div class="param-row"><span>Span</span><span>1.20 m</span></div>
-              <div class="param-row"><span>Mass</span><span>2.40 kg</span></div>
-              <div class="param-row"><span>Battery</span><span>4.2 Ah</span></div>
+              <div class="param-row"><span>Span</span><span id="cadSpan" data-default="1.20 m">1.20 m</span></div>
+              <div class="param-row"><span>Mass</span><span id="cadMass" data-default="2.40 kg">2.40 kg</span></div>
+              <div class="param-row"><span>Battery</span><span id="cadBattery" data-default="4.2 Ah">4.2 Ah</span></div>
+            </div>
+            <div class="panel-section">
+              <div class="section-title">Geometry</div>
+              <div class="param-row"><span>Envelope</span><span id="cadEnvelope" data-default="0.38 m">0.38 m</span></div>
+              <div class="param-row"><span>Actuator Ø</span><span id="cadActuator" data-default="0.06 m">0.06 m</span></div>
+              <div class="param-row"><span>Tolerance</span><span id="cadTolerance" data-default="0.30 mm">0.30 mm</span></div>
             </div>
           </aside>
         </div>

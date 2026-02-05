@@ -109,7 +109,10 @@ def _create_simulated_outputs(step: ProcessStep, config: RunConfig) -> None:
         expanded = expand_placeholders(output, placeholders)
         if expanded.endswith("acceptance_data_package.zip"):
             continue
-        output_path = resolve_path(config.repo_root, expanded)
+        try:
+            output_path = resolve_path(config.repo_root, expanded)
+        except ValueError:
+            continue
         if expanded.endswith("/"):
             create_placeholder_dir(output_path)
         elif output_path.suffix in {".json", ".yaml", ".yml"}:
@@ -119,9 +122,11 @@ def _create_simulated_outputs(step: ProcessStep, config: RunConfig) -> None:
 
     for evidence in step.evidence.required:
         name, _ = normalize_optional_name(evidence)
-        evidence_path = resolve_path(
-            _build_dir(config), expand_placeholders(name, placeholders)
-        )
+        expanded_name = expand_placeholders(name, placeholders)
+        try:
+            evidence_path = resolve_path(_build_dir(config), expanded_name)
+        except ValueError:
+            continue
         if name.endswith("/"):
             create_placeholder_dir(evidence_path)
             create_placeholder_file(evidence_path / "placeholder.txt", "SIMULATED EVIDENCE\n")
@@ -176,17 +181,28 @@ def _evaluate_acceptance(
             path = criterion.get("path")
             if criterion_type == "file_exists" and isinstance(path, str):
                 expanded = expand_placeholders(path, placeholders)
-                target = resolve_path(config.repo_root, expanded)
-                status = "PASS" if target.exists() else "FAIL"
-                if status == "FAIL":
+                try:
+                    target = resolve_path(config.repo_root, expanded)
+                    status = "PASS" if target.exists() else "FAIL"
+                    if status == "FAIL":
+                        all_passed = False
+                    results.append(
+                        {
+                            "criterion": f"file_exists:{expanded}",
+                            "status": status,
+                            "manual_signoff_required": False,
+                        }
+                    )
+                except ValueError as exc:
+                    results.append(
+                        {
+                            "criterion": f"file_exists:{expanded}",
+                            "status": "FAIL",
+                            "manual_signoff_required": False,
+                            "error": str(exc),
+                        }
+                    )
                     all_passed = False
-                results.append(
-                    {
-                        "criterion": f"file_exists:{expanded}",
-                        "status": status,
-                        "manual_signoff_required": False,
-                    }
-                )
             else:
                 results.append(
                     {
@@ -220,11 +236,15 @@ def _evaluate_evidence(
             results.append({"evidence": name, "status": "OPTIONAL"})
             continue
         expanded = expand_placeholders(name, placeholders)
-        evidence_path = resolve_path(_build_dir(config), expanded)
-        status = "PASS" if evidence_path.exists() else "FAIL"
-        if status == "FAIL":
+        try:
+            evidence_path = resolve_path(_build_dir(config), expanded)
+            status = "PASS" if evidence_path.exists() else "FAIL"
+            if status == "FAIL":
+                all_present = False
+            results.append({"evidence": expanded, "status": status})
+        except ValueError as exc:
+            results.append({"evidence": expanded, "status": "FAIL", "error": str(exc)})
             all_present = False
-        results.append({"evidence": expanded, "status": status})
     return all_present, results
 
 

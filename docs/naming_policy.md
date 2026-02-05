@@ -3,7 +3,7 @@
 Goal: unify file naming with deterministic, history-preserving changes and zero behavioral differences.
 
 ## Definitions
-- **Executable main files** (ALL CAPS base name): contain a program/CLI entry point (`main`) or are the top-level driver that wires multiple modules for a full run/demo. Files that mix an entry point with significant implementation (including test harnesses with `main()`) are still treated as executable mains and should follow ALL_CAPS; prefer factoring shared logic into sub-files. Example: `4-1-drone-main/cpp/cli/closeout_demo.cpp` (planned rename to `CLOSEOUT_DEMO.cpp`).
+- **Executable main files** (ALL CAPS base name): contain a program/CLI entry point (`main`) or are the top-level driver that wires multiple modules for a full run/demo. Files that mix an entry point with significant implementation (including test harnesses with `main()`) are still treated as executable mains and should follow ALL_CAPS; prefer factoring shared logic into sub-files.
 - **Contract docs**: repo-level canonical documentation/specs. These keep their mandated names (e.g., `README.md`) and are already uppercase-compliant.
 - **Sub files** (module internals): implementation or header units that do not host entry points—helpers, models, algorithms, and supporting utilities within `cpp/engine/**` and similar module trees.
 

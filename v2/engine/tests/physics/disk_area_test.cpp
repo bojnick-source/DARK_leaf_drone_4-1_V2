@@ -19,7 +19,7 @@ Purpose:
 void test_distributed_rotors() {
     std::cout << "Test: Distributed rotors disk area..." << std::endl;
     
-    auto factory = v2::physics::PhysicsFactory::create_legacy_4_1();
+    auto factory = v2::physics::PhysicsFactory::create_baseline();
     auto calculator = factory->create_disk_area_calculator();
     
     v2::physics::RotorGeometry geom;
@@ -47,7 +47,7 @@ void test_distributed_rotors() {
 void test_coaxial_rotors() {
     std::cout << "Test: Coaxial rotors disk area..." << std::endl;
     
-    auto factory = v2::physics::PhysicsFactory::create_legacy_4_1();
+    auto factory = v2::physics::PhysicsFactory::create_baseline();
     auto calculator = factory->create_disk_area_calculator();
     
     v2::physics::RotorGeometry geom;
@@ -75,7 +75,7 @@ void test_coaxial_rotors() {
 void test_shrouded_rotors() {
     std::cout << "Test: Shrouded rotors disk area..." << std::endl;
     
-    auto factory = v2::physics::PhysicsFactory::create_legacy_4_1();
+    auto factory = v2::physics::PhysicsFactory::create_baseline();
     auto calculator = factory->create_disk_area_calculator();
     
     v2::physics::RotorGeometry geom;

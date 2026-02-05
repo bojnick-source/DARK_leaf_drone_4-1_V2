@@ -8,9 +8,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 enable_testing()
 
-# Vendor code
-add_subdirectory(external/4-1-drone)
-
 # Optional v2 engine/tooling
 option(ENABLE_V2_ENGINE "Build v2 engine/tooling" OFF)
 if(ENABLE_V2_ENGINE)

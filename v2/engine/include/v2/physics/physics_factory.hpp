@@ -11,7 +11,7 @@ Purpose:
   - Auditable instantiation logic
 
 Usage:
-  auto factory = PhysicsFactory::create_legacy_4_1();
+  auto factory = PhysicsFactory::create_baseline();
   auto disk_calc = factory->create_disk_area_calculator();
   auto hover_model = factory->create_hover_power_model();
 
@@ -37,6 +37,7 @@ public:
     virtual std::unique_ptr<HoverPowerModel> create_hover_power_model() const = 0;
     
     // Static factory methods for different implementations
+    static std::unique_ptr<PhysicsFactory> create_baseline();
     static std::unique_ptr<PhysicsFactory> create_legacy_4_1();
 };
 

@@ -591,6 +591,181 @@ body::before {
   background: linear-gradient(145deg, rgba(15, 20, 30, 0.8), rgba(9, 12, 18, 0.9));
 }
 
+.viewport-canvas.cad-viewport {
+  position: relative;
+  overflow: hidden;
+  border-style: solid;
+  min-height: 320px;
+  padding: 18px;
+  align-items: stretch;
+  justify-items: stretch;
+  perspective: 900px;
+  --cad-tilt-x: 0deg;
+  --cad-tilt-y: 0deg;
+  --cad-shift-x: 0px;
+  --cad-shift-y: 0px;
+}
+
+.cad-grid,
+.cad-model {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cad-grid {
+  opacity: 0.45;
+}
+
+.cad-model {
+  transform-style: preserve-3d;
+  transform-origin: center;
+  transform: translate3d(var(--cad-shift-x), var(--cad-shift-y), 0) rotateX(var(--cad-tilt-x))
+    rotateY(var(--cad-tilt-y));
+  transition: transform 0.12s ease-out;
+  filter: drop-shadow(0 26px 30px rgba(6, 12, 22, 0.65));
+}
+
+.cad-model .model-shadow {
+  fill: rgba(8, 12, 18, 0.65);
+}
+
+.cad-model .body-core {
+  fill: url(#fuseGradient);
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 1.4;
+}
+
+.cad-model .wing-core,
+.cad-model .boom-core {
+  fill: rgba(44, 60, 92, 0.92);
+  stroke: rgba(56, 243, 255, 0.25);
+  stroke-width: 1.2;
+}
+
+.cad-model .battery-core {
+  fill: rgba(124, 92, 255, 0.4);
+  stroke: rgba(124, 92, 255, 0.7);
+  stroke-width: 1.2;
+}
+
+.cad-model .rotor-core {
+  fill: url(#rotorGlow);
+  stroke: rgba(56, 243, 255, 0.35);
+  stroke-width: 1.4;
+}
+
+.cad-model .rotor-hub {
+  fill: rgba(10, 18, 32, 0.9);
+  stroke: rgba(56, 243, 255, 0.5);
+  stroke-width: 1.2;
+}
+
+.cad-model .model-outline {
+  fill: none;
+  stroke: rgba(199, 210, 254, 0.5);
+  stroke-width: 1.2;
+  opacity: 0.8;
+}
+
+.cad-hud {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  background: rgba(12, 18, 28, 0.65);
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  border-radius: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  z-index: 2;
+}
+
+.cad-hud-row {
+  display: flex;
+  gap: 12px;
+  color: var(--text-soft);
+}
+
+.cad-axis {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 2;
+}
+
+.cad-axis span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-strong);
+}
+
+.cad-axis .axis-x::before,
+.cad-axis .axis-y::before,
+.cad-axis .axis-z::before {
+  content: "";
+  width: 22px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(56, 243, 255, 0.7);
+}
+
+.cad-axis .axis-y::before {
+  background: rgba(124, 92, 255, 0.7);
+}
+
+.cad-axis .axis-z::before {
+  background: rgba(199, 125, 255, 0.7);
+}
+
+.cad-legend {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  background: rgba(12, 18, 28, 0.65);
+  border: 1px solid rgba(56, 243, 255, 0.3);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--text-soft);
+  z-index: 2;
+}
+
+.cad-legend .legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cad-legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.cad-legend .dot-cyan {
+  background: rgba(56, 243, 255, 0.8);
+}
+
+.cad-legend .dot-violet {
+  background: rgba(124, 92, 255, 0.8);
+}
+
+.cad-legend .dot-magenta {
+  background: rgba(199, 125, 255, 0.8);
+}
+
 .viewport-label {
   font-size: 14px;
   text-transform: uppercase;

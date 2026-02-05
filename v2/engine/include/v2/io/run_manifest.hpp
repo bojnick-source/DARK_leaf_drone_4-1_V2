@@ -584,11 +584,11 @@ inline bool write_run_output(
     int precision = 12) {
     namespace fs = std::filesystem;
 
-    const auto base_dir = run_artifact_dir(run_id);
-    fs::create_directories(base_dir);
-
+    const std::string base_dir = run_artifact_dir(run_id);
     const std::string artifact_root = artifact_root_override.empty() ? base_dir : artifact_root_override;
-    const auto output_path = run_output_path(run_id);
+    fs::create_directories(artifact_root);
+
+    const auto output_path = (fs::path(artifact_root) / kRunOutputFile).generic_string();
     fs::path tmp_path = fs::path(output_path).concat(".tmp");
 
     std::ostringstream oss;

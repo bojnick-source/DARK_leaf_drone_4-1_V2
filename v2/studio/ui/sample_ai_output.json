@@ -1,0 +1,60 @@
+{
+  "schema": "topology_ai_output.v1",
+  "timestamp_utc": "2026-02-04T00:00:00Z",
+  "best": {
+    "name": "baseline_topology_2",
+    "score": 0.82,
+    "tag": "Stiffened"
+  },
+  "ranked": [
+    {"name": "baseline_topology_2", "score": 0.82, "tag": "Stiffened"},
+    {"name": "baseline_topology_3", "score": 0.77, "tag": "Reach"},
+    {"name": "baseline_topology_1", "score": 0.71, "tag": "Lightweight"}
+  ],
+  "ai": {
+    "model": "REIDCE v2",
+    "confidence": 0.91,
+    "status": "Stable"
+  },
+  "system": {
+    "power_rails": 4,
+    "photonic_links": 3,
+    "thermal_nodes": 5
+  },
+  "flight": {
+    "target_altitude_m": 120,
+    "target_speed_m_s": 14,
+    "mode": "Test Pilot",
+    "path": [
+      {"t": 0.0, "alt": 10.0},
+      {"t": 5.0, "alt": 40.0},
+      {"t": 10.0, "alt": 85.0},
+      {"t": 15.0, "alt": 110.0},
+      {"t": 20.0, "alt": 120.0}
+    ]
+  },
+  "thermal": {
+    "nodes": [
+      {"name": "core", "temp": 61.2},
+      {"name": "pmu", "temp": 54.8},
+      {"name": "bus", "temp": 49.6},
+      {"name": "optics", "temp": 58.1}
+    ]
+  },
+  "wind": {
+    "ship_efficiency": 0.62,
+    "kite_power_kw": 48,
+    "ship_force": [0.0, 22.0, 38.0, 54.0, 68.0]
+  },
+  "sales": {
+    "gross_margin_usd": 1200000,
+    "shipping_cost_usd": 180000,
+    "revenue_usd": 3200000
+  },
+  "inspector": {
+    "processor": "Photonic Core v2",
+    "bus_voltage": "16 V",
+    "thermal_margin": "+1.6 W",
+    "electro_thermal": "Converged"
+  }
+}

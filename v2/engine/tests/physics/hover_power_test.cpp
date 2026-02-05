@@ -19,7 +19,7 @@ Purpose:
 void test_hover_power_basic() {
     std::cout << "Test: Basic hover power computation..." << std::endl;
     
-    auto factory = v2::physics::PhysicsFactory::create_legacy_4_1();
+    auto factory = v2::physics::PhysicsFactory::create_baseline();
     auto model = factory->create_hover_power_model();
     
     v2::physics::AtmosphereConditions atmo;
@@ -63,7 +63,7 @@ void test_hover_power_basic() {
 void test_hover_power_sized() {
     std::cout << "Test: Sized hover power with reserve..." << std::endl;
     
-    auto factory = v2::physics::PhysicsFactory::create_legacy_4_1();
+    auto factory = v2::physics::PhysicsFactory::create_baseline();
     auto model = factory->create_hover_power_model();
     
     v2::physics::AtmosphereConditions atmo;
@@ -95,7 +95,7 @@ void test_hover_power_sized() {
 void test_hover_power_determinism() {
     std::cout << "Test: Deterministic hover power..." << std::endl;
     
-    auto factory = v2::physics::PhysicsFactory::create_legacy_4_1();
+    auto factory = v2::physics::PhysicsFactory::create_baseline();
     auto model = factory->create_hover_power_model();
     
     v2::physics::AtmosphereConditions atmo;

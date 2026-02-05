@@ -1,5 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/cpp_lineage_stamper_tests.dir/link.d"
   "CMakeFiles/cpp_lineage_stamper_tests.dir/tests/test_lineage_stamper.cpp.o"
   "CMakeFiles/cpp_lineage_stamper_tests.dir/tests/test_lineage_stamper.cpp.o.d"
   "cpp_lineage_stamper_tests"

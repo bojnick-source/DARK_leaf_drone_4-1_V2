@@ -11,7 +11,7 @@ from reidce.schemas import (
     GeometryTolerances,
     StructureSpec,
 )
-from reidce.topology import generate_topology_candidates
+from reidce.topology import generate_topology_candidates, recommend_topology
 
 
 def _quantity(value: float, unit: str) -> dict:
@@ -121,4 +121,14 @@ def test_generate_topology_candidates() -> None:
     design = _make_design()
     candidates = generate_topology_candidates(design)
     assert len(candidates) == 3
-    assert candidates[0].design.name.endswith("_topology_1")
+    candidate_names = {candidate.design.name for candidate in candidates}
+    assert any(name.endswith("_topology_1") for name in candidate_names)
+    assert any(name.endswith("_topology_2") for name in candidate_names)
+    assert any(name.endswith("_topology_3") for name in candidate_names)
+
+
+def test_recommend_topology() -> None:
+    design = _make_design()
+    recommendation = recommend_topology(design)
+    assert recommendation.best.name.startswith("baseline_topology_")
+    assert len(recommendation.ranked) == 3
