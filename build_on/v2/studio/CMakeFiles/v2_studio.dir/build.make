@@ -69,31 +69,53 @@ include v2/studio/CMakeFiles/v2_studio.dir/progress.make
 # Include the compile flags for this target's objects.
 include v2/studio/CMakeFiles/v2_studio.dir/flags.make
 
-v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o: v2/studio/CMakeFiles/v2_studio.dir/flags.make
-v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o: /workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main_stub.cpp
-v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o: v2/studio/CMakeFiles/v2_studio.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/DARK_leaf_drone_4-1_V2/build_on/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o"
-	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o -MF CMakeFiles/v2_studio.dir/app/main_stub.cpp.o.d -o CMakeFiles/v2_studio.dir/app/main_stub.cpp.o -c /workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main_stub.cpp
+v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o: v2/studio/CMakeFiles/v2_studio.dir/flags.make
+v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o: v2/studio/v2_studio_autogen/mocs_compilation.cpp
+v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o: v2/studio/CMakeFiles/v2_studio.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/DARK_leaf_drone_4-1_V2/build_on/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o"
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o -MF CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o.d -o CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o -c /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/v2_studio_autogen/mocs_compilation.cpp
 
-v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/v2_studio.dir/app/main_stub.cpp.i"
-	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main_stub.cpp > CMakeFiles/v2_studio.dir/app/main_stub.cpp.i
+v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.i"
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/v2_studio_autogen/mocs_compilation.cpp > CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.i
 
-v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/v2_studio.dir/app/main_stub.cpp.s"
-	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main_stub.cpp -o CMakeFiles/v2_studio.dir/app/main_stub.cpp.s
+v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.s"
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/v2_studio_autogen/mocs_compilation.cpp -o CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.s
+
+v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o: v2/studio/CMakeFiles/v2_studio.dir/flags.make
+v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o: /workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main.cpp
+v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o: v2/studio/CMakeFiles/v2_studio.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/DARK_leaf_drone_4-1_V2/build_on/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o"
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o -MF CMakeFiles/v2_studio.dir/app/main.cpp.o.d -o CMakeFiles/v2_studio.dir/app/main.cpp.o -c /workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main.cpp
+
+v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/v2_studio.dir/app/main.cpp.i"
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main.cpp > CMakeFiles/v2_studio.dir/app/main.cpp.i
+
+v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/v2_studio.dir/app/main.cpp.s"
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main.cpp -o CMakeFiles/v2_studio.dir/app/main.cpp.s
 
 # Object files for target v2_studio
 v2_studio_OBJECTS = \
-"CMakeFiles/v2_studio.dir/app/main_stub.cpp.o"
+"CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o" \
+"CMakeFiles/v2_studio.dir/app/main.cpp.o"
 
 # External object files for target v2_studio
 v2_studio_EXTERNAL_OBJECTS =
 
-v2/studio/v2_studio: v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o
+v2/studio/v2_studio: v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o
+v2/studio/v2_studio: v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o
 v2/studio/v2_studio: v2/studio/CMakeFiles/v2_studio.dir/build.make
+v2/studio/v2_studio: /usr/lib/x86_64-linux-gnu/libQt6Widgets.so.6.4.2
+v2/studio/v2_studio: /usr/lib/x86_64-linux-gnu/libQt6Gui.so.6.4.2
+v2/studio/v2_studio: /usr/lib/x86_64-linux-gnu/libQt6Core.so.6.4.2
+v2/studio/v2_studio: v2/engine/libv2_engine.a
+v2/studio/v2_studio: /usr/lib/x86_64-linux-gnu/libGLX.so
+v2/studio/v2_studio: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 v2/studio/v2_studio: v2/studio/CMakeFiles/v2_studio.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/workspaces/DARK_leaf_drone_4-1_V2/build_on/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable v2_studio"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/workspaces/DARK_leaf_drone_4-1_V2/build_on/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable v2_studio"
 	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/v2_studio.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -7,6 +7,30 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from reidce.memory import MemoryStore
 
 
+def _empty_nodes() -> dict[str, Node]:
+    return {}
+
+
+def _empty_resistors() -> list[Resistor]:
+    return []
+
+
+def _empty_voltage_sources() -> list[VoltageSource]:
+    return []
+
+
+def _empty_current_sources() -> list[CurrentSource]:
+    return []
+
+
+def _empty_capacitors() -> list[Capacitor]:
+    return []
+
+
+def _empty_inductors() -> list[Inductor]:
+    return []
+
+
 @dataclass(frozen=True)
 class Node:
     name: str
@@ -310,12 +334,12 @@ class ElectroThermalResult:
 
 @dataclass
 class Circuit:
-    nodes: Dict[str, Node] = field(default_factory=dict)
-    resistors: List[Resistor] = field(default_factory=list)
-    voltage_sources: List[VoltageSource] = field(default_factory=list)
-    current_sources: List[CurrentSource] = field(default_factory=list)
-    capacitors: List[Capacitor] = field(default_factory=list)
-    inductors: List[Inductor] = field(default_factory=list)
+    nodes: dict[str, Node] = field(default_factory=_empty_nodes)
+    resistors: list[Resistor] = field(default_factory=_empty_resistors)
+    voltage_sources: list[VoltageSource] = field(default_factory=_empty_voltage_sources)
+    current_sources: list[CurrentSource] = field(default_factory=_empty_current_sources)
+    capacitors: list[Capacitor] = field(default_factory=_empty_capacitors)
+    inductors: list[Inductor] = field(default_factory=_empty_inductors)
 
     def add_node(self, name: str) -> Node:
         if name not in self.nodes:
@@ -487,25 +511,25 @@ def simulate_dc(circuit: Circuit, memory: Optional[MemoryStore] = None) -> Circu
             matrix[a][b] -= g
             matrix[b][a] -= g
 
-    for source in circuit.current_sources:
-        a = idx(source.node_pos)
-        b = idx(source.node_neg)
+    for current_source in circuit.current_sources:
+        a = idx(current_source.node_pos)
+        b = idx(current_source.node_neg)
         if a is not None:
-            vector[a] += source.amps
+            vector[a] += current_source.amps
         if b is not None:
-            vector[b] -= source.amps
+            vector[b] -= current_source.amps
 
-    for s_idx, source in enumerate(circuit.voltage_sources):
+    for s_idx, voltage_source in enumerate(circuit.voltage_sources):
         row = n + s_idx
-        a = idx(source.node_pos)
-        b = idx(source.node_neg)
+        a = idx(voltage_source.node_pos)
+        b = idx(voltage_source.node_neg)
         if a is not None:
             matrix[a][row] += 1.0
             matrix[row][a] += 1.0
         if b is not None:
             matrix[b][row] -= 1.0
             matrix[row][b] -= 1.0
-        vector[row] = source.volts
+        vector[row] = voltage_source.volts
 
     solution = _solve_linear_system(matrix, vector)
     node_voltages = {"0": 0.0}
@@ -513,8 +537,8 @@ def simulate_dc(circuit: Circuit, memory: Optional[MemoryStore] = None) -> Circu
         node_voltages[name] = solution[index]
 
     source_currents: Dict[str, float] = {}
-    for s_idx, source in enumerate(circuit.voltage_sources):
-        source_currents[source.name] = solution[n + s_idx]
+    for s_idx, voltage_source in enumerate(circuit.voltage_sources):
+        source_currents[voltage_source.name] = solution[n + s_idx]
 
     resistor_currents: Dict[str, float] = {}
     for resistor in circuit.resistors:
@@ -594,25 +618,25 @@ def simulate_ac(circuit: Circuit, freq_hz: float) -> Dict[str, complex]:
             matrix[a][b] -= y
             matrix[b][a] -= y
 
-    for source in circuit.current_sources:
-        a = idx(source.node_pos)
-        b = idx(source.node_neg)
+    for current_source in circuit.current_sources:
+        a = idx(current_source.node_pos)
+        b = idx(current_source.node_neg)
         if a is not None:
-            vector[a] += source.amps
+            vector[a] += current_source.amps
         if b is not None:
-            vector[b] -= source.amps
+            vector[b] -= current_source.amps
 
-    for s_idx, source in enumerate(circuit.voltage_sources):
+    for s_idx, voltage_source in enumerate(circuit.voltage_sources):
         row = n + s_idx
-        a = idx(source.node_pos)
-        b = idx(source.node_neg)
+        a = idx(voltage_source.node_pos)
+        b = idx(voltage_source.node_neg)
         if a is not None:
             matrix[a][row] += 1.0
             matrix[row][a] += 1.0
         if b is not None:
             matrix[b][row] -= 1.0
             matrix[row][b] -= 1.0
-        vector[row] = source.volts
+        vector[row] = voltage_source.volts
 
     solution = _solve_linear_system_complex(matrix, vector)
     node_voltages: Dict[str, complex] = {"0": 0.0 + 0.0j}
@@ -708,25 +732,25 @@ def simulate_transient(
             matrix[row][row] -= g
             vector[row] = -g * i_prev
 
-        for source in circuit.current_sources:
-            a = idx(source.node_pos)
-            b = idx(source.node_neg)
+        for current_source in circuit.current_sources:
+            a = idx(current_source.node_pos)
+            b = idx(current_source.node_neg)
             if a is not None:
-                vector[a] += source.amps
+                vector[a] += current_source.amps
             if b is not None:
-                vector[b] -= source.amps
+                vector[b] -= current_source.amps
 
-        for s_idx, source in enumerate(circuit.voltage_sources):
+        for s_idx, voltage_source in enumerate(circuit.voltage_sources):
             row = n + s_idx
-            a = idx(source.node_pos)
-            b = idx(source.node_neg)
+            a = idx(voltage_source.node_pos)
+            b = idx(voltage_source.node_neg)
             if a is not None:
                 matrix[a][row] += 1.0
                 matrix[row][a] += 1.0
             if b is not None:
                 matrix[b][row] -= 1.0
                 matrix[row][b] -= 1.0
-            vector[row] = source.volts
+            vector[row] = voltage_source.volts
 
         solution = _solve_linear_system(matrix, vector)
         node_voltages = {"0": 0.0}
@@ -878,10 +902,20 @@ def _clone_circuit_with_resistors(
     cloned = Circuit()
     for node in circuit.nodes:
         cloned.add_node(node)
-    for source in circuit.voltage_sources:
-        cloned.add_voltage_source(source.name, source.node_pos, source.node_neg, source.volts)
-    for source in circuit.current_sources:
-        cloned.add_current_source(source.name, source.node_pos, source.node_neg, source.amps)
+    for voltage_source in circuit.voltage_sources:
+        cloned.add_voltage_source(
+            voltage_source.name,
+            voltage_source.node_pos,
+            voltage_source.node_neg,
+            voltage_source.volts,
+        )
+    for current_source in circuit.current_sources:
+        cloned.add_current_source(
+            current_source.name,
+            current_source.node_pos,
+            current_source.node_neg,
+            current_source.amps,
+        )
     for capacitor in circuit.capacitors:
         cloned.add_capacitor(capacitor.name, capacitor.node_a, capacitor.node_b, capacitor.farads)
     for inductor in circuit.inductors:
@@ -905,23 +939,24 @@ def simulate_electro_thermal_dc(
     fixed_resistors = [
         resistor for resistor in circuit.resistors if resistor.name not in {r.name for r in thermal_resistors}
     ]
+    result: CircuitResult | None = None
 
     for iteration in range(1, max_iters + 1):
-        updated = []
-        for resistor in thermal_resistors:
-            temp_c = temps.get(resistor.thermal_node, resistor.ref_temp_c)
+        updated: list[Resistor] = []
+        for thermal_resistor in thermal_resistors:
+            temp_c = temps.get(thermal_resistor.thermal_node, thermal_resistor.ref_temp_c)
             updated.append(
                 Resistor(
-                    name=resistor.name,
-                    node_a=resistor.node_a,
-                    node_b=resistor.node_b,
-                    ohms=resistor.resistance(temp_c),
+                    name=thermal_resistor.name,
+                    node_a=thermal_resistor.node_a,
+                    node_b=thermal_resistor.node_b,
+                    ohms=thermal_resistor.resistance(temp_c),
                 )
             )
         working = _clone_circuit_with_resistors(circuit, fixed_resistors + updated)
         result = simulate_dc(working)
 
-        loads = list(extra_loads)
+        loads: list[ThermalLoad] = list(extra_loads)
         for resistor in updated:
             current = result.resistor_currents.get(resistor.name, 0.0)
             power = (current**2) * resistor.ohms
@@ -938,4 +973,6 @@ def simulate_electro_thermal_dc(
         if max_delta <= tol_c:
             return ElectroThermalResult(circuit=result, temperatures_c=temps, iterations=iteration)
 
+    if result is None:
+        raise RuntimeError("Electro-thermal simulation did not run.")
     return ElectroThermalResult(circuit=result, temperatures_c=temps, iterations=max_iters)

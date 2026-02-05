@@ -24,6 +24,8 @@
 /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/CMakeFiles/test.dir
 /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/CMakeFiles/edit_cache.dir
 /workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/CMakeFiles/rebuild_cache.dir
+/workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir
+/workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/CMakeFiles/v2_studio_autogen.dir
 /workspaces/DARK_leaf_drone_4-1_V2/build_on/cpp/engine/CMakeFiles/cpp_accuracy_gate.dir
 /workspaces/DARK_leaf_drone_4-1_V2/build_on/cpp/engine/CMakeFiles/cpp_commit_gate.dir
 /workspaces/DARK_leaf_drone_4-1_V2/build_on/cpp/engine/CMakeFiles/cpp_accuracy_gate_tests.dir

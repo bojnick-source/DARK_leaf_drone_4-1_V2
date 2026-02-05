@@ -140,29 +140,81 @@ v2_studio/fast:
 	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/build
 .PHONY : v2_studio/fast
 
-app/main_stub.o: app/main_stub.cpp.o
-.PHONY : app/main_stub.o
+# Convenience name for target.
+v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir/rule:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir/rule
+.PHONY : v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir/rule
+
+# Convenience name for target.
+v2_studio_autogen_timestamp_deps: v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir/rule
+.PHONY : v2_studio_autogen_timestamp_deps
+
+# fast build rule for target.
+v2_studio_autogen_timestamp_deps/fast:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir/build.make v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir/build
+.PHONY : v2_studio_autogen_timestamp_deps/fast
+
+# Convenience name for target.
+v2/studio/CMakeFiles/v2_studio_autogen.dir/rule:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 v2/studio/CMakeFiles/v2_studio_autogen.dir/rule
+.PHONY : v2/studio/CMakeFiles/v2_studio_autogen.dir/rule
+
+# Convenience name for target.
+v2_studio_autogen: v2/studio/CMakeFiles/v2_studio_autogen.dir/rule
+.PHONY : v2_studio_autogen
+
+# fast build rule for target.
+v2_studio_autogen/fast:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio_autogen.dir/build.make v2/studio/CMakeFiles/v2_studio_autogen.dir/build
+.PHONY : v2_studio_autogen/fast
+
+app/main.o: app/main.cpp.o
+.PHONY : app/main.o
 
 # target to build an object file
-app/main_stub.cpp.o:
-	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o
-.PHONY : app/main_stub.cpp.o
+app/main.cpp.o:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o
+.PHONY : app/main.cpp.o
 
-app/main_stub.i: app/main_stub.cpp.i
-.PHONY : app/main_stub.i
+app/main.i: app/main.cpp.i
+.PHONY : app/main.i
 
 # target to preprocess a source file
-app/main_stub.cpp.i:
-	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.i
-.PHONY : app/main_stub.cpp.i
+app/main.cpp.i:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.i
+.PHONY : app/main.cpp.i
 
-app/main_stub.s: app/main_stub.cpp.s
-.PHONY : app/main_stub.s
+app/main.s: app/main.cpp.s
+.PHONY : app/main.s
 
 # target to generate assembly for a file
-app/main_stub.cpp.s:
-	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.s
-.PHONY : app/main_stub.cpp.s
+app/main.cpp.s:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.s
+.PHONY : app/main.cpp.s
+
+v2_studio_autogen/mocs_compilation.o: v2_studio_autogen/mocs_compilation.cpp.o
+.PHONY : v2_studio_autogen/mocs_compilation.o
+
+# target to build an object file
+v2_studio_autogen/mocs_compilation.cpp.o:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o
+.PHONY : v2_studio_autogen/mocs_compilation.cpp.o
+
+v2_studio_autogen/mocs_compilation.i: v2_studio_autogen/mocs_compilation.cpp.i
+.PHONY : v2_studio_autogen/mocs_compilation.i
+
+# target to preprocess a source file
+v2_studio_autogen/mocs_compilation.cpp.i:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.i
+.PHONY : v2_studio_autogen/mocs_compilation.cpp.i
+
+v2_studio_autogen/mocs_compilation.s: v2_studio_autogen/mocs_compilation.cpp.s
+.PHONY : v2_studio_autogen/mocs_compilation.s
+
+# target to generate assembly for a file
+v2_studio_autogen/mocs_compilation.cpp.s:
+	cd /workspaces/DARK_leaf_drone_4-1_V2/build_on && $(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio.dir/build.make v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.s
+.PHONY : v2_studio_autogen/mocs_compilation.cpp.s
 
 # Help Target
 help:
@@ -173,10 +225,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... v2_studio_autogen"
+	@echo "... v2_studio_autogen_timestamp_deps"
 	@echo "... v2_studio"
-	@echo "... app/main_stub.o"
-	@echo "... app/main_stub.i"
-	@echo "... app/main_stub.s"
+	@echo "... app/main.o"
+	@echo "... app/main.i"
+	@echo "... app/main.s"
+	@echo "... v2_studio_autogen/mocs_compilation.o"
+	@echo "... v2_studio_autogen/mocs_compilation.i"
+	@echo "... v2_studio_autogen/mocs_compilation.s"
 .PHONY : help
 
 

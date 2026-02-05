@@ -8,7 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main_stub.cpp" "v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o" "gcc" "v2/studio/CMakeFiles/v2_studio.dir/app/main_stub.cpp.o.d"
+  "/workspaces/DARK_leaf_drone_4-1_V2/v2/studio/app/main.cpp" "v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o" "gcc" "v2/studio/CMakeFiles/v2_studio.dir/app/main.cpp.o.d"
+  "/workspaces/DARK_leaf_drone_4-1_V2/build_on/v2/studio/v2_studio_autogen/mocs_compilation.cpp" "v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o" "gcc" "v2/studio/CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 from reidce.memory import MemoryStore
 from reidce.pipeline import build_pipeline
 from reidce.schemas import (
     ActuatorSpec,
+    BudgetLine,
     BudgetsSpec,
     CadRef,
     CalibrationParamsUncertainty,
@@ -31,15 +33,18 @@ from reidce.schemas import (
     RunConfig,
     StatisticalSufficiency,
     StructureSpec,
+    UnitLiteral,
     VariabilitySpec,
 )
 
+DistributionUnit = Literal["kg", "N", "W", "Pa", "K", "m", "ratio", "deg"]
 
-def _quantity(value: float, unit: str) -> Quantity:
+
+def _quantity(value: float, unit: UnitLiteral) -> Quantity:
     return Quantity(value=value, unit=unit)
 
 
-def _delta(value: float, unit: str) -> DistributionSpec:
+def _delta(value: float, unit: DistributionUnit) -> DistributionSpec:
     return DistributionSpec(
         dist="delta",
         params=DistributionParams(mean=value),
@@ -101,24 +106,26 @@ def _make_design() -> DesignSpec:
                 currency="kg",
                 margin=_quantity(0.1, "kg"),
                 lines=[
-                    {
-                        "name": "frame",
-                        "mass": _quantity(0.5, "kg"),
-                        "owner": "structures",
-                        "required": True,
-                    }
+                    BudgetLine(
+                        name="frame",
+                        mass=_quantity(0.5, "kg"),
+                        power=None,
+                        owner="structures",
+                        required=True,
+                    )
                 ],
             ),
             power_budget=PowerBudget(
                 currency="W",
                 margin=_quantity(10.0, "W"),
                 lines=[
-                    {
-                        "name": "pump",
-                        "power": _quantity(50.0, "W"),
-                        "owner": "propulsion",
-                        "required": True,
-                    }
+                    BudgetLine(
+                        name="pump",
+                        mass=None,
+                        power=_quantity(50.0, "W"),
+                        owner="propulsion",
+                        required=True,
+                    )
                 ],
             ),
         ),

@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/run_config_test.dir/core/run_config_test.cpp.o -o run_config_test  ../libv2_engine.a 

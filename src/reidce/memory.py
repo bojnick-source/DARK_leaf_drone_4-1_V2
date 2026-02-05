@@ -6,22 +6,30 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Iterable, Optional
 from uuid import uuid4
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
+
+
+def _empty_tags() -> list[str]:
+    return []
+
+
+def _empty_metadata() -> dict[str, Any]:
+    return {}
 
 
 def _now_utc_iso() -> str:
     return datetime.now(tz=timezone.utc).isoformat()
 
 
-def _tokenize(text: str) -> List[str]:
+def _tokenize(text: str) -> list[str]:
     return _TOKEN_RE.findall(text.lower())
 
 
-def _term_frequency(tokens: Iterable[str]) -> Dict[str, float]:
-    counts: Dict[str, float] = {}
+def _term_frequency(tokens: Iterable[str]) -> dict[str, float]:
+    counts: dict[str, float] = {}
     total = 0.0
     for token in tokens:
         counts[token] = counts.get(token, 0.0) + 1.0
@@ -31,7 +39,7 @@ def _term_frequency(tokens: Iterable[str]) -> Dict[str, float]:
     return {token: value / total for token, value in counts.items()}
 
 
-def _cosine_similarity(vec_a: Dict[str, float], vec_b: Dict[str, float]) -> float:
+def _cosine_similarity(vec_a: dict[str, float], vec_b: dict[str, float]) -> float:
     if not vec_a or not vec_b:
         return 0.0
     dot = 0.0
@@ -51,8 +59,8 @@ class MemoryRecord:
     created_utc: str
     source: str
     text: str
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=_empty_tags)
+    metadata: dict[str, Any] = field(default_factory=_empty_metadata)
 
 
 @dataclass(frozen=True)
@@ -64,13 +72,13 @@ class MemorySearchResult:
 class MemoryStore:
     def __init__(self, path: Optional[Path] = None) -> None:
         self._path = path
-        self._records: List[MemoryRecord] = []
-        self._doc_tokens: Dict[str, List[str]] = {}
+        self._records: list[MemoryRecord] = []
+        self._doc_tokens: dict[str, list[str]] = {}
         if self._path:
             self.load(self._path)
 
     @property
-    def records(self) -> List[MemoryRecord]:
+    def records(self) -> list[MemoryRecord]:
         return list(self._records)
 
     def add(
@@ -78,7 +86,7 @@ class MemoryStore:
         text: str,
         source: str = "manual",
         tags: Optional[Iterable[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> MemoryRecord:
         record = MemoryRecord(
             record_id=str(uuid4()),
@@ -92,7 +100,12 @@ class MemoryStore:
         self._doc_tokens[record.record_id] = _tokenize(record.text)
         return record
 
-    def log_event(self, event_type: str, message: str, metadata: Optional[Dict[str, Any]] = None) -> MemoryRecord:
+    def log_event(
+        self,
+        event_type: str,
+        message: str,
+        metadata: Optional[dict[str, Any]] = None,
+    ) -> MemoryRecord:
         tags = ["event", event_type]
         return self.add(text=message, source="event", tags=tags, metadata=metadata)
 
@@ -102,7 +115,7 @@ class MemoryStore:
         top_k: int = 5,
         required_tags: Optional[Iterable[str]] = None,
         source: Optional[str] = None,
-    ) -> List[MemorySearchResult]:
+    ) -> list[MemorySearchResult]:
         if not query.strip():
             return []
         required = set(required_tags or [])
@@ -115,7 +128,7 @@ class MemoryStore:
         if not records:
             return []
 
-        doc_freq: Dict[str, int] = {}
+        doc_freq: dict[str, int] = {}
         for record in records:
             tokens = self._doc_tokens.get(record.record_id) or _tokenize(record.text)
             self._doc_tokens[record.record_id] = tokens
@@ -133,7 +146,7 @@ class MemoryStore:
         query_tf = _term_frequency(query_tokens)
         query_vec = {token: query_tf[token] * idf.get(token, 0.0) for token in query_tf}
 
-        scored: List[MemorySearchResult] = []
+        scored: list[MemorySearchResult] = []
         for record in records:
             tokens = self._doc_tokens.get(record.record_id) or _tokenize(record.text)
             tf = _term_frequency(tokens)
@@ -161,8 +174,8 @@ class MemoryStore:
         if not path.exists():
             self._path = path
             return
-        records: List[MemoryRecord] = []
-        doc_tokens: Dict[str, List[str]] = {}
+        records: list[MemoryRecord] = []
+        doc_tokens: dict[str, list[str]] = {}
         with path.open("r", encoding="utf-8") as handle:
             for line in handle:
                 line = line.strip()

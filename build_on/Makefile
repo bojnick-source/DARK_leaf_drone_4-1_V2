@@ -309,6 +309,32 @@ v2_studio/fast:
 .PHONY : v2_studio/fast
 
 #=============================================================================
+# Target rules for targets named v2_studio_autogen_timestamp_deps
+
+# Build rule for target.
+v2_studio_autogen_timestamp_deps: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 v2_studio_autogen_timestamp_deps
+.PHONY : v2_studio_autogen_timestamp_deps
+
+# fast build rule for target.
+v2_studio_autogen_timestamp_deps/fast:
+	$(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir/build.make v2/studio/CMakeFiles/v2_studio_autogen_timestamp_deps.dir/build
+.PHONY : v2_studio_autogen_timestamp_deps/fast
+
+#=============================================================================
+# Target rules for targets named v2_studio_autogen
+
+# Build rule for target.
+v2_studio_autogen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 v2_studio_autogen
+.PHONY : v2_studio_autogen
+
+# fast build rule for target.
+v2_studio_autogen/fast:
+	$(MAKE) $(MAKESILENT) -f v2/studio/CMakeFiles/v2_studio_autogen.dir/build.make v2/studio/CMakeFiles/v2_studio_autogen.dir/build
+.PHONY : v2_studio_autogen/fast
+
+#=============================================================================
 # Target rules for targets named cpp_accuracy_gate
 
 # Build rule for target.
@@ -395,6 +421,8 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... test"
+	@echo "... v2_studio_autogen"
+	@echo "... v2_studio_autogen_timestamp_deps"
 	@echo "... calibration_test"
 	@echo "... cpp_accuracy_gate"
 	@echo "... cpp_accuracy_gate_tests"
