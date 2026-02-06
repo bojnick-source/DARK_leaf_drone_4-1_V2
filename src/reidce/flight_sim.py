@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
+from dataclasses import dataclass, field
 from typing import Callable, Iterable, List, Optional, Tuple
 
 
@@ -159,14 +159,16 @@ def simulate_flight(
     target: GuidanceTarget,
     duration_s: float,
     dt_s: float,
-    params: VehicleParams = VehicleParams(),
-    atmosphere: Atmosphere = Atmosphere(),
+    params: Optional[VehicleParams] = None,
+    atmosphere: Optional[Atmosphere] = None,
     controller: Optional[TripleRedundantController] = None,
     guidance_profile: Optional[Callable[[float, GuidanceTarget], GuidanceTarget]] = None,
 ) -> SimulationResult:
     if duration_s <= 0.0 or dt_s <= 0.0:
         raise ValueError("duration_s and dt_s must be > 0")
 
+    params = params or VehicleParams()
+    atmosphere = atmosphere or Atmosphere()
     controller = controller or TripleRedundantController()
     controller.reset()
 
@@ -240,11 +242,16 @@ def _integrate(
         x_m=state.x_m + dt / 6.0 * (k1.x_m + 2 * k2.x_m + 2 * k3.x_m + k4.x_m),
         y_m=state.y_m + dt / 6.0 * (k1.y_m + 2 * k2.y_m + 2 * k3.y_m + k4.y_m),
         z_m=state.z_m + dt / 6.0 * (k1.z_m + 2 * k2.z_m + 2 * k3.z_m + k4.z_m),
-        vx_m_s=state.vx_m_s + dt / 6.0 * (k1.vx_m_s + 2 * k2.vx_m_s + 2 * k3.vx_m_s + k4.vx_m_s),
-        vy_m_s=state.vy_m_s + dt / 6.0 * (k1.vy_m_s + 2 * k2.vy_m_s + 2 * k3.vy_m_s + k4.vy_m_s),
-        vz_m_s=state.vz_m_s + dt / 6.0 * (k1.vz_m_s + 2 * k2.vz_m_s + 2 * k3.vz_m_s + k4.vz_m_s),
-        roll_rad=state.roll_rad + dt / 6.0 * (k1.roll_rad + 2 * k2.roll_rad + 2 * k3.roll_rad + k4.roll_rad),
-        pitch_rad=state.pitch_rad + dt / 6.0 * (k1.pitch_rad + 2 * k2.pitch_rad + 2 * k3.pitch_rad + k4.pitch_rad),
+        vx_m_s=state.vx_m_s
+        + dt / 6.0 * (k1.vx_m_s + 2 * k2.vx_m_s + 2 * k3.vx_m_s + k4.vx_m_s),
+        vy_m_s=state.vy_m_s
+        + dt / 6.0 * (k1.vy_m_s + 2 * k2.vy_m_s + 2 * k3.vy_m_s + k4.vy_m_s),
+        vz_m_s=state.vz_m_s
+        + dt / 6.0 * (k1.vz_m_s + 2 * k2.vz_m_s + 2 * k3.vz_m_s + k4.vz_m_s),
+        roll_rad=state.roll_rad
+        + dt / 6.0 * (k1.roll_rad + 2 * k2.roll_rad + 2 * k3.roll_rad + k4.roll_rad),
+        pitch_rad=state.pitch_rad
+        + dt / 6.0 * (k1.pitch_rad + 2 * k2.pitch_rad + 2 * k3.pitch_rad + k4.pitch_rad),
         yaw_rad=_wrap_angle(state.yaw_rad + dt * cmd.yaw_rate_cmd_rad_s),
     )
     return _limit_state(next_state, params)

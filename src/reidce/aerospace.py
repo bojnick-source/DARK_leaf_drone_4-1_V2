@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 from typing import Dict
 
 
@@ -51,7 +51,12 @@ def isa_atmosphere(altitude_m: float) -> ISAAtmosphere:
     )
 
 
-def lift_drag(speed_m_s: float, wing_area_m2: float, coeffs: AeroCoefficients, rho_kg_m3: float) -> Dict[str, float]:
+def lift_drag(
+    speed_m_s: float,
+    wing_area_m2: float,
+    coeffs: AeroCoefficients,
+    rho_kg_m3: float,
+) -> Dict[str, float]:
     if speed_m_s <= 0 or wing_area_m2 <= 0:
         raise ValueError("speed_m_s and wing_area_m2 must be > 0")
     q = 0.5 * rho_kg_m3 * speed_m_s**2

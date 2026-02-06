@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from sfcs_mdp.cli import main, resolve_spec_path
 
 

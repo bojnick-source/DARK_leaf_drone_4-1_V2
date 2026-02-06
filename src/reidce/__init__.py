@@ -1,3 +1,70 @@
+from reidce.aerospace import (
+    AeroCoefficients,
+    ISAAtmosphere,
+    RangeEstimate,
+    estimate_glide_ratio,
+    isa_atmosphere,
+    lift_drag,
+    range_endurance,
+    thrust_to_weight,
+    wing_loading,
+)
+from reidce.circuitry import (
+    Capacitor,
+    Circuit,
+    CircuitBoard,
+    CircuitBoardTrace,
+    CircuitResult,
+    CNTInterconnect,
+    CurrentSource,
+    ElectroThermalResistor,
+    ElectroThermalResult,
+    Inductor,
+    PhotonicModulator,
+    PhotonicProcessor,
+    PhotonicWaveguide,
+    PowerDistributionNetwork,
+    PowerRail,
+    ProcessingUnitLoad,
+    RailLoad,
+    Resistor,
+    TaNResistor,
+    ThermalLoad,
+    ThermalNode,
+    TransientResult,
+    VoltageSource,
+    build_advanced_fuselage_circuit,
+    build_photonic_processor_circuit,
+    generate_fuselage_power_netlist,
+    parse_netlist,
+    simulate_ac,
+    simulate_dc,
+    simulate_electro_thermal_dc,
+    simulate_photonic_burst,
+    simulate_thermal_steady_state,
+    simulate_transient,
+)
+from reidce.flight_sim import (
+    Atmosphere,
+    AutopilotChannel,
+    ControlCommand,
+    GuidanceTarget,
+    SensorSample,
+    SimulationResult,
+    TripleRedundantController,
+    VehicleParams,
+    VehicleState,
+    simulate_flight,
+)
+from reidce.kite_power import (
+    KiteParams,
+    KitePowerResult,
+    KiteWind,
+    kite_aero_forces,
+    kite_power,
+    optimal_reeling_speed,
+)
+from reidce.memory import MemoryRecord, MemorySearchResult, MemoryStore
 from reidce.pico_gk import PicoGKResult, apply_pico_gk, generate_cad_ref
 from reidce.pipeline import (
     compile_inputs,
@@ -7,6 +74,15 @@ from reidce.pipeline import (
     export_evidence_pack,
     gate_build_ready,
     sensitivity,
+)
+from reidce.sales_shipping import (
+    SalesInputs,
+    SalesSummary,
+    ShippingInputs,
+    ShippingSummary,
+    compute_sales,
+    compute_shipping,
+    estimate_sales_and_shipping,
 )
 from reidce.schemas import (
     BuildPacket,
@@ -32,74 +108,6 @@ from reidce.topology import (
     rank_topology_candidates,
     recommend_topology,
 )
-from reidce.memory import MemoryRecord, MemorySearchResult, MemoryStore
-from reidce.circuitry import (
-    CNTInterconnect,
-    Capacitor,
-    CircuitBoard,
-    CircuitBoardTrace,
-    Circuit,
-    CircuitResult,
-    CurrentSource,
-    ElectroThermalResistor,
-    Inductor,
-    PhotonicModulator,
-    PhotonicProcessor,
-    PhotonicWaveguide,
-    PowerDistributionNetwork,
-    PowerRail,
-    ProcessingUnitLoad,
-    RailLoad,
-    Resistor,
-    TaNResistor,
-    ThermalLoad,
-    ThermalNode,
-    VoltageSource,
-    build_advanced_fuselage_circuit,
-    build_photonic_processor_circuit,
-    generate_fuselage_power_netlist,
-    parse_netlist,
-    simulate_photonic_burst,
-    simulate_ac,
-    simulate_electro_thermal_dc,
-    simulate_transient,
-    simulate_thermal_steady_state,
-    simulate_dc,
-    TransientResult,
-    ElectroThermalResult,
-)
-from reidce.flight_sim import (
-    Atmosphere,
-    AutopilotChannel,
-    ControlCommand,
-    GuidanceTarget,
-    SensorSample,
-    SimulationResult,
-    TripleRedundantController,
-    VehicleParams,
-    VehicleState,
-    simulate_flight,
-)
-from reidce.aerospace import (
-    AeroCoefficients,
-    ISAAtmosphere,
-    RangeEstimate,
-    estimate_glide_ratio,
-    isa_atmosphere,
-    lift_drag,
-    range_endurance,
-    thrust_to_weight,
-    wing_loading,
-)
-from reidce.sales_shipping import (
-    SalesInputs,
-    SalesSummary,
-    ShippingInputs,
-    ShippingSummary,
-    compute_sales,
-    compute_shipping,
-    estimate_sales_and_shipping,
-)
 from reidce.wind_ship import (
     WindCondition,
     WindShipParams,
@@ -110,14 +118,6 @@ from reidce.wind_ship import (
     evaluate_wind_ship,
     hull_drag,
     sail_aero_force,
-)
-from reidce.kite_power import (
-    KiteParams,
-    KitePowerResult,
-    KiteWind,
-    kite_aero_forces,
-    kite_power,
-    optimal_reeling_speed,
 )
 
 __all__ = [

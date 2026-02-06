@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Iterable, Optional
 
-from reidce.schemas import DesignSpec
 from reidce.memory import MemoryStore
+from reidce.schemas import DesignSpec
 
 
 @dataclass(frozen=True)

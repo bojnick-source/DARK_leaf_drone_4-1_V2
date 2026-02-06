@@ -1,29 +1,27 @@
 from reidce.circuitry import (
     CircuitBoard,
     CircuitBoardTrace,
-    Capacitor,
     CNTInterconnect,
     ElectroThermalResistor,
-    Inductor,
     PhotonicModulator,
     PhotonicProcessor,
     PhotonicWaveguide,
     PowerDistributionNetwork,
     PowerRail,
     RailLoad,
+    TaNResistor,
     ThermalLoad,
     ThermalNode,
-    build_photonic_processor_circuit,
-    TaNResistor,
     build_advanced_fuselage_circuit,
+    build_photonic_processor_circuit,
     generate_fuselage_power_netlist,
     parse_netlist,
-    simulate_photonic_burst,
     simulate_ac,
-    simulate_electro_thermal_dc,
-    simulate_transient,
-    simulate_thermal_steady_state,
     simulate_dc,
+    simulate_electro_thermal_dc,
+    simulate_photonic_burst,
+    simulate_thermal_steady_state,
+    simulate_transient,
 )
 
 
@@ -76,7 +74,12 @@ def test_advanced_fuselage_circuit_builds() -> None:
 
 def test_photonic_processor_budget() -> None:
     waveguide = PhotonicWaveguide(name="wg0", length_m=0.02, loss_db_per_cm=0.6)
-    modulator = PhotonicModulator(name="m0", drive_voltage_v=1.5, capacitance_f=0.4e-12, data_rate_hz=25e9)
+    modulator = PhotonicModulator(
+        name="m0",
+        drive_voltage_v=1.5,
+        capacitance_f=0.4e-12,
+        data_rate_hz=25e9,
+    )
     processor = PhotonicProcessor(
         name="pho",
         optical_input_mw=10.0,
@@ -132,7 +135,12 @@ def test_thermal_steady_state() -> None:
 
 def test_photonic_burst() -> None:
     waveguide = PhotonicWaveguide(name="wg1", length_m=0.01, loss_db_per_cm=0.4)
-    modulator = PhotonicModulator(name="m1", drive_voltage_v=1.2, capacitance_f=0.3e-12, data_rate_hz=20e9)
+    modulator = PhotonicModulator(
+        name="m1",
+        drive_voltage_v=1.2,
+        capacitance_f=0.3e-12,
+        data_rate_hz=20e9,
+    )
     processor = PhotonicProcessor(
         name="pho2",
         optical_input_mw=8.0,

@@ -1,4 +1,10 @@
-from reidce.kite_power import KiteParams, KiteWind, kite_aero_forces, kite_power, optimal_reeling_speed
+from reidce.kite_power import (
+    KiteParams,
+    KiteWind,
+    kite_aero_forces,
+    kite_power,
+    optimal_reeling_speed,
+)
 
 
 def test_kite_aero_forces() -> None:

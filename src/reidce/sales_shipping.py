@@ -47,7 +47,12 @@ def compute_sales(inputs: SalesInputs) -> SalesSummary:
     cost = inputs.unit_cost_usd * inputs.volume_units
     margin = revenue - cost
     margin_rate = margin / revenue if revenue > 0 else 0.0
-    return SalesSummary(revenue_usd=revenue, cost_usd=cost, gross_margin_usd=margin, margin_rate=margin_rate)
+    return SalesSummary(
+        revenue_usd=revenue,
+        cost_usd=cost,
+        gross_margin_usd=margin,
+        margin_rate=margin_rate,
+    )
 
 
 def compute_shipping(inputs: ShippingInputs) -> ShippingSummary:

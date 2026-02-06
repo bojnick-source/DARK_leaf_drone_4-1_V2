@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 from typing import Dict
 
 
@@ -41,11 +41,13 @@ class WindShipPerformance:
 
 
 def apparent_wind(state: WindShipState, wind: WindCondition) -> Dict[str, float]:
-    rel_x = wind.true_wind_speed_m_s * math.cos(wind.true_wind_dir_rad) - state.speed_m_s * math.cos(
-        state.heading_rad
+    rel_x = (
+        wind.true_wind_speed_m_s * math.cos(wind.true_wind_dir_rad)
+        - state.speed_m_s * math.cos(state.heading_rad)
     )
-    rel_y = wind.true_wind_speed_m_s * math.sin(wind.true_wind_dir_rad) - state.speed_m_s * math.sin(
-        state.heading_rad
+    rel_y = (
+        wind.true_wind_speed_m_s * math.sin(wind.true_wind_dir_rad)
+        - state.speed_m_s * math.sin(state.heading_rad)
     )
     speed = math.hypot(rel_x, rel_y)
     angle = math.atan2(rel_y, rel_x)

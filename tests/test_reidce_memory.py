@@ -5,7 +5,10 @@ from reidce.memory import MemoryStore
 
 def test_memory_store_add_and_search(tmp_path: Path) -> None:
     store = MemoryStore()
-    store.add("Topology optimization improved with stiffness and slenderness scoring", tags=["topology"])
+    store.add(
+        "Topology optimization improved with stiffness and slenderness scoring",
+        tags=["topology"],
+    )
     store.add("CAD geometry memory created for actuator envelope", tags=["geometry"])
     store.add("Manufacturing gate requires tolerance evidence", tags=["manufacturing", "qa"])
 

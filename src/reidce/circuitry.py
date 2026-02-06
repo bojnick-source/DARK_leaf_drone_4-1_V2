@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
+from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional, Tuple
 
 from reidce.memory import MemoryStore
@@ -387,11 +387,21 @@ class Circuit:
 
     def add_cnt_interconnect(self, interconnect: CNTInterconnect) -> Resistor:
         resistance = interconnect.resistance()
-        return self.add_resistor(interconnect.name, interconnect.node_a, interconnect.node_b, resistance)
+        return self.add_resistor(
+            interconnect.name,
+            interconnect.node_a,
+            interconnect.node_b,
+            resistance,
+        )
 
     def add_tan_resistor(self, tan_resistor: TaNResistor) -> Resistor:
         resistance = tan_resistor.resistance()
-        return self.add_resistor(tan_resistor.name, tan_resistor.node_a, tan_resistor.node_b, resistance)
+        return self.add_resistor(
+            tan_resistor.name,
+            tan_resistor.node_a,
+            tan_resistor.node_b,
+            resistance,
+        )
 
     def add_processing_unit(self, load: ProcessingUnitLoad) -> Resistor:
         resistance = load.equivalent_resistance()
@@ -452,7 +462,10 @@ def _solve_linear_system(matrix: List[List[float]], vector: List[float]) -> List
     return [augmented[row][size] for row in range(size)]
 
 
-def _solve_linear_system_complex(matrix: List[List[complex]], vector: List[complex]) -> List[complex]:
+def _solve_linear_system_complex(
+    matrix: List[List[complex]],
+    vector: List[complex],
+) -> List[complex]:
     size = len(vector)
     augmented = [row[:] + [vector[idx]] for idx, row in enumerate(matrix)]
 
@@ -487,7 +500,10 @@ def simulate_dc(circuit: Circuit, memory: Optional[MemoryStore] = None) -> Circu
     if memory:
         memory.log_event(
             "circuit_sim",
-            f"DC simulation started with {n} nodes, {len(circuit.resistors)} resistors, {m} sources.",
+            (
+                f"DC simulation started with {n} nodes, "
+                f"{len(circuit.resistors)} resistors, {m} sources."
+            ),
             {"nodes": nodes},
         )
 
@@ -936,8 +952,9 @@ def simulate_electro_thermal_dc(
     if max_iters <= 0:
         raise ValueError("max_iters must be > 0")
     temps = {node.name: node.ambient_c for node in thermal_nodes}
+    thermal_names = {resistor.name for resistor in thermal_resistors}
     fixed_resistors = [
-        resistor for resistor in circuit.resistors if resistor.name not in {r.name for r in thermal_resistors}
+        resistor for resistor in circuit.resistors if resistor.name not in thermal_names
     ]
     result: CircuitResult | None = None
 
