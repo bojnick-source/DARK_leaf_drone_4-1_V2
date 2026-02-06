@@ -179,10 +179,9 @@ function attachHandlers() {
   const btnExport = getElementById("btnExport");
   const tabButtons = document.querySelectorAll("[data-tab]");
   const menuTriggers = document.querySelectorAll(".menu-trigger");
-  const menuPanels = document.querySelectorAll(".menu-panel");
   const menuActions = document.querySelectorAll("[data-action]");
   const workspaceTabs = document.querySelectorAll(".workspace-tab");
-    const workspaceAdd = document.getElementById("workspaceAdd");
+  const workspaceAdd = document.getElementById("workspaceAdd");
   const modeToolButtons = document.querySelectorAll("[data-mode-tools] [data-action]");
 
   if (btnLoadSample) {

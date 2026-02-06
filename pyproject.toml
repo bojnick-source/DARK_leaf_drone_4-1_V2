@@ -22,6 +22,7 @@ dev = [
 
 [project.scripts]
 sfcs-mdp = "sfcs_mdp.cli:main"
+repo-lint = "sfcs_mdp.linting:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

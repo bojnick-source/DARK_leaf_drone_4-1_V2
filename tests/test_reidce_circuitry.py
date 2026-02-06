@@ -108,7 +108,7 @@ def test_power_distribution_network() -> None:
         PowerRail(name="1v8", voltage_v=1.8, max_current_a=5.0),
         PowerRail(name="3v3", voltage_v=3.3, max_current_a=3.0),
     )
-    loads = {
+    loads: dict[str, tuple[RailLoad, ...]] = {
         "1v8": (RailLoad(name="fpga", power_w=4.0),),
         "3v3": (RailLoad(name="io", power_w=2.0),),
     }

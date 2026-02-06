@@ -1,0 +1,7 @@
+build/**
+build_on/**
+build_off/**
+build-ON/**
+build-OFF/**
+external/**
+node_modules/**

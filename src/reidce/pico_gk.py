@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
-from reidce.schemas import CadRef, DesignSpec, GeometrySpec
 from sfcs_mdp.hashutil import sha256_bytes
+
+from reidce.schemas import CadRef, DesignSpec, GeometrySpec
 
 
 @dataclass(frozen=True)
