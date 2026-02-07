@@ -18,6 +18,7 @@ jobs:
       PYTHONPATH: src
       TOPOPT_TEST_BUDGET_S: "5"
       TOPOPT_LHS_BUDGET_S: "5"
+      TOPOPT_SKIP_CAP: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

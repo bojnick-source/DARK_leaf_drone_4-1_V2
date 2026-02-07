@@ -116,11 +116,10 @@ def main() -> int:
     if invalid_reasons:
         failures += 1
         print("FAILED skip reasons missing required details.")
-    # Only count skips with invalid reasons against the cap.
-    # Valid skips (with proper documentation) are expected and allowed even when cap is 0.
-    if len(invalid_reasons) > skip_cap:
+    # Enforce skip cap against total skip count per REQ-A3-SKIP-003.
+    if skipped > skip_cap:
         failures += 1
-        print(f"FAILED skip cap exceeded: {len(invalid_reasons)} > {skip_cap}")
+        print(f"FAILED skip cap exceeded: {skipped} > {skip_cap}")
 
     if not args.q:
         print(f"collected {total} tests, {failures} failures, {skipped} skipped")
