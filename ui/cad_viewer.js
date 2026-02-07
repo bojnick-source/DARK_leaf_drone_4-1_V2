@@ -20,6 +20,9 @@
   let cameraPanY = 0;
   let constraintViolated = false;
 
+  const MESH_SEGMENTS = 48;
+  const MIN_INNER_RADIUS = 0.0001;
+
   const params = {
     diameter: 0.06,
     wallThickness: 0.0025,
@@ -160,7 +163,7 @@
     const r = params.diameter / 2;
     const wallT = params.wallThickness;
     const len = params.length;
-    const rInner = Math.max(r - wallT, 0.0001);
+    const rInner = Math.max(r - wallT, MIN_INNER_RADIUS);
 
     // Color based on constraint status
     const bodyColor = constraintViolated ? 0xff4d6a : 0x3a4a72;
@@ -168,7 +171,7 @@
     const emissiveColor = constraintViolated ? 0x440011 : 0x0a1428;
 
     // Outer cylinder (actuator body)
-    const outerGeo = new THREE.CylinderGeometry(r, r, len, 48, 1, false);
+    const outerGeo = new THREE.CylinderGeometry(r, r, len, MESH_SEGMENTS, 1, false);
     const outerMat = new THREE.MeshStandardMaterial({
       color: bodyColor,
       metalness: 0.7,
@@ -193,8 +196,8 @@
     wireframeGroup.add(new THREE.LineSegments(wireGeo, wireMat));
 
     // Inner hollow (if wall thickness makes sense)
-    if (rInner > 0.0001 && rInner < r) {
-      const innerGeo = new THREE.CylinderGeometry(rInner, rInner, len + 0.001, 48, 1, true);
+    if (rInner > MIN_INNER_RADIUS && rInner < r) {
+      const innerGeo = new THREE.CylinderGeometry(rInner, rInner, len + 0.001, MESH_SEGMENTS, 1, true);
       const innerMat = new THREE.MeshStandardMaterial({
         color: 0x0f141d,
         metalness: 0.5,
@@ -205,7 +208,7 @@
     }
 
     // Top and bottom caps (annular rings)
-    const capGeo = new THREE.RingGeometry(rInner, r, 48);
+    const capGeo = new THREE.RingGeometry(rInner, r, MESH_SEGMENTS);
     const capMat = new THREE.MeshStandardMaterial({
       color: bodyColor,
       metalness: 0.6,
@@ -314,10 +317,6 @@
     const violations = [];
 
     for (const key in results) {
-      const el = $(
-        "c" + key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, "")
-      );
-      // Use mapped IDs
       const elMap = {
         diameterLeEnvelope: "cDiameter",
         wallLtHalfRadius: "cWall",
@@ -465,9 +464,8 @@
 
   // --- Mesh Info ---
   function updateMeshInfo() {
-    const segments = 48; // high_fidelity
-    const verts = segments * 2 + 2;
-    const tris = segments * 4;
+    const verts = MESH_SEGMENTS * 2 + 2;
+    const tris = MESH_SEGMENTS * 4;
 
     const infoVerts = $("infoVerts");
     const infoTris = $("infoTris");
@@ -587,7 +585,7 @@
   function exportSTL() {
     const r = params.diameter / 2;
     const len = params.length;
-    const segments = 48;
+    const segments = MESH_SEGMENTS;
     const lines = ["solid actuator"];
 
     for (let i = 0; i < segments; i++) {
@@ -610,7 +608,7 @@
 
     lines.push("endsolid actuator");
     const stl = lines.join("\n");
-    const blob = new Blob([stl], { type: "application/sla" });
+    const blob = new Blob([stl], { type: "model/stl" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
