@@ -1,0 +1,132 @@
+<!-- ui/cad_viewer.html — Interactive 3D CAD Viewer
+     High-fidelity real-time drone CAD viewer with constraint validation.
+     Allows interactive editing of geometry parameters with live red
+     highlighting when constraints are violated.
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dark Leaf Drone — CAD Viewer</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data:;
+        font-src 'self';
+        connect-src 'self';
+        base-uri 'self';
+        frame-ancestors 'none';"
+    />
+    <link rel="stylesheet" href="./cad_viewer.css" />
+  </head>
+  <body>
+    <header id="cadHeader">
+      <div class="header-brand">
+        <span class="brand-icon">◇</span>
+        <span>Dark Leaf Drone — CAD Viewer</span>
+      </div>
+      <nav class="header-nav">
+        <a href="./dashboard.html" class="nav-link">Dashboard</a>
+        <button id="btnLoadPayload" class="nav-btn" type="button">Load JSON…</button>
+        <button id="btnResetView" class="nav-btn" type="button">Reset View</button>
+        <button id="btnExportSTL" class="nav-btn accent" type="button">Export STL</button>
+      </nav>
+    </header>
+
+    <main id="cadMain">
+      <aside id="cadSidebar">
+        <section class="sidebar-section">
+          <h3 class="section-heading">Geometry Parameters</h3>
+          <div class="param-control">
+            <label for="paramDiameter">Actuator Diameter (m)</label>
+            <input id="paramDiameter" type="range" min="0.005" max="0.20" step="0.001" value="0.06" />
+            <span class="param-value" id="valDiameter">0.060</span>
+          </div>
+          <div class="param-control">
+            <label for="paramWall">Wall Thickness (m)</label>
+            <input id="paramWall" type="range" min="0.0005" max="0.01" step="0.0005" value="0.0025" />
+            <span class="param-value" id="valWall">0.0025</span>
+          </div>
+          <div class="param-control">
+            <label for="paramLength">Actuator Length (m)</label>
+            <input id="paramLength" type="range" min="0.05" max="0.50" step="0.005" value="0.24" />
+            <span class="param-value" id="valLength">0.240</span>
+          </div>
+          <div class="param-control">
+            <label for="paramEnvelope">Envelope Max (m)</label>
+            <input id="paramEnvelope" type="range" min="0.10" max="1.00" step="0.01" value="0.38" />
+            <span class="param-value" id="valEnvelope">0.38</span>
+          </div>
+        </section>
+
+        <section class="sidebar-section">
+          <h3 class="section-heading">Constraints</h3>
+          <div id="constraintList" class="constraint-list">
+            <div class="constraint-row pass" id="cDiameter">
+              <span class="constraint-icon">✓</span>
+              <span>Diameter ≤ Envelope</span>
+            </div>
+            <div class="constraint-row pass" id="cWall">
+              <span class="constraint-icon">✓</span>
+              <span>Wall &lt; Radius/2</span>
+            </div>
+            <div class="constraint-row pass" id="cLength">
+              <span class="constraint-icon">✓</span>
+              <span>Length ≤ Envelope</span>
+            </div>
+            <div class="constraint-row pass" id="cPositive">
+              <span class="constraint-icon">✓</span>
+              <span>All values &gt; 0</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="sidebar-section">
+          <h3 class="section-heading">Mesh Info</h3>
+          <div class="info-row"><span>Vertices</span><span id="infoVerts">—</span></div>
+          <div class="info-row"><span>Triangles</span><span id="infoTris">—</span></div>
+          <div class="info-row"><span>Quality</span><span id="infoQuality">high_fidelity</span></div>
+          <div class="info-row"><span>Watertight</span><span id="infoWatertight">—</span></div>
+        </section>
+
+        <section class="sidebar-section">
+          <h3 class="section-heading">View Controls</h3>
+          <div class="info-row hint">
+            <span>Orbit: Left-click drag</span>
+          </div>
+          <div class="info-row hint">
+            <span>Pan: Right-click drag</span>
+          </div>
+          <div class="info-row hint">
+            <span>Zoom: Scroll wheel</span>
+          </div>
+        </section>
+      </aside>
+
+      <div id="cadCanvas">
+        <canvas id="threeCanvas"></canvas>
+        <div id="cadStatus" class="cad-status">
+          <span id="statusText">READY</span>
+        </div>
+        <div id="constraintBanner" class="constraint-banner" hidden>
+          <span class="banner-icon">⚠</span>
+          <span id="bannerText">Constraint violated</span>
+        </div>
+      </div>
+    </main>
+
+    <footer id="cadFooter">
+      <span class="pill" id="footerMode">MODE: CAD VIEWER</span>
+      <span class="pill" id="footerConstraint">CONSTRAINTS: OK</span>
+      <span class="pill" id="footerMesh">MESH: —</span>
+    </footer>
+
+    <input id="jsonFileInput" type="file" accept="application/json" hidden />
+
+    <script src="./lib/three.min.js"></script>
+    <script src="./cad_viewer.js"></script>
+  </body>
+</html>
