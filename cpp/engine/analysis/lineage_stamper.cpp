@@ -29,6 +29,11 @@ std::string escape_json_string(std::string_view in) {
         switch (c) {
             case '\\': out += "\\\\"; break;
             case '\"': out += "\\\""; break;
+            case '\b': out += "\\b"; break;
+            case '\f': out += "\\f"; break;
+            case '\n': out += "\\n"; break;
+            case '\r': out += "\\r"; break;
+            case '\t': out += "\\t"; break;
             default: out.push_back(c); break;
         }
     }
