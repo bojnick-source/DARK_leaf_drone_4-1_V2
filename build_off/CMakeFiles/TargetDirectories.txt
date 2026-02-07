@@ -1,3 +1,0 @@
-/workspaces/DARK_leaf_drone_4-1_V2/build_off/CMakeFiles/test.dir
-/workspaces/DARK_leaf_drone_4-1_V2/build_off/CMakeFiles/edit_cache.dir
-/workspaces/DARK_leaf_drone_4-1_V2/build_off/CMakeFiles/rebuild_cache.dir

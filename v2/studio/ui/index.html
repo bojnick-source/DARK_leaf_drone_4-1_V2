@@ -27,6 +27,8 @@
           <li>Flight AI</li>
           <li>Wind Power</li>
           <li>Sales + Shipping</li>
+          <li>CAD Rendering</li>
+          <li>FEA Analysis</li>
         </ul>
         <div class="panel-block">
           <h3>AI Stack</h3>
@@ -55,8 +57,16 @@
             <div class="overlay-title">Computational Output</div>
             <div class="overlay-grid">
               <div class="overlay-panel span-2">
-                <h4>3D System Mesh</h4>
-                <canvas id="meshCanvas" width="720" height="220"></canvas>
+                <h4>CAD Wireframe — High Fidelity</h4>
+                <canvas id="cadCanvas" width="720" height="220"></canvas>
+              </div>
+              <div class="overlay-panel">
+                <h4>FEA Stress Distribution</h4>
+                <canvas id="feaCanvas" width="360" height="160"></canvas>
+              </div>
+              <div class="overlay-panel">
+                <h4>FEA Displacement</h4>
+                <canvas id="feaDispCanvas" width="360" height="160"></canvas>
               </div>
               <div class="overlay-panel">
                 <h4>Flight AI Path</h4>
@@ -97,6 +107,16 @@
                     <div class="bar"><div class="fill" id="barWind"></div></div>
                     <span id="valWind">88%</span>
                   </div>
+                  <div class="status-bar" data-value="92">
+                    <span>Mesh Quality</span>
+                    <div class="bar"><div class="fill" id="barMesh"></div></div>
+                    <span id="valMesh">92%</span>
+                  </div>
+                  <div class="status-bar" data-value="85">
+                    <span>FEA Safety Factor</span>
+                    <div class="bar"><div class="fill" id="barFEA"></div></div>
+                    <span id="valFEA">85%</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -125,6 +145,21 @@
         <div class="kv">
           <span>Electro-thermal</span>
           <span id="electroThermal">Stable</span>
+        </div>
+        <div class="panel-block">
+          <h3>CAD Rendering</h3>
+          <div class="kv"><span>Quality</span><span id="cadQuality">High Fidelity</span></div>
+          <div class="kv"><span>Triangles</span><span id="cadTriangles">192</span></div>
+          <div class="kv"><span>Vertices</span><span id="cadVertices">98</span></div>
+          <div class="kv"><span>Mesh Score</span><span id="cadMeshScore">0.94</span></div>
+          <div class="kv"><span>Surface Area</span><span id="cadSurfaceArea">0.0063 m²</span></div>
+        </div>
+        <div class="panel-block">
+          <h3>FEA Analysis</h3>
+          <div class="kv"><span>Max Disp.</span><span id="feaMaxDisp">0.12 mm</span></div>
+          <div class="kv"><span>Max Stress</span><span id="feaMaxStress">45.2 MPa</span></div>
+          <div class="kv"><span>Safety Factor</span><span id="feaSafetyFactor">5.53</span></div>
+          <div class="kv"><span>Converged</span><span id="feaConverged">Yes</span></div>
         </div>
         <div class="panel-block">
           <h3>Flight AI</h3>
