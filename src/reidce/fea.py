@@ -263,13 +263,14 @@ def solve_static(
 
         # Bending: curvature approximation
         transverse_delta = ux_j - ux_i
-        r_outer = math.sqrt(elem.area_m2 / math.pi + 1e-20)
+        r_outer = math.sqrt(max(elem.area_m2, 0.0) / math.pi) if elem.area_m2 > 0 else 0.0
         curvature = transverse_delta / (ll**2) if ll > 1e-12 else 0.0
         bending_stress = elem.elastic_modulus_pa * curvature * r_outer
 
-        # Von Mises (simplified for uniaxial + bending)
-        sigma_total = abs(axial_stress) + abs(bending_stress)
-        von_mises = sigma_total
+        # Von Mises stress (combined axial + bending, uniaxial formulation)
+        sigma_a = axial_stress
+        sigma_b = bending_stress
+        von_mises = math.sqrt(sigma_a**2 + sigma_b**2 + sigma_a * sigma_b)
 
         sf = yield_stress_pa / max(von_mises, 1e-12)
         max_vm = max(max_vm, von_mises)
@@ -315,7 +316,7 @@ def _solve_linear_system(a: List[List[float]], b: List[float]) -> List[float]:
         aug[col], aug[max_row] = aug[max_row], aug[col]
 
         pivot = aug[col][col]
-        if abs(pivot) < 1e-30:
+        if abs(pivot) < 1e-12:
             continue
 
         for row in range(col + 1, n):
@@ -326,7 +327,7 @@ def _solve_linear_system(a: List[List[float]], b: List[float]) -> List[float]:
     # Back substitution
     x = [0.0] * n
     for i in range(n - 1, -1, -1):
-        if abs(aug[i][i]) < 1e-30:
+        if abs(aug[i][i]) < 1e-12:
             x[i] = 0.0
             continue
         x[i] = aug[i][n]

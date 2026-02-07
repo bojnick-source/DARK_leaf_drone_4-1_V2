@@ -179,10 +179,23 @@ def _cylinder_mesh(
 def _compute_bounding_box(vertices: Sequence[Vec3]) -> Tuple[Vec3, Vec3]:
     if not vertices:
         return Vec3(0.0, 0.0, 0.0), Vec3(0.0, 0.0, 0.0)
-    xs = [v.x for v in vertices]
-    ys = [v.y for v in vertices]
-    zs = [v.z for v in vertices]
-    return Vec3(min(xs), min(ys), min(zs)), Vec3(max(xs), max(ys), max(zs))
+    min_x = max_x = vertices[0].x
+    min_y = max_y = vertices[0].y
+    min_z = max_z = vertices[0].z
+    for v in vertices[1:]:
+        if v.x < min_x:
+            min_x = v.x
+        elif v.x > max_x:
+            max_x = v.x
+        if v.y < min_y:
+            min_y = v.y
+        elif v.y > max_y:
+            max_y = v.y
+        if v.z < min_z:
+            min_z = v.z
+        elif v.z > max_z:
+            max_z = v.z
+    return Vec3(min_x, min_y, min_z), Vec3(max_x, max_y, max_z)
 
 
 def _compute_surface_area(triangles: Sequence[Triangle]) -> float:
