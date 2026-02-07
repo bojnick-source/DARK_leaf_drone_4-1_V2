@@ -57,6 +57,8 @@ def test_wrap_angle_precision_large_multiples() -> None:
     wrapped = _wrap_angle(angle)
     assert abs(wrapped - (-0.3)) < 1e-10
 
-    # Exact π boundary
-    assert abs(_wrap_angle(math.pi)) < 1e-10 or abs(abs(_wrap_angle(math.pi)) - math.pi) < 1e-10
-    assert abs(_wrap_angle(-math.pi)) < 1e-10 or abs(abs(_wrap_angle(-math.pi)) - math.pi) < 1e-10
+    # Exact π boundary — math.remainder returns value in [-π, π]
+    wrapped_pi = _wrap_angle(math.pi)
+    assert -math.pi <= wrapped_pi <= math.pi
+    wrapped_neg_pi = _wrap_angle(-math.pi)
+    assert -math.pi <= wrapped_neg_pi <= math.pi

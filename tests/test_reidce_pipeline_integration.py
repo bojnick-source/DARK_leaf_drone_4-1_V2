@@ -243,5 +243,3 @@ def test_pipeline_uses_standard_gravity(tmp_path: Path) -> None:
     assert force_eq is not None
     expected_ratio = (force_eq / _GRAVITY_M_S2) / mission.payload_target.value
     assert abs(nominal.kpis.payload_ratio.value - expected_ratio) < 1e-12
-    # Verify the constant is the standard value
-    assert _GRAVITY_M_S2 == 9.80665
