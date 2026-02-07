@@ -179,6 +179,25 @@ def test_transient_rc_charging() -> None:
     assert result.node_voltages[-1]["vout"] > 0.8
 
 
+def test_transient_rc_steady_state_precision() -> None:
+    """RC transient should converge near source voltage with low error margin."""
+    import math
+
+    circuit = parse_netlist(
+        [
+            "V1 vin 0 5",
+            "R1 vin vout 1000",
+            "C1 vout 0 1e-6",
+        ]
+    )
+    tau = 1000 * 1e-6  # RC time constant = 1ms
+    # Simulate for 10 time constants — should be within 1% of final value
+    result = simulate_transient(circuit, t_stop_s=10.0 * tau, dt_s=tau / 20.0)
+    final_v = result.node_voltages[-1]["vout"]
+    expected = 5.0 * (1.0 - math.exp(-10.0))
+    assert abs(final_v - expected) / expected < 0.01
+
+
 def test_rlc_transient_step() -> None:
     circuit = parse_netlist(
         [

@@ -39,3 +39,24 @@ def test_triple_redundant_voting_with_fault() -> None:
     controller = TripleRedundantController(channel_faults=(True, False, False))
     result = simulate_flight(initial, target, duration_s=10.0, dt_s=0.05, controller=controller)
     assert len(result.commands) == len(result.state)
+
+
+def test_wrap_angle_precision_large_multiples() -> None:
+    """_wrap_angle must stay precise for large angle multiples."""
+    import math
+
+    from reidce.flight_sim import _wrap_angle
+
+    # Large positive multiple of 2π should wrap to near zero
+    angle = 1000.0 * 2.0 * math.pi + 0.1
+    wrapped = _wrap_angle(angle)
+    assert abs(wrapped - 0.1) < 1e-10
+
+    # Large negative multiple
+    angle = -500.0 * 2.0 * math.pi - 0.3
+    wrapped = _wrap_angle(angle)
+    assert abs(wrapped - (-0.3)) < 1e-10
+
+    # Exact π boundary
+    assert abs(_wrap_angle(math.pi)) < 1e-10 or abs(abs(_wrap_angle(math.pi)) - math.pi) < 1e-10
+    assert abs(_wrap_angle(-math.pi)) < 1e-10 or abs(abs(_wrap_angle(-math.pi)) - math.pi) < 1e-10

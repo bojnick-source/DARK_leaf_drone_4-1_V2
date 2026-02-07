@@ -138,3 +138,14 @@ def test_recommend_topology() -> None:
     recommendation = recommend_topology(design)
     assert recommendation.best.name.startswith("baseline_topology_")
     assert len(recommendation.ranked) == 3
+
+
+def test_deflection_capacity_uses_energy_formula() -> None:
+    """deflection_capacity must use 0.5 * k * δ² (elastic energy), not k * δ."""
+    design = _make_design()
+    candidates = generate_topology_candidates(design)
+    for candidate in candidates:
+        k = candidate.metrics["stiffness_n_per_m"]
+        d = candidate.metrics["max_deflection_m"]
+        expected = 0.5 * k * d * d
+        assert abs(candidate.metrics["deflection_capacity"] - expected) < 1e-12
