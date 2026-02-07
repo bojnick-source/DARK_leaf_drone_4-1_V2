@@ -70,6 +70,20 @@ int main() {
     LineageResult mismatch = stamp_lineage(ctx, changed);
     assert(!mismatch.ok);
 
+    // canonical_inputs containing quotes must be escaped in the JSON output.
+    const std::string ci_with_quotes = R"({"alpha":"1.0","beta":"2.0"})";
+    const std::string esc_id = v2::io::compute_run_id(ci_with_quotes);
+    const auto esc_root = v2::io::artifact_root(esc_id);
+    std::filesystem::remove_all(esc_root);
+    RunContext ctx_esc{esc_id};
+    LineageInput esc_input{esc_id, {}, {}, {}, ci_with_quotes};
+    LineageResult esc_result = stamp_lineage(ctx_esc, esc_input);
+    assert(esc_result.ok);
+    // The inner quotes in canonical_inputs must be escaped as \".
+    const std::string& esc_json = esc_result.lineage_json;
+    assert(esc_json.find("\"canonical_inputs\":\"{\\\"alpha\\\":\\\"1.0\\\",\\\"beta\\\":\\\"2.0\\\"}\"") != std::string::npos);
+    std::filesystem::remove_all(esc_root);
+
     std::filesystem::remove_all(root);
     std::filesystem::remove_all(multi_root);
     return 0;
