@@ -185,15 +185,15 @@ def _compute_bounding_box(vertices: Sequence[Vec3]) -> Tuple[Vec3, Vec3]:
     for v in vertices[1:]:
         if v.x < min_x:
             min_x = v.x
-        elif v.x > max_x:
+        if v.x > max_x:
             max_x = v.x
         if v.y < min_y:
             min_y = v.y
-        elif v.y > max_y:
+        if v.y > max_y:
             max_y = v.y
         if v.z < min_z:
             min_z = v.z
-        elif v.z > max_z:
+        if v.z > max_z:
             max_z = v.z
     return Vec3(min_x, min_y, min_z), Vec3(max_x, max_y, max_z)
 

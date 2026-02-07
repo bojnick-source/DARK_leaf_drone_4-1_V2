@@ -267,10 +267,8 @@ def solve_static(
         curvature = transverse_delta / (ll**2) if ll > 1e-12 else 0.0
         bending_stress = elem.elastic_modulus_pa * curvature * r_outer
 
-        # Von Mises stress (combined axial + bending, uniaxial formulation)
-        sigma_a = axial_stress
-        sigma_b = bending_stress
-        von_mises = math.sqrt(sigma_a**2 + sigma_b**2 + sigma_a * sigma_b)
+        # Von Mises stress (combined axial + bending along beam axis)
+        von_mises = abs(axial_stress + bending_stress)
 
         sf = yield_stress_pa / max(von_mises, 1e-12)
         max_vm = max(max_vm, von_mises)
