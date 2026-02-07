@@ -784,6 +784,7 @@ def simulate_transient(
             v_a_old = prev.get(capacitor.node_a, 0.0)
             v_b_old = prev.get(capacitor.node_b, 0.0)
             v_old = v_a_old - v_b_old
+            # Trapezoidal companion model: i_c(n) = g*(v(n) - v(n-1)) - i_c(n-1)
             prev_capacitor_currents[capacitor.name] = (
                 g * (v_new - v_old) - prev_capacitor_currents[capacitor.name]
             )
