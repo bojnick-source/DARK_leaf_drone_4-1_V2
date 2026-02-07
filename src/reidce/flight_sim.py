@@ -283,7 +283,10 @@ def _wrap_angle(angle: float) -> float:
 
 def _median(values: Iterable[float]) -> float:
     sorted_vals = sorted(values)
-    mid = len(sorted_vals) // 2
+    n = len(sorted_vals)
+    mid = n // 2
+    if n % 2 == 0:
+        return (sorted_vals[mid - 1] + sorted_vals[mid]) / 2.0
     return sorted_vals[mid]
 
 

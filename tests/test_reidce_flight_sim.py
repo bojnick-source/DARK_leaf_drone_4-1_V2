@@ -6,6 +6,24 @@ from reidce.flight_sim import (
 )
 
 
+def test_median_even_length_list() -> None:
+    """Regression: _median must average two middle values for even-length lists."""
+    from reidce.flight_sim import _median
+
+    assert _median([1.0, 3.0]) == 2.0
+    assert _median([1.0, 2.0, 3.0, 4.0]) == 2.5
+    assert _median([10.0, 20.0]) == 15.0
+
+
+def test_median_odd_length_list() -> None:
+    """_median returns middle value for odd-length lists."""
+    from reidce.flight_sim import _median
+
+    assert _median([1.0, 2.0, 3.0]) == 2.0
+    assert _median([5.0]) == 5.0
+    assert _median([1.0, 3.0, 5.0, 7.0, 9.0]) == 5.0
+
+
 def test_flight_sim_converges_altitude() -> None:
     initial = VehicleState(z_m=0.0, vx_m_s=8.0)
     target = GuidanceTarget(altitude_m=50.0, speed_m_s=12.0, heading_rad=0.0)

@@ -3,6 +3,14 @@ from pathlib import Path
 from reidce.memory import MemoryStore
 
 
+def test_memory_search_top_k_zero() -> None:
+    """Regression: search with top_k=0 must return empty list."""
+    store = MemoryStore()
+    store.add("Some text about testing", tags=["test"])
+    results = store.search("testing", top_k=0)
+    assert results == []
+
+
 def test_memory_store_add_and_search(tmp_path: Path) -> None:
     store = MemoryStore()
     store.add(
