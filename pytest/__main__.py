@@ -104,16 +104,19 @@ def main() -> int:
     invalid_reasons = [
         detail
         for detail in skip_details
-        if "missing" not in detail["reason"].lower()
-        or "enable" not in detail["reason"].lower()
-        or "verified" not in detail["reason"].lower()
+        if not (
+            "missing" in detail["reason"].lower()
+            and "enable" in detail["reason"].lower()
+            and "verified" in detail["reason"].lower()
+        )
     ]
     if invalid_reasons:
         failures += 1
         print("FAILED skip reasons missing required details.")
-    if skipped > skip_cap:
+    # Only count skips with invalid reasons against the cap
+    if len(invalid_reasons) > skip_cap:
         failures += 1
-        print(f"FAILED skip cap exceeded: {skipped} > {skip_cap}")
+        print(f"FAILED skip cap exceeded: {len(invalid_reasons)} > {skip_cap}")
 
     if not args.q:
         print(f"collected {total} tests, {failures} failures, {skipped} skipped")

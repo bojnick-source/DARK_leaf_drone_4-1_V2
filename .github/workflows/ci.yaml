@@ -30,12 +30,16 @@ jobs:
       - name: Build-off tests
         run: python -m pytest -q tests/topopt
       - name: Repo self-check
+        if: always()
         run: python -m topopt.cli repo-check
       - name: No-network sentinel
+        if: always()
         run: python scripts/no_network_sentinel.py
       - name: Build-off perf tripwire
+        if: always()
         run: python scripts/perf_tripwire.py
       - name: Traceability checks
+        if: always()
         run: |
           python scripts/prompt_must_id_check.py
           python scripts/traceability_check.py
@@ -91,8 +95,10 @@ jobs:
       - name: Build-on tests
         run: python -m pytest -q tests/topopt
       - name: Repo self-check
+        if: always()
         run: python -m topopt.cli repo-check
       - name: Build-on perf tripwire
+        if: always()
         run: python scripts/perf_tripwire.py
       - name: Detect lint tools
         id: lint

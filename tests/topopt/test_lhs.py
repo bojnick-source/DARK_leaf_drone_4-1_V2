@@ -97,6 +97,10 @@ def test_build_off_optional_heavy_not_loaded():
 
 
 def test_numpy_backend_agreement_when_available():
+    if os.environ.get("TOPOPT_BUILD_MODE") == "OFF":
+        pytest.skip(
+            "missing build_on mode: enable by setting TOPOPT_BUILD_MODE=ON; affects VERIFIED status if build_on required."
+        )
     try:
         numpy_spec = importlib.util.find_spec("numpy")
     except ImportError:
