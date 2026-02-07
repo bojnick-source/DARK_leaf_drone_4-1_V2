@@ -9,6 +9,17 @@ from reidce.aerospace import (
     thrust_to_weight,
     wing_loading,
 )
+from reidce.cad_rendering import (
+    CadMesh,
+    CrossSection,
+    MeshStatistics,
+    Vec3,
+    WireframeEdge,
+    compute_cross_section,
+    generate_mesh,
+    mesh_quality_score,
+    mesh_to_stl_text,
+)
 from reidce.circuitry import (
     Capacitor,
     Circuit,
@@ -43,6 +54,19 @@ from reidce.circuitry import (
     simulate_photonic_burst,
     simulate_thermal_steady_state,
     simulate_transient,
+)
+from reidce.fea import (
+    BeamElement,
+    BoundaryCondition,
+    ElementStress,
+    FEAMesh,
+    FEAResult,
+    NodalResult,
+    Node,
+    PointLoad,
+    evaluate_design_fea,
+    generate_beam_mesh,
+    solve_static,
 )
 from reidce.flight_sim import (
     Atmosphere,
@@ -228,4 +252,24 @@ __all__ = [
     "recommend_topology",
     "gate_build_ready",
     "sensitivity",
+    "CadMesh",
+    "CrossSection",
+    "MeshStatistics",
+    "Vec3",
+    "WireframeEdge",
+    "compute_cross_section",
+    "generate_mesh",
+    "mesh_quality_score",
+    "mesh_to_stl_text",
+    "BeamElement",
+    "BoundaryCondition",
+    "ElementStress",
+    "FEAMesh",
+    "FEAResult",
+    "Node",
+    "NodalResult",
+    "PointLoad",
+    "evaluate_design_fea",
+    "generate_beam_mesh",
+    "solve_static",
 ]
