@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["mode", "forbidden", "detected_imports", "blocked_imports", "loaded_forbidden", "status"],
+  "properties": {
+    "mode": {"type": "string"},
+    "forbidden": {"type": "array"},
+    "detected_imports": {"type": "array"},
+    "blocked_imports": {"type": "array"},
+    "loaded_forbidden": {"type": "array"},
+    "status": {"type": "string"}
+  }
+}

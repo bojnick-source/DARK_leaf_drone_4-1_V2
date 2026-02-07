@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["total", "failures", "skipped", "runtime_s", "budget_s"],
+  "properties": {
+    "total": {"type": "integer"},
+    "failures": {"type": "integer"},
+    "skipped": {"type": "integer"},
+    "runtime_s": {"type": "number"},
+    "budget_s": {"type": "number"}
+  }
+}

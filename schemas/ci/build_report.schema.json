@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["mode", "status", "numpy_available", "numpy_active", "python_version", "repro_command", "env"],
+  "properties": {
+    "mode": {"type": "string"},
+    "status": {"type": "string"},
+    "numpy_available": {"type": "boolean"},
+    "numpy_active": {"type": "boolean"},
+    "python_version": {"type": "string"},
+    "repro_command": {"type": "string"},
+    "env": {"type": "object"}
+  }
+}

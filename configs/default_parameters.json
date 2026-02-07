@@ -1,0 +1,79 @@
+{
+  "config_id": "default-ci-small-v1",
+  "description": "Deterministic defaults for CI-small benchmarks.",
+  "defaults": {
+    "material": {
+      "youngs_modulus": {
+        "value": 210000000000.0,
+        "units": "Pa",
+        "bounds": [100000000000.0, 250000000000.0],
+        "rationale": "Steel-like modulus for baseline compliance scaling.",
+        "uncertainty_model": "normal(mean=2.1e11, std=1.0e10)"
+      },
+      "poissons_ratio": {
+        "value": 0.3,
+        "units": "-",
+        "bounds": [0.2, 0.35],
+        "rationale": "Typical isotropic Poisson ratio.",
+        "uncertainty_model": "triangular(min=0.25, mode=0.3, max=0.35)"
+      }
+    },
+    "geometry": {
+      "length": {
+        "value": 1.0,
+        "units": "m",
+        "bounds": [0.5, 2.0],
+        "rationale": "Normalized length for CI-small runs.",
+        "uncertainty_model": "uniform(0.5, 2.0)"
+      },
+      "height": {
+        "value": 0.3,
+        "units": "m",
+        "bounds": [0.2, 0.6],
+        "rationale": "Compact aspect ratio for CI.",
+        "uncertainty_model": "uniform(0.2, 0.6)"
+      }
+    },
+    "loads": {
+      "tip_force": {
+        "value": 1000.0,
+        "units": "N",
+        "bounds": [500.0, 2000.0],
+        "rationale": "Moderate load for analytic proxy.",
+        "uncertainty_model": "lognormal(mean=1000, sigma=0.2)"
+      }
+    },
+    "solver": {
+      "seed": {
+        "value": 123,
+        "units": "-",
+        "bounds": [0, 1000000],
+        "rationale": "Deterministic seed for CI.",
+        "uncertainty_model": "discrete({123})"
+      },
+      "parallel_workers": {
+        "value": 2,
+        "units": "workers",
+        "bounds": [1, 4],
+        "rationale": "Small parallelism for CI.",
+        "uncertainty_model": "discrete({1,2,4})"
+      }
+    },
+    "uq": {
+      "lhs_samples": {
+        "value": 16,
+        "units": "samples",
+        "bounds": [8, 64],
+        "rationale": "CI-small sampling budget.",
+        "uncertainty_model": "discrete({8,16,32,64})"
+      },
+      "lhs_seed": {
+        "value": 42,
+        "units": "-",
+        "bounds": [0, 1000000],
+        "rationale": "Deterministic LHS seed.",
+        "uncertainty_model": "discrete({42})"
+      }
+    }
+  }
+}

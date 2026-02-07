@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TopOpt Config",
+  "type": "object",
+  "required": ["config_id", "defaults"],
+  "properties": {
+    "config_id": {"type": "string"},
+    "description": {"type": "string"},
+    "defaults": {"type": "object"}
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "benchmark_id": "mbb",
+  "name": "MBB beam",
+  "description": "Canonical MBB beam benchmark.",
+  "target": "compliance",
+  "load_case": "midspan",
+  "notes": "Analytic proxy used for CI-small runs."
+}

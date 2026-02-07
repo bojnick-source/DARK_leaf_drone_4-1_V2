@@ -8,22 +8,121 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  build-off:
     runs-on: ubuntu-latest
+    env:
+      TOPOPT_BUILD_MODE: OFF
+      PIP_NO_INDEX: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PIP_DEFAULT_TIMEOUT: "1"
+      PYTHONPATH: src
+      TOPOPT_TEST_BUDGET_S: "5"
+      TOPOPT_LHS_BUDGET_S: "5"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
+      - name: Build-off summary
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install .[dev]
-      - name: Lint
-        run: python -m ruff check .
-      - name: Type check
-        run: python -m mypy src
-      - name: Test
-        run: python -m pytest
-      - name: Validate mathlib
-        run: python3 tools/validate_mathlib_v0.py manufacturing/mathlib_v0.yaml
+          echo "mode=build_off"
+          echo "numpy_accel=disabled"
+      - name: Build-off tests
+        run: python -m pytest -q tests/topopt
+      - name: Repo self-check
+        run: python -m topopt.cli repo-check
+      - name: No-network sentinel
+        run: python scripts/no_network_sentinel.py
+      - name: Build-off perf tripwire
+        run: python scripts/perf_tripwire.py
+      - name: Traceability checks
+        run: |
+          python scripts/prompt_must_id_check.py
+          python scripts/traceability_check.py
+      - name: Build-off report
+        if: always()
+        run: |
+          python scripts/ci_report.py \
+            --mode build_off \
+            --status ${{ job.status == 'success' && 'passed' || 'failed' }} \
+            --repro "TOPOPT_BUILD_MODE=OFF PYTHONPATH=src python -m pytest -q tests/topopt"
+      - name: Artifact check
+        if: always()
+        run: python scripts/ci_artifact_check.py
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-off-ci-out
+          path: ci_out
+
+  build-on:
+    runs-on: ubuntu-latest
+    env:
+      TOPOPT_BUILD_MODE: ON
+      PYTHONPATH: src
+      TOPOPT_TEST_BUDGET_S: "5"
+      TOPOPT_LHS_BUDGET_S: "5"
+      TOPOPT_SKIP_CAP: "5"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Detect NumPy availability
+        id: numpy
+        run: |
+          python - <<'PY'
+          from importlib.util import find_spec
+          import json
+          import os
+          available = find_spec("numpy") is not None
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"available={str(available).lower()}\n")
+          print(f"numpy_available={available}")
+          PY
+      - name: Build-on summary
+        run: |
+          echo "mode=build_on"
+          echo "numpy_accel=${{ steps.numpy.outputs.available }}"
+          if [ "${{ steps.numpy.outputs.available }}" != "true" ]; then
+            echo "tests_skipped=true"
+          fi
+      - name: Build-on tests
+        run: python -m pytest -q tests/topopt
+      - name: Repo self-check
+        run: python -m topopt.cli repo-check
+      - name: Build-on perf tripwire
+        run: python scripts/perf_tripwire.py
+      - name: Detect lint tools
+        id: lint
+        if: steps.numpy.outputs.available == 'true'
+        run: |
+          python - <<'PY'
+          from importlib.util import find_spec
+          import os
+          available = bool(find_spec("ruff") and find_spec("mypy"))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"available={str(available).lower()}\n")
+          print(f"lint_available={available}")
+          PY
+      - name: Build-on lint run
+        if: steps.numpy.outputs.available == 'true' && steps.lint.outputs.available == 'true'
+        run: python -m topopt.cli lint
+      - name: Build-on report
+        if: always()
+        run: |
+          python scripts/ci_report.py \
+            --mode build_on \
+            --status ${{ job.status == 'success' && 'passed' || 'failed' }} \
+            --repro "PYTHONPATH=src python -m pytest -q tests/topopt" \
+            ${{ steps.numpy.outputs.available == 'true' && '--numpy-active' || '' }}
+      - name: Artifact check
+        if: always()
+        run: python scripts/ci_artifact_check.py
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-on-ci-out
+          path: ci_out

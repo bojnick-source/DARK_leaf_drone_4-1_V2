@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["runtime_s", "budget_s", "status", "rationale", "repro_command"],
+  "properties": {
+    "runtime_s": {"type": "number"},
+    "budget_s": {"type": "number"},
+    "status": {"type": "string"},
+    "rationale": {"type": "string"},
+    "repro_command": {"type": "string"}
+  }
+}

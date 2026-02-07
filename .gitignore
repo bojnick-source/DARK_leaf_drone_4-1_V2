@@ -35,3 +35,6 @@ records/
 quality/ncr/
 *.egg-info/
 build/
+runs/*
+!runs/.gitkeep
+ci_out/

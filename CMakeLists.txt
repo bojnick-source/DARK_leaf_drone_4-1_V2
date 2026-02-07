@@ -8,6 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 enable_testing()
 
+add_subdirectory(cpp/topopt_precision)
+
 # Optional v2 engine/tooling
 option(ENABLE_V2_ENGINE "Build v2 engine/tooling" OFF)
 if(ENABLE_V2_ENGINE)

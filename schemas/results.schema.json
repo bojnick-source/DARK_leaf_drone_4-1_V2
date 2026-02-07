@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TopOpt Results",
+  "type": "object",
+  "required": ["run_id", "benchmark", "status", "objectives", "uq"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "benchmark": {"type": "string"},
+    "status": {"type": "string"},
+    "objectives": {"type": "object"},
+    "uq": {"type": "object"},
+    "artifacts": {"type": "array", "items": {"type": "string"}}
+  }
+}

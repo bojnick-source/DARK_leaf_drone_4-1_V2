@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Results Certificate",
+  "type": "object",
+  "required": [
+    "run_id",
+    "overall_status",
+    "lhs_enabled",
+    "n_samples",
+    "seed",
+    "batching_mode",
+    "lhs_quality_metrics",
+    "uq_mode_verdict"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "overall_status": {"type": "string"},
+    "lhs_enabled": {"type": "boolean"},
+    "n_samples": {"type": "integer"},
+    "seed": {"type": "integer"},
+    "batching_mode": {"type": "string", "enum": ["SLHS", "BATCHED-NON-SLHS"]},
+    "lhs_quality_metrics": {"type": "object"},
+    "uq_mode_verdict": {"type": "string"},
+    "notes": {"type": "array", "items": {"type": "string"}}
+  }
+}

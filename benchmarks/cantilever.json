@@ -1,0 +1,8 @@
+{
+  "benchmark_id": "cantilever",
+  "name": "Cantilever with tip load",
+  "description": "Cantilever beam with tip load benchmark.",
+  "target": "compliance",
+  "load_case": "tip",
+  "notes": "Analytic proxy used for CI-small runs."
+}

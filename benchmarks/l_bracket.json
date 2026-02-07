@@ -1,0 +1,8 @@
+{
+  "benchmark_id": "l_bracket",
+  "name": "L-bracket / compliant mechanism",
+  "description": "L-bracket style compliant mechanism benchmark.",
+  "target": "compliance",
+  "load_case": "corner",
+  "notes": "Analytic proxy used for CI-small runs."
+}

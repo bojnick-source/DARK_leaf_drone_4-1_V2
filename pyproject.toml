@@ -19,10 +19,16 @@ dev = [
     "ruff==0.5.6",
     "mypy==1.11.1",
 ]
+topopt-full = [
+    "jsonschema==4.23.0",
+    "numpy==2.0.2",
+    "pyarrow==17.0.0",
+]
 
 [project.scripts]
 sfcs-mdp = "sfcs_mdp.cli:main"
 repo-lint = "sfcs_mdp.linting:main"
+topopt = "topopt.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["skipped", "cap", "status", "details"],
+  "properties": {
+    "skipped": {"type": "integer"},
+    "cap": {"type": "integer"},
+    "status": {"type": "string"},
+    "details": {"type": "array"}
+  }
+}
