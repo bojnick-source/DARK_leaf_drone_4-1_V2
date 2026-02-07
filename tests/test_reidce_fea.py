@@ -168,3 +168,29 @@ def test_tip_displacement_increases_with_load() -> None:
     result_low = evaluate_design_fea(design, tip_load_n=5.0)
     result_high = evaluate_design_fea(design, tip_load_n=50.0)
     assert result_high.max_displacement_m > result_low.max_displacement_m
+
+
+def test_von_mises_uses_abs_sum_for_opposite_sign_stresses() -> None:
+    """Von Mises (max fiber) stress must equal |axial| + |bending|.
+
+    When axial and bending stresses have opposite signs, the old formula
+    ``abs(axial + bending)`` would undercount the peak fiber stress.
+    """
+    design = _make_design()
+    mesh = generate_beam_mesh(design, n_elements=10)
+    bcs = [
+        BoundaryCondition(node_id=0, dof="uz", value=0.0),
+        BoundaryCondition(node_id=0, dof="ux", value=0.0),
+    ]
+    # Apply both axial (fz) and transverse (fx) loads so that at least some
+    # elements develop axial and bending stresses with opposite signs.
+    loads = [PointLoad(node_id=10, fx=5.0, fz=-10.0)]
+    result = solve_static(mesh, bcs, loads)
+    assert result.converged is True
+
+    for es in result.element_stresses:
+        expected = abs(es.axial_stress_pa) + abs(es.bending_stress_pa)
+        assert abs(es.von_mises_pa - expected) < 1e-6, (
+            f"element {es.element_id}: von_mises_pa={es.von_mises_pa} "
+            f"!= |axial|+|bending|={expected}"
+        )
