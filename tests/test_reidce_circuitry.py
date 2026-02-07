@@ -198,6 +198,29 @@ def test_transient_rc_steady_state_precision() -> None:
     assert abs(final_v - expected) / expected < 0.01
 
 
+def test_transient_trapezoidal_capacitor_history() -> None:
+    """Trapezoidal capacitor stamp must not overshoot with a coarse time step."""
+    import math
+
+    circuit = parse_netlist(
+        [
+            "V1 vin 0 5",
+            "R1 vin vout 1000",
+            "C1 vout 0 1e-6",
+        ]
+    )
+    tau = 1000 * 1e-6  # RC = 1ms
+    # Coarse step of tau/5; trapezoidal integration should remain monotonic
+    result = simulate_transient(circuit, t_stop_s=5.0 * tau, dt_s=tau / 5.0)
+    for i in range(1, len(result.node_voltages)):
+        v_cur = result.node_voltages[i]["vout"]
+        v_prv = result.node_voltages[i - 1]["vout"]
+        assert v_cur >= v_prv, "RC charge must be monotonically increasing"
+    # Final value should be close to 5 V (within 2%)
+    expected = 5.0 * (1.0 - math.exp(-5.0))
+    assert abs(result.node_voltages[-1]["vout"] - expected) / expected < 0.02
+
+
 def test_rlc_transient_step() -> None:
     circuit = parse_netlist(
         [
