@@ -101,6 +101,9 @@ def main() -> int:
 
     default_cap = "0" if os.environ.get("TOPOPT_BUILD_MODE") == "OFF" else "5"
     skip_cap = int(os.environ.get("TOPOPT_SKIP_CAP", default_cap))
+    # Invalid reasons are those missing required documentation keywords.
+    # A valid skip reason must contain: "missing" (what's missing), "enable" (how to enable it),
+    # and "verified" (impact on VERIFIED status). This ensures skips are documented and justified.
     invalid_reasons = [
         detail
         for detail in skip_details
@@ -113,7 +116,8 @@ def main() -> int:
     if invalid_reasons:
         failures += 1
         print("FAILED skip reasons missing required details.")
-    # Only count skips with invalid reasons against the cap
+    # Only count skips with invalid reasons against the cap.
+    # Valid skips (with proper documentation) are expected and allowed even when cap is 0.
     if len(invalid_reasons) > skip_cap:
         failures += 1
         print(f"FAILED skip cap exceeded: {len(invalid_reasons)} > {skip_cap}")

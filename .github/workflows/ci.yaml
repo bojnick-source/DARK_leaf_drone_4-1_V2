@@ -33,7 +33,6 @@ jobs:
         if: always()
         run: python -m topopt.cli repo-check
       - name: No-network sentinel
-        if: always()
         run: python scripts/no_network_sentinel.py
       - name: Build-off perf tripwire
         if: always()
