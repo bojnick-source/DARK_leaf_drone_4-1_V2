@@ -1,0 +1,25 @@
+module.exports = {
+  extends: ["stylelint-config-standard"],
+  ignoreFiles: [
+    "build/**",
+    "build_on/**",
+    "build_off/**",
+    "build-ON/**",
+    "build-OFF/**",
+    "external/**",
+    "node_modules/**",
+  ],
+  rules: {
+    "selector-class-pattern": null,
+    "custom-property-empty-line-before": null,
+    "custom-property-pattern": null,
+    "selector-id-pattern": null,
+    "color-function-notation": null,
+    "alpha-value-notation": null,
+    "property-no-vendor-prefix": null,
+    "no-duplicate-selectors": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "function-url-quotes": null,
+    "media-feature-range-notation": null,
+  },
+};

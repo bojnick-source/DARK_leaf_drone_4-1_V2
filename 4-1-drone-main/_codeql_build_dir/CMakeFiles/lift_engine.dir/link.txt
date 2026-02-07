@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblift_engine.a CMakeFiles/lift_engine.dir/cpp/engine/core/logging.cpp.o CMakeFiles/lift_engine.dir/cpp/engine/core/hashing.cpp.o CMakeFiles/lift_engine.dir/cpp/engine/core/cache_key.cpp.o CMakeFiles/lift_engine.dir/cpp/engine/core/design_hash.cpp.o CMakeFiles/lift_engine.dir/cpp/engine/physics/disk_area.cpp.o CMakeFiles/lift_engine.dir/cpp/engine/physics/hover_momentum.cpp.o CMakeFiles/lift_engine.dir/cpp/engine/analysis/closeout_eval.cpp.o CMakeFiles/lift_engine.dir/cpp/engine/analysis/closeout_json.cpp.o
-/usr/bin/ranlib liblift_engine.a

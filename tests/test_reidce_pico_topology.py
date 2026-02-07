@@ -1,6 +1,7 @@
 from reidce.pico_gk import apply_pico_gk
 from reidce.schemas import (
     ActuatorSpec,
+    BudgetLine,
     BudgetsSpec,
     CadRef,
     CalibrationParamsUncertainty,
@@ -9,13 +10,17 @@ from reidce.schemas import (
     GeometryKeyDimensions,
     GeometrySpec,
     GeometryTolerances,
+    MassBudget,
+    PowerBudget,
+    Quantity,
     StructureSpec,
+    UnitLiteral,
 )
-from reidce.topology import generate_topology_candidates
+from reidce.topology import generate_topology_candidates, recommend_topology
 
 
-def _quantity(value: float, unit: str) -> dict:
-    return {"value": value, "unit": unit}
+def _quantity(value: float, unit: UnitLiteral) -> Quantity:
+    return Quantity(value=value, unit=unit)
 
 
 def _make_design() -> DesignSpec:
@@ -67,30 +72,30 @@ def _make_design() -> DesignSpec:
         ),
         budgets=BudgetsSpec(
             schema_version="budgets.v1.0",
-            mass_budget={
-                "currency": "kg",
-                "margin": _quantity(0.1, "kg"),
-                "lines": [
-                    {
-                        "name": "frame",
-                        "mass": _quantity(0.5, "kg"),
-                        "owner": "structures",
-                        "required": True,
-                    }
+            mass_budget=MassBudget(
+                currency="kg",
+                margin=_quantity(0.1, "kg"),
+                lines=[
+                    BudgetLine(
+                        name="frame",
+                        mass=_quantity(0.5, "kg"),
+                        owner="structures",
+                        required=True,
+                    )
                 ],
-            },
-            power_budget={
-                "currency": "W",
-                "margin": _quantity(10.0, "W"),
-                "lines": [
-                    {
-                        "name": "pump",
-                        "power": _quantity(50.0, "W"),
-                        "owner": "propulsion",
-                        "required": True,
-                    }
+            ),
+            power_budget=PowerBudget(
+                currency="W",
+                margin=_quantity(10.0, "W"),
+                lines=[
+                    BudgetLine(
+                        name="pump",
+                        power=_quantity(50.0, "W"),
+                        owner="propulsion",
+                        required=True,
+                    )
                 ],
-            },
+            ),
         ),
     )
 
@@ -100,6 +105,7 @@ def test_apply_pico_gk_adds_cad_ref() -> None:
     updated = apply_pico_gk(design)
     assert updated.geometry.cad_ref.type == "implicit"
     assert updated.geometry.cad_ref.sha256
+    assert updated.geometry.cad_ref.uri is not None
     assert updated.geometry.cad_ref.uri.startswith("pico_gk://")
 
 
@@ -121,4 +127,14 @@ def test_generate_topology_candidates() -> None:
     design = _make_design()
     candidates = generate_topology_candidates(design)
     assert len(candidates) == 3
-    assert candidates[0].design.name.endswith("_topology_1")
+    candidate_names = {candidate.design.name for candidate in candidates}
+    assert any(name.endswith("_topology_1") for name in candidate_names)
+    assert any(name.endswith("_topology_2") for name in candidate_names)
+    assert any(name.endswith("_topology_3") for name in candidate_names)
+
+
+def test_recommend_topology() -> None:
+    design = _make_design()
+    recommendation = recommend_topology(design)
+    assert recommendation.best.name.startswith("baseline_topology_")
+    assert len(recommendation.ranked) == 3

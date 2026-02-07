@@ -1,5 +1,27 @@
 {
   "schema": "engine_output.schema.json",
   "run_id": "RUN_SAMPLE",
-  "summary": {"status": "nominal", "module": "daily-dashboard"}
+  "summary": {"status": "nominal", "module": "daily-dashboard"},
+  "design": {
+    "geometry": {
+      "schema_version": "geometry.v1.0",
+      "cad_ref": {"type": "implicit", "uri": null, "sha256": null},
+      "envelope_max": {"value": 0.38, "unit": "m"},
+      "key_dimensions": {
+        "actuator_diameter": {"value": 0.06, "unit": "m"},
+        "actuator_wall_thickness": {"value": 0.0025, "unit": "m"},
+        "actuator_length": {"value": 0.24, "unit": "m"}
+      },
+      "tolerances": {
+        "general_linear": {"value": 0.0003, "unit": "m"},
+        "critical_linear": {"value": 0.00015, "unit": "m"},
+        "critical_features": [
+          {
+            "feature": "hinge_clearance",
+            "tol": {"value": 0.0001, "unit": "m"}
+          }
+        ]
+      }
+    }
+  }
 }

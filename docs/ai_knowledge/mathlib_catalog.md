@@ -1,0 +1,758 @@
+# Mathlib Catalog (Auto-generated)
+
+Source: manufacturing/mathlib_v0.yaml
+
+This catalog lists mathlib entries grouped by domain with their purpose lines (if present).
+
+## additive
+- `additive_pbf_energy_densities`: Compute PBF-style energy density primitives (line/area/volume) from power, speed, hatch spacing, and layer thickness.
+- `additive_waam_heat_input_per_length`: Compute WAAM heat input per unit length from arc electrical power and travel speed.
+- `additive_vat_jacobs_working_curve`: Jacobs working curve template: predict cure depth from exposure energy using calibrated Ec and Dp.
+- `additive_binderjet_scale_compensation`: Binder-jet/sintering scale compensation from calibrated linear shrinkage fraction.
+- `additive_pbf_energy_densities`: PBF energy density primitives (line/area/volume).
+- `additive_waam_heat_input_per_length`: WAAM heat input per length from arc electrical power and travel speed.
+- `additive_vat_jacobs_working_curve`: VAT Jacobs working curve template (calibration required).
+- `additive_binderjet_scale_compensation`: Scale compensation from calibrated linear shrinkage (binder-jet/sintering template).
+- `additive_pbf_energy_densities`: PBF energy density primitives (line/area/volume).
+- `additive_waam_heat_input_per_length`: WAAM heat input per length from arc electrical power and travel speed.
+- `additive_vat_jacobs_working_curve`: VAT Jacobs working curve template (calibration required).
+- `additive_binderjet_scale_compensation`: Scale compensation from calibrated linear shrinkage (binder-jet/sintering template).
+- `additive_pbf_energy_densities`: PBF energy density primitives (line/area/volume).
+- `additive_waam_heat_input_per_length`: WAAM heat input per length from arc electrical power and travel speed.
+- `additive_vat_jacobs_working_curve`: VAT Jacobs working curve template (calibration required).
+- `additive_binderjet_scale_compensation`: Scale compensation from calibrated linear shrinkage (binder-jet/sintering template).
+- `additive_pbf_energy_densities`: PBF energy density primitives (line/area/volume).
+- `additive_waam_heat_input_per_length`: WAAM heat input per length from arc electrical power and travel speed.
+- `additive_vat_jacobs_working_curve`: VAT Jacobs working curve template (calibration required).
+- `additive_binderjet_scale_compensation`: Scale compensation from calibrated linear shrinkage (binder-jet/sintering template).
+
+## composites_3d_woven
+- `composites_tex_to_linear_mass_density`: Convert tex to linear mass density.
+- `composites_warp_weft_binder_linear_mass`: Convert warp/weft/binder tex to linear mass density.
+- `composites_areal_mass_contributions`: Areal mass contributions from yarn linear mass density and count density.
+- `composites_total_fiber_areal_mass`: Total fiber areal mass from warp/weft/binder contributions.
+- `composites_fiber_volume_fraction_from_areal_mass`: Fiber volume fraction from total fiber areal mass, fiber density, and preform thickness.
+- `composites_matrix_void_closure`: Matrix fraction via closure with explicit void fraction input.
+- `composites_crimp_efficiency_template`: Crimp/undulation efficiency template (calibration required).
+- `composites_compaction_law_template`: Preform compaction law template (calibration required).
+- `composites_tex_to_linear_mass_density`: Convert tex to linear mass density.
+- `composites_warp_weft_binder_linear_mass`: Convert warp/weft/binder tex to linear mass density.
+- `composites_areal_mass_contributions`: Areal mass contributions from yarn linear mass density and count density.
+- `composites_total_fiber_areal_mass`: Total fiber areal mass from warp/weft/binder contributions.
+- `composites_fiber_volume_fraction_from_areal_mass`: Fiber volume fraction from total fiber areal mass, fiber density, and preform thickness.
+- `composites_matrix_void_closure`: Matrix fraction via closure with explicit void fraction input.
+- `composites_crimp_efficiency_template`: Crimp/undulation efficiency template (calibration required).
+- `composites_compaction_law_template`: Preform compaction law template (calibration required).
+
+## metrology
+- `metrology_spacing_from_speed_and_rate`: Along-track point spacing from speed and sample rate.
+- `metrology_raster_scan_time_with_overlap`: Raster scan time estimate using effective line spacing from stepover and overlap.
+- `metrology_point_density_and_count`: Estimate point density and point count from along-track spacing and effective line spacing.
+- `metrology_lidar_range_from_tof`: LiDAR range from time-of-flight delta time.
+- `metrology_lidar_range_noise_from_jitter`: Range noise standard deviation induced by timing jitter.
+- `metrology_angular_step_to_arc_spacing`: Arc spacing from angular step at a given range.
+- `metrology_uncertainty_rss_and_expanded`: Combine uncertainty components by RSS and compute expanded uncertainty with explicit coverage factor.
+- `metrology_motion_blur_position_error`: Position error due to motion during exposure/integration.
+- `metrology_trigger_jitter_position_error`: Position error due to trigger timing jitter at speed.
+- `metrology_pointcloud_size_and_io_time`: Deterministic planning for point cloud size and I/O time.
+- `metrology_spacing_from_speed_and_rate`: Along-track point spacing from speed and sample rate.
+- `metrology_raster_scan_time_with_overlap`: Raster scan time estimate using effective line spacing from stepover and overlap.
+- `metrology_point_density_and_count`: Estimate point density and point count from along-track spacing and effective line spacing.
+- `metrology_lidar_range_from_tof`: LiDAR range from time-of-flight delta time.
+- `metrology_lidar_range_noise_from_jitter`: Range noise standard deviation induced by timing jitter.
+- `metrology_angular_step_to_arc_spacing`: Arc spacing from angular step at a given range.
+- `metrology_uncertainty_rss_and_expanded`: Combine uncertainty components by RSS and compute expanded uncertainty with explicit coverage factor.
+- `metrology_motion_blur_position_error`: Position error due to motion during exposure/integration.
+- `metrology_trigger_jitter_position_error`: Position error due to trigger timing jitter at speed.
+- `metrology_pointcloud_size_and_io_time`: Deterministic planning for point cloud size and I/O time.
+- `metrology_spacing_from_speed_and_rate`: Along-track point spacing from speed and sample rate.
+- `metrology_raster_scan_time_with_overlap`: Raster scan time estimate using effective line spacing from stepover and overlap.
+- `metrology_point_density_and_count`: Estimate point density and point count from along-track spacing and effective line spacing.
+- `metrology_lidar_range_from_tof`: LiDAR range from time-of-flight delta time.
+- `metrology_lidar_range_noise_from_jitter`: Range noise standard deviation induced by timing jitter.
+- `metrology_angular_step_to_arc_spacing`: Arc spacing from angular step at a given range.
+- `metrology_uncertainty_rss_and_expanded`: Combine uncertainty components by RSS and compute expanded uncertainty with explicit coverage factor.
+- `metrology_motion_blur_position_error`: Position error due to motion during exposure/integration.
+- `metrology_trigger_jitter_position_error`: Position error due to trigger timing jitter at speed.
+- `metrology_pointcloud_size_and_io_time`: Deterministic planning for point cloud size and I/O time.
+
+## risf
+- `risf_sine_law_thickness`: Predict final thickness using the sine law approximation for incremental forming.
+- `risf_sine_law_thinning_ratio`: Compute thickness ratio implied by sine law (t_final / t_initial).
+- `risf_scallop_height_exact`: Compute geometric scallop height from tool radius and lateral stepover (exact circle geometry).
+- `risf_scallop_height_small_step`: Compute scallop height using small-step approximation (tool_stepover << tool_radius).
+- `risf_inverse_scallop_to_step`: Inverse geometry: compute step parameter that yields a target scallop height for a given tool radius.
+- `risf_aerens_axial_force_template`: Aerens-family axial force empirical template (dimensionless-normalized; requires calibration artifact).
+- `risf_robot_deflection_compliance_template`: Robot/tool deflection model using calibrated linear compliance (requires calibration artifact).
+- `risf_sine_law_thickness`: Predict final thickness using the sine law approximation for incremental forming.
+- `risf_sine_law_thinning_ratio`: Compute thickness ratio implied by sine law (t_final / t_initial).
+- `risf_scallop_height_exact`: Compute geometric scallop height from tool radius and lateral stepover (exact circle geometry).
+- `risf_scallop_height_small_step`: Compute scallop height using small-step approximation (tool_stepover << tool_radius).
+- `risf_inverse_scallop_to_step`: Inverse geometry: compute step parameter that yields a target scallop height for a given tool radius.
+- `risf_aerens_axial_force_template`: Aerens-family axial force empirical template (dimensionless-normalized; requires calibration artifact).
+- `risf_robot_deflection_compliance_template`: Robot/tool deflection model using calibrated linear compliance (requires calibration artifact).
+- `risf_sine_law_thickness`: Final thickness via sine law approximation.
+- `risf_sine_law_thinning_ratio`: Thickness ratio implied by sine law.
+- `risf_scallop_height_exact`: Scallop height (exact circle geometry).
+- `risf_scallop_height_small_step`: Scallop height (small-step approximation).
+- `risf_inverse_scallop_to_step`: Inverse scallop target to step parameter.
+- `risf_aerens_axial_force_template`: Aerens-family axial force template (calibration required).
+- `risf_robot_deflection_compliance_template`: Robot/tool deflection via calibrated linear compliance.
+- `risf_sine_law_thickness`: Final thickness via sine law approximation.
+- `risf_sine_law_thinning_ratio`: Thickness ratio implied by sine law.
+- `risf_scallop_height_exact`: Scallop height (exact circle geometry).
+- `risf_scallop_height_small_step`: Scallop height (small-step approximation).
+- `risf_inverse_scallop_to_step`: Inverse scallop target to step parameter.
+- `risf_aerens_axial_force_template`: Aerens-family axial force template (calibration required).
+- `risf_robot_deflection_compliance_template`: Robot/tool deflection via calibrated linear compliance.
+- `risf_sine_law_thickness`: Final thickness via sine law approximation.
+- `risf_sine_law_thinning_ratio`: Thickness ratio implied by sine law.
+- `risf_scallop_height_exact`: Scallop height (exact circle geometry).
+- `risf_scallop_height_small_step`: Scallop height (small-step approximation).
+- `risf_inverse_scallop_to_step`: Inverse scallop target to step parameter.
+- `risf_aerens_axial_force_template`: Aerens-family axial force template (calibration required).
+- `risf_robot_deflection_compliance_template`: Robot/tool deflection via calibrated linear compliance.
+- `risf_sine_law_thickness`: Final thickness via sine law approximation.
+- `risf_sine_law_thinning_ratio`: Thickness ratio implied by sine law.
+- `risf_scallop_height_exact`: Scallop height (exact circle geometry).
+- `risf_scallop_height_small_step`: Scallop height (small-step approximation).
+- `risf_inverse_scallop_to_step`: Inverse scallop target to step parameter.
+- `risf_aerens_axial_force_template`: Aerens-family axial force template (calibration required).
+- `risf_robot_deflection_compliance_template`: Robot/tool deflection via calibrated linear compliance.
+
+## structures
+- `structures_beam_bending_stress`: Beam bending stress at distance c from neutral axis: sigma = M*c/I.
+- `structures_beam_shear_stress`: Beam shear stress: tau = V*Q/(I*b).
+- `structures_plate_buckling_stress_template`: Plate buckling critical stress template with explicit k input.
+- `structures_beam_bending_stress`: Beam bending stress at distance c from neutral axis: sigma = M*c/I.
+- `structures_beam_shear_stress`: Beam shear stress: tau = V*Q/(I*b).
+- `structures_plate_buckling_stress_template`: Plate buckling critical stress template with explicit k input.
+
+## subtractive
+- `subtractive_laser_power_density`: Laser spot area and power density from spot diameter and power.
+- `subtractive_laser_absorbed_heat_per_length`: Absorbed heat per unit cut length (coupling via absorptivity and efficiency).
+- `subtractive_laser_haz_template`: Laser HAZ width template (calibration required).
+- `subtractive_laser_kerf_template`: Laser kerf width template (calibration required).
+- `subtractive_waterjet_hydraulic_power`: Waterjet hydraulic power primitive (p*Q).
+- `subtractive_waterjet_abrasive_dose_per_length`: Abrasive dose per unit length (mass_flow / travel_speed).
+- `subtractive_waterjet_kerf_offset_template`: Waterjet kerf offset template (calibration required).
+- `subtractive_waterjet_taper_template`: Waterjet taper angle template (calibration required).
+- `subtractive_waterjet_vcut_template`: Waterjet V-cut depth template (calibration required).
+- `subtractive_laser_power_density`: Laser spot area and power density from spot diameter and power.
+- `subtractive_laser_absorbed_heat_per_length`: Absorbed heat per unit cut length (coupling via absorptivity and efficiency).
+- `subtractive_laser_haz_template`: Laser HAZ width template (calibration required).
+- `subtractive_laser_kerf_template`: Laser kerf width template (calibration required).
+- `subtractive_waterjet_hydraulic_power`: Waterjet hydraulic power primitive (p*Q).
+- `subtractive_waterjet_abrasive_dose_per_length`: Abrasive dose per unit length (mass_flow / travel_speed).
+- `subtractive_waterjet_kerf_offset_template`: Waterjet kerf offset template (calibration required).
+- `subtractive_waterjet_taper_template`: Waterjet taper angle template (calibration required).
+- `subtractive_waterjet_vcut_template`: Waterjet V-cut depth template (calibration required).
+- `subtractive_laser_power_density`: Laser spot area and power density from spot diameter and power.
+- `subtractive_laser_absorbed_heat_per_length`: Absorbed heat per unit cut length (coupling via absorptivity and efficiency).
+- `subtractive_laser_haz_template`: Laser HAZ width template (calibration required).
+- `subtractive_laser_kerf_template`: Laser kerf width template (calibration required).
+- `subtractive_waterjet_hydraulic_power`: Waterjet hydraulic power primitive (p*Q).
+- `subtractive_waterjet_abrasive_dose_per_length`: Abrasive dose per unit length (mass_flow / travel_speed).
+- `subtractive_waterjet_kerf_offset_template`: Waterjet kerf offset template (calibration required).
+- `subtractive_waterjet_taper_template`: Waterjet taper angle template (calibration required).
+- `subtractive_waterjet_vcut_template`: Waterjet V-cut depth template (calibration required).
+- `subtractive_laser_power_density`: Laser spot area and power density from spot diameter and power.
+- `subtractive_laser_absorbed_heat_per_length`: Absorbed heat per unit cut length (coupling via absorptivity and efficiency).
+- `subtractive_laser_haz_template`: Laser HAZ width template (calibration required).
+- `subtractive_laser_kerf_template`: Laser kerf width template (calibration required).
+- `subtractive_waterjet_hydraulic_power`: Waterjet hydraulic power primitive (p*Q).
+- `subtractive_waterjet_abrasive_dose_per_length`: Abrasive dose per unit length (mass_flow / travel_speed).
+- `subtractive_waterjet_kerf_offset_template`: Waterjet kerf offset template (calibration required).
+- `subtractive_waterjet_taper_template`: Waterjet taper angle template (calibration required).
+- `subtractive_waterjet_vcut_template`: Waterjet V-cut depth template (calibration required).
+
+## unspecified
+- `m`: No purpose text
+- `kg`: No purpose text
+- `s`: No purpose text
+- `A`: No purpose text
+- `K`: No purpose text
+- `mol`: No purpose text
+- `cd`: No purpose text
+- `1`: No purpose text
+- `rad`: No purpose text
+- `deg`: No purpose text
+- `Hz`: No purpose text
+- `N`: No purpose text
+- `Pa`: No purpose text
+- `J`: No purpose text
+- `W`: No purpose text
+- `MEDIA_REFERENCE_GUARD`: No purpose text
+- `DOMAIN_ALLOWLIST`: No purpose text
+- `EQUATION_SAFETY`: No purpose text
+- `NUMERIC_SANITY`: No purpose text
+- `CALIBRATION_REQUIRED`: No purpose text
+- `DETERMINISM_CANON`: No purpose text
+- `m`: No purpose text
+- `kg`: No purpose text
+- `s`: No purpose text
+- `A`: No purpose text
+- `K`: No purpose text
+- `mol`: No purpose text
+- `cd`: No purpose text
+- `1`: No purpose text
+- `rad`: No purpose text
+- `deg`: No purpose text
+- `Hz`: No purpose text
+- `N`: No purpose text
+- `Pa`: No purpose text
+- `J`: No purpose text
+- `W`: No purpose text
+- `V`: No purpose text
+- `C`: No purpose text
+- `ohm`: No purpose text
+- `m/s`: No purpose text
+- `m^2`: No purpose text
+- `m^3`: No purpose text
+- `m^4`: No purpose text
+- `N*m`: No purpose text
+- `J/m`: No purpose text
+- `J/m^2`: No purpose text
+- `J/m^3`: No purpose text
+- `W/m^2`: No purpose text
+- `kg/s`: No purpose text
+- `m^3/s`: No purpose text
+- `kg/m`: No purpose text
+- `kg/m^2`: No purpose text
+- `kg/m^3`: No purpose text
+- `1/m`: No purpose text
+- `1/m^2`: No purpose text
+- `m/N`: No purpose text
+- `B`: No purpose text
+- `B/s`: No purpose text
+- `tex`: No purpose text
+- `min`: No purpose text
+- `h`: No purpose text
+- `pct`: No purpose text
+- `c_light`: No purpose text
+- `t_initial`: No purpose text
+- `t_final`: No purpose text
+- `wall_angle`: No purpose text
+- `thinning_ratio`: No purpose text
+- `tool_radius`: No purpose text
+- `tool_stepover`: No purpose text
+- `tool_stepdown`: No purpose text
+- `scallop_height`: No purpose text
+- `scallop_height_small_step`: No purpose text
+- `target_scallop_height`: No purpose text
+- `stepdown_from_scallop`: No purpose text
+- `axial_force`: No purpose text
+- `aerens_force_scale`: No purpose text
+- `aerens_k0`: No purpose text
+- `aerens_k1`: No purpose text
+- `aerens_k2`: No purpose text
+- `aerens_k3`: No purpose text
+- `aerens_k4`: No purpose text
+- `aerens_k5`: No purpose text
+- `aerens_k6`: No purpose text
+- `robot_linear_compliance`: No purpose text
+- `robot_deflection`: No purpose text
+- `laser_power`: No purpose text
+- `scan_speed`: No purpose text
+- `travel_speed`: No purpose text
+- `process_efficiency`: No purpose text
+- `layer_thickness`: No purpose text
+- `hatch_spacing`: No purpose text
+- `energy_line`: No purpose text
+- `energy_area`: No purpose text
+- `energy_volume`: No purpose text
+- `arc_voltage`: No purpose text
+- `arc_current`: No purpose text
+- `heat_input_per_length`: No purpose text
+- `exposure_energy`: No purpose text
+- `critical_energy`: No purpose text
+- `penetration_depth`: No purpose text
+- `cure_depth`: No purpose text
+- `linear_shrinkage`: No purpose text
+- `scale_compensation`: No purpose text
+- `beam_spot_diameter`: No purpose text
+- `beam_area`: No purpose text
+- `power_density`: No purpose text
+- `absorptivity`: No purpose text
+- `absorbed_heat_per_length`: No purpose text
+- `haz_width`: No purpose text
+- `kerf_width`: No purpose text
+- `laser_haz_scale`: No purpose text
+- `laser_haz_k0`: No purpose text
+- `laser_haz_k1`: No purpose text
+- `laser_haz_k2`: No purpose text
+- `laser_kerf_scale`: No purpose text
+- `laser_kerf_k0`: No purpose text
+- `laser_kerf_k1`: No purpose text
+- `laser_kerf_k2`: No purpose text
+- `waterjet_pressure`: No purpose text
+- `water_flow_rate`: No purpose text
+- `hydraulic_power`: No purpose text
+- `abrasive_mass_flow`: No purpose text
+- `abrasive_dose_per_length`: No purpose text
+- `wjet_kerf_offset`: No purpose text
+- `wjet_taper_angle`: No purpose text
+- `v_cut_depth`: No purpose text
+- `sample_rate`: No purpose text
+- `point_spacing`: No purpose text
+- `overlap_fraction`: No purpose text
+- `scan_width`: No purpose text
+- `scan_height`: No purpose text
+- `raster_time`: No purpose text
+- `point_density`: No purpose text
+- `point_count`: No purpose text
+- `tof_dt`: No purpose text
+- `lidar_range`: No purpose text
+- `timing_jitter`: No purpose text
+- `range_noise`: No purpose text
+- `angular_step`: No purpose text
+- `arc_spacing`: No purpose text
+- `u_component_1`: No purpose text
+- `u_component_2`: No purpose text
+- `u_component_3`: No purpose text
+- `combined_uncertainty`: No purpose text
+- `coverage_factor_k`: No purpose text
+- `expanded_uncertainty_u95`: No purpose text
+- `exposure_time`: No purpose text
+- `motion_blur_error`: No purpose text
+- `trigger_jitter`: No purpose text
+- `trigger_jitter_error`: No purpose text
+- `point_size_bytes`: No purpose text
+- `pointcloud_size`: No purpose text
+- `io_bandwidth`: No purpose text
+- `io_time`: No purpose text
+- `yarn_tex_warp`: No purpose text
+- `yarn_tex_weft`: No purpose text
+- `yarn_tex_binder`: No purpose text
+- `areal_mass_warp`: No purpose text
+- `areal_mass_weft`: No purpose text
+- `areal_mass_binder`: No purpose text
+- `areal_mass_total`: No purpose text
+- `fiber_density`: No purpose text
+- `preform_thickness`: No purpose text
+- `fiber_volume_fraction`: No purpose text
+- `matrix_volume_fraction`: No purpose text
+- `void_volume_fraction`: No purpose text
+- `crimp_efficiency`: No purpose text
+- `compaction_pressure`: No purpose text
+- `compaction_k0`: No purpose text
+- `compaction_k1`: No purpose text
+- `bending_moment`: No purpose text
+- `neutral_axis_distance`: No purpose text
+- `second_moment_area`: No purpose text
+- `bending_stress`: No purpose text
+- `shear_force`: No purpose text
+- `first_moment_area`: No purpose text
+- `web_width`: No purpose text
+- `shear_stress`: No purpose text
+- `youngs_modulus`: No purpose text
+- `poisson_ratio`: No purpose text
+- `plate_thickness`: No purpose text
+- `plate_width`: No purpose text
+- `buckling_k`: No purpose text
+- `plate_buckling_stress`: No purpose text
+- `MEDIA_REFERENCE_GUARD`: No purpose text
+- `DOMAIN_ALLOWLIST`: No purpose text
+- `EQUATION_SAFETY`: No purpose text
+- `NUMERIC_SANITY`: No purpose text
+- `CALIBRATION_REQUIRED`: No purpose text
+- `DETERMINISM_CANON`: No purpose text
+- `m`: No purpose text
+- `kg`: No purpose text
+- `s`: No purpose text
+- `A`: No purpose text
+- `K`: No purpose text
+- `mol`: No purpose text
+- `cd`: No purpose text
+- `1`: No purpose text
+- `rad`: No purpose text
+- `deg`: No purpose text
+- `Hz`: No purpose text
+- `N`: No purpose text
+- `Pa`: No purpose text
+- `J`: No purpose text
+- `W`: No purpose text
+- `V`: No purpose text
+- `C`: No purpose text
+- `ohm`: No purpose text
+- `m/s`: No purpose text
+- `m^2`: No purpose text
+- `m^3`: No purpose text
+- `m^4`: No purpose text
+- `N*m`: No purpose text
+- `J/m`: No purpose text
+- `J/m^2`: No purpose text
+- `J/m^3`: No purpose text
+- `W/m^2`: No purpose text
+- `kg/s`: No purpose text
+- `m^3/s`: No purpose text
+- `kg/m`: No purpose text
+- `kg/m^2`: No purpose text
+- `kg/m^3`: No purpose text
+- `1/m`: No purpose text
+- `1/m^2`: No purpose text
+- `m/N`: No purpose text
+- `B`: No purpose text
+- `B/s`: No purpose text
+- `tex`: No purpose text
+- `min`: No purpose text
+- `h`: No purpose text
+- `pct`: No purpose text
+- `c_light`: No purpose text
+- `t_initial`: No purpose text
+- `t_final`: No purpose text
+- `wall_angle`: No purpose text
+- `thinning_ratio`: No purpose text
+- `tool_radius`: No purpose text
+- `tool_stepover`: No purpose text
+- `tool_stepdown`: No purpose text
+- `scallop_height`: No purpose text
+- `scallop_height_small_step`: No purpose text
+- `target_scallop_height`: No purpose text
+- `stepdown_from_scallop`: No purpose text
+- `axial_force`: No purpose text
+- `aerens_force_scale`: No purpose text
+- `aerens_k0`: No purpose text
+- `aerens_k1`: No purpose text
+- `aerens_k2`: No purpose text
+- `aerens_k3`: No purpose text
+- `aerens_k4`: No purpose text
+- `aerens_k5`: No purpose text
+- `aerens_k6`: No purpose text
+- `aerens_t_ref`: No purpose text
+- `aerens_r_ref`: No purpose text
+- `aerens_s_ref`: No purpose text
+- `aerens_dz_ref`: No purpose text
+- `robot_linear_compliance`: No purpose text
+- `robot_deflection`: No purpose text
+- `laser_power`: No purpose text
+- `scan_speed`: No purpose text
+- `travel_speed`: No purpose text
+- `process_efficiency`: No purpose text
+- `layer_thickness`: No purpose text
+- `hatch_spacing`: No purpose text
+- `energy_line`: No purpose text
+- `energy_area`: No purpose text
+- `energy_volume`: No purpose text
+- `arc_voltage`: No purpose text
+- `arc_current`: No purpose text
+- `heat_input_per_length`: No purpose text
+- `exposure_energy`: No purpose text
+- `critical_energy`: No purpose text
+- `penetration_depth`: No purpose text
+- `cure_depth`: No purpose text
+- `linear_shrinkage`: No purpose text
+- `scale_compensation`: No purpose text
+- `beam_spot_diameter`: No purpose text
+- `beam_area`: No purpose text
+- `power_density`: No purpose text
+- `absorptivity`: No purpose text
+- `absorbed_heat_per_length`: No purpose text
+- `haz_width`: No purpose text
+- `kerf_width`: No purpose text
+- `laser_haz_scale`: No purpose text
+- `laser_haz_k0`: No purpose text
+- `laser_haz_k1`: No purpose text
+- `laser_haz_k2`: No purpose text
+- `laser_kerf_scale`: No purpose text
+- `laser_kerf_k0`: No purpose text
+- `laser_kerf_k1`: No purpose text
+- `laser_kerf_k2`: No purpose text
+- `waterjet_pressure`: No purpose text
+- `water_flow_rate`: No purpose text
+- `hydraulic_power`: No purpose text
+- `abrasive_mass_flow`: No purpose text
+- `abrasive_dose_per_length`: No purpose text
+- `wjet_kerf_offset`: No purpose text
+- `wjet_taper_angle`: No purpose text
+- `v_cut_depth`: No purpose text
+- `sample_rate`: No purpose text
+- `point_spacing`: No purpose text
+- `overlap_fraction`: No purpose text
+- `scan_width`: No purpose text
+- `scan_height`: No purpose text
+- `raster_time`: No purpose text
+- `point_density`: No purpose text
+- `point_count`: No purpose text
+- `tof_dt`: No purpose text
+- `lidar_range`: No purpose text
+- `timing_jitter`: No purpose text
+- `range_noise`: No purpose text
+- `angular_step`: No purpose text
+- `arc_spacing`: No purpose text
+- `u_component_1`: No purpose text
+- `u_component_2`: No purpose text
+- `u_component_3`: No purpose text
+- `combined_uncertainty`: No purpose text
+- `coverage_factor_k`: No purpose text
+- `expanded_uncertainty_u95`: No purpose text
+- `exposure_time`: No purpose text
+- `motion_blur_error`: No purpose text
+- `trigger_jitter`: No purpose text
+- `trigger_jitter_error`: No purpose text
+- `point_size_bytes`: No purpose text
+- `pointcloud_size`: No purpose text
+- `io_bandwidth`: No purpose text
+- `io_time`: No purpose text
+- `yarn_tex_warp`: No purpose text
+- `yarn_tex_weft`: No purpose text
+- `yarn_tex_binder`: No purpose text
+- `areal_mass_warp`: No purpose text
+- `areal_mass_weft`: No purpose text
+- `areal_mass_binder`: No purpose text
+- `areal_mass_total`: No purpose text
+- `fiber_density`: No purpose text
+- `preform_thickness`: No purpose text
+- `fiber_volume_fraction`: No purpose text
+- `matrix_volume_fraction`: No purpose text
+- `void_volume_fraction`: No purpose text
+- `crimp_efficiency`: No purpose text
+- `compaction_pressure`: No purpose text
+- `compaction_k0`: No purpose text
+- `compaction_k1`: No purpose text
+- `bending_moment`: No purpose text
+- `neutral_axis_distance`: No purpose text
+- `second_moment_area`: No purpose text
+- `bending_stress`: No purpose text
+- `shear_force`: No purpose text
+- `first_moment_area`: No purpose text
+- `web_width`: No purpose text
+- `shear_stress`: No purpose text
+- `youngs_modulus`: No purpose text
+- `poisson_ratio`: No purpose text
+- `plate_thickness`: No purpose text
+- `plate_width`: No purpose text
+- `buckling_k`: No purpose text
+- `plate_buckling_stress`: No purpose text
+- `MEDIA_REFERENCE_GUARD`: No purpose text
+- `DOMAIN_ALLOWLIST`: No purpose text
+- `EQUATION_SAFETY`: No purpose text
+- `NUMERIC_SANITY`: No purpose text
+- `CALIBRATION_REQUIRED`: No purpose text
+- `DETERMINISM_CANON`: No purpose text
+- `m`: No purpose text
+- `kg`: No purpose text
+- `s`: No purpose text
+- `A`: No purpose text
+- `K`: No purpose text
+- `mol`: No purpose text
+- `cd`: No purpose text
+- `1`: No purpose text
+- `rad`: No purpose text
+- `deg`: No purpose text
+- `Hz`: No purpose text
+- `N`: No purpose text
+- `Pa`: No purpose text
+- `J`: No purpose text
+- `W`: No purpose text
+- `V`: No purpose text
+- `C`: No purpose text
+- `ohm`: No purpose text
+- `m/s`: No purpose text
+- `m^2`: No purpose text
+- `m^3`: No purpose text
+- `m^4`: No purpose text
+- `N*m`: No purpose text
+- `J/m`: No purpose text
+- `J/m^2`: No purpose text
+- `J/m^3`: No purpose text
+- `W/m^2`: No purpose text
+- `kg/s`: No purpose text
+- `m^3/s`: No purpose text
+- `kg/m`: No purpose text
+- `kg/m^2`: No purpose text
+- `kg/m^3`: No purpose text
+- `1/m`: No purpose text
+- `1/m^2`: No purpose text
+- `m/N`: No purpose text
+- `B`: No purpose text
+- `B/s`: No purpose text
+- `tex`: No purpose text
+- `min`: No purpose text
+- `h`: No purpose text
+- `pct`: No purpose text
+- `c_light`: No purpose text
+- `t_initial`: No purpose text
+- `t_final`: No purpose text
+- `wall_angle`: No purpose text
+- `thinning_ratio`: No purpose text
+- `tool_radius`: No purpose text
+- `tool_stepover`: No purpose text
+- `tool_stepdown`: No purpose text
+- `scallop_height`: No purpose text
+- `scallop_height_small_step`: No purpose text
+- `target_scallop_height`: No purpose text
+- `stepdown_from_scallop`: No purpose text
+- `axial_force`: No purpose text
+- `aerens_force_scale`: No purpose text
+- `aerens_k0`: No purpose text
+- `aerens_k1`: No purpose text
+- `aerens_k2`: No purpose text
+- `aerens_k3`: No purpose text
+- `aerens_k4`: No purpose text
+- `aerens_k5`: No purpose text
+- `aerens_k6`: No purpose text
+- `aerens_t_ref`: No purpose text
+- `aerens_r_ref`: No purpose text
+- `aerens_s_ref`: No purpose text
+- `aerens_dz_ref`: No purpose text
+- `robot_linear_compliance`: No purpose text
+- `robot_deflection`: No purpose text
+- `laser_power`: No purpose text
+- `scan_speed`: No purpose text
+- `travel_speed`: No purpose text
+- `process_efficiency`: No purpose text
+- `layer_thickness`: No purpose text
+- `hatch_spacing`: No purpose text
+- `energy_line`: No purpose text
+- `energy_area`: No purpose text
+- `energy_volume`: No purpose text
+- `arc_voltage`: No purpose text
+- `arc_current`: No purpose text
+- `heat_input_per_length`: No purpose text
+- `exposure_energy`: No purpose text
+- `critical_energy`: No purpose text
+- `penetration_depth`: No purpose text
+- `cure_depth`: No purpose text
+- `linear_shrinkage`: No purpose text
+- `scale_compensation`: No purpose text
+- `beam_spot_diameter`: No purpose text
+- `beam_area`: No purpose text
+- `power_density`: No purpose text
+- `absorptivity`: No purpose text
+- `absorbed_heat_per_length`: No purpose text
+- `haz_width`: No purpose text
+- `kerf_width`: No purpose text
+- `laser_haz_scale`: No purpose text
+- `laser_haz_k0`: No purpose text
+- `laser_haz_k1`: No purpose text
+- `laser_haz_k2`: No purpose text
+- `laser_kerf_scale`: No purpose text
+- `laser_kerf_k0`: No purpose text
+- `laser_kerf_k1`: No purpose text
+- `laser_kerf_k2`: No purpose text
+- `waterjet_pressure`: No purpose text
+- `water_flow_rate`: No purpose text
+- `hydraulic_power`: No purpose text
+- `abrasive_mass_flow`: No purpose text
+- `abrasive_dose_per_length`: No purpose text
+- `wjet_kerf_offset`: No purpose text
+- `wjet_taper_angle`: No purpose text
+- `v_cut_depth`: No purpose text
+- `sample_rate`: No purpose text
+- `point_spacing`: No purpose text
+- `overlap_fraction`: No purpose text
+- `scan_width`: No purpose text
+- `scan_height`: No purpose text
+- `raster_time`: No purpose text
+- `point_density`: No purpose text
+- `point_count`: No purpose text
+- `tof_dt`: No purpose text
+- `lidar_range`: No purpose text
+- `timing_jitter`: No purpose text
+- `range_noise`: No purpose text
+- `angular_step`: No purpose text
+- `arc_spacing`: No purpose text
+- `u_component_1`: No purpose text
+- `u_component_2`: No purpose text
+- `u_component_3`: No purpose text
+- `combined_uncertainty`: No purpose text
+- `coverage_factor_k`: No purpose text
+- `expanded_uncertainty_u95`: No purpose text
+- `exposure_time`: No purpose text
+- `motion_blur_error`: No purpose text
+- `trigger_jitter`: No purpose text
+- `trigger_jitter_error`: No purpose text
+- `point_size_bytes`: No purpose text
+- `pointcloud_size`: No purpose text
+- `io_bandwidth`: No purpose text
+- `io_time`: No purpose text
+- `yarn_tex_warp`: No purpose text
+- `yarn_tex_weft`: No purpose text
+- `yarn_tex_binder`: No purpose text
+- `areal_mass_warp`: No purpose text
+- `areal_mass_weft`: No purpose text
+- `areal_mass_binder`: No purpose text
+- `areal_mass_total`: No purpose text
+- `fiber_density`: No purpose text
+- `preform_thickness`: No purpose text
+- `fiber_volume_fraction`: No purpose text
+- `matrix_volume_fraction`: No purpose text
+- `void_volume_fraction`: No purpose text
+- `crimp_efficiency`: No purpose text
+- `compaction_pressure`: No purpose text
+- `compaction_k0`: No purpose text
+- `compaction_k1`: No purpose text
+- `bending_moment`: No purpose text
+- `neutral_axis_distance`: No purpose text
+- `second_moment_area`: No purpose text
+- `bending_stress`: No purpose text
+- `shear_force`: No purpose text
+- `first_moment_area`: No purpose text
+- `web_width`: No purpose text
+- `shear_stress`: No purpose text
+- `youngs_modulus`: No purpose text
+- `poisson_ratio`: No purpose text
+- `plate_thickness`: No purpose text
+- `plate_width`: No purpose text
+- `buckling_k`: No purpose text
+- `plate_buckling_stress`: No purpose text
+- `MEDIA_REFERENCE_GUARD`: No purpose text
+- `DOMAIN_ALLOWLIST`: No purpose text
+- `EQUATION_SAFETY`: No purpose text
+- `NUMERIC_SANITY`: No purpose text
+- `CALIBRATION_REQUIRED`: No purpose text
+- `DETERMINISM_CANON`: No purpose text
+- `ref_si_brochure`: No purpose text
+- `ref_gum_uncertainty`: No purpose text
+- `ref_vat_jacobs_curve`: No purpose text
+- `ref_pbf_process_fundamentals`: No purpose text
+- `ref_waam_heat_input`: No purpose text
+- `ref_binderjet_shrinkage`: No purpose text
+- `ref_laser_cutting_thermal_models`: No purpose text
+- `ref_waterjet_cutting_models`: No purpose text
+- `ref_lidar_tof_principles`: No purpose text
+- `ref_pointcloud_planning`: No purpose text
+- `ref_risf_sine_law`: No purpose text
+- `ref_risf_scallop_geometry`: No purpose text
+- `ref_risf_force_models_aerens_family`: No purpose text
+- `ref_robot_compliance_calibration`: No purpose text
+- `ref_textile_tex_definition`: No purpose text
+- `ref_composites_fvf_areal_mass`: No purpose text
+- `ref_plate_buckling_theory`: No purpose text
+- `ref_mechanics_of_materials_beams`: No purpose text
+- `media_placeholder_001`: No purpose text
+- `ref_si_brochure`: No purpose text
+- `ref_gum_uncertainty`: No purpose text
+- `ref_vat_jacobs_curve`: No purpose text
+- `ref_pbf_process_fundamentals`: No purpose text
+- `ref_waam_heat_input`: No purpose text
+- `ref_binderjet_shrinkage`: No purpose text
+- `ref_laser_cutting_thermal_models`: No purpose text
+- `ref_waterjet_cutting_models`: No purpose text
+- `ref_lidar_tof_principles`: No purpose text
+- `ref_pointcloud_planning`: No purpose text
+- `ref_risf_sine_law`: No purpose text
+- `ref_risf_scallop_geometry`: No purpose text
+- `ref_risf_force_models_aerens_family`: No purpose text
+- `ref_robot_compliance_calibration`: No purpose text
+- `ref_textile_tex`: No purpose text
+- `ref_textile_structural_composites_3d_woven`: No purpose text
+- `ref_crimp_effects_textile_composites`: No purpose text
+- `ref_preform_compaction_models`: No purpose text
+- `ref_beam_theory_bending_and_shear`: No purpose text
+- `ref_classical_plate_buckling`: No purpose text
+- `only_allowed_top_level_keys`: No purpose text
+- `forbid_yaml_anchors`: No purpose text
+- `hashing_must_exclude_meta_build`: No purpose text
+- `forbid_non_finite`: No purpose text
+- `domains_must_be_allowlisted`: No purpose text
+- `units_must_exist`: No purpose text
+- `identifiers_must_match_patterns`: No purpose text
+- `expression_language_guardrails`: No purpose text
+- `all_models_outputs_declared_in_registry`: No purpose text
+- `all_equation_variables_declared_in_registry`: No purpose text
+- `no_thresholds_or_acceptance_criteria`: No purpose text
+- `calibration_required_models_must_have_storage_path`: No purpose text
+- `forbid_unverified_coefficients`: No purpose text
+- `research_sources_must_not_be_required_at_runtime`: No purpose text
