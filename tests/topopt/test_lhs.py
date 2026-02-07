@@ -97,7 +97,11 @@ def test_build_off_optional_heavy_not_loaded():
 
 
 def test_numpy_backend_agreement_when_available():
-    if importlib.util.find_spec("numpy") is None:
+    try:
+        numpy_spec = importlib.util.find_spec("numpy")
+    except ImportError:
+        numpy_spec = None
+    if numpy_spec is None:
         pytest.skip(
             "missing numpy: enable by installing topopt-full; affects VERIFIED status if build_on required."
         )

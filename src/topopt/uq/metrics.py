@@ -3,11 +3,14 @@ from __future__ import annotations
 from importlib import import_module
 from importlib.util import find_spec
 from math import sqrt
+import os
 from statistics import fmean
 from typing import Sequence
 
 
 def _numpy():
+    if os.environ.get("TOPOPT_BUILD_MODE") == "OFF":
+        return None
     if find_spec("numpy") is None:
         return None
     return import_module("numpy")
