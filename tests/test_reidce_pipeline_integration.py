@@ -223,3 +223,23 @@ def test_pipeline_applies_pico_gk_and_topology(tmp_path: Path) -> None:
     tags = [tag for record in memory_store.records for tag in record.tags]
     assert "pico_gk" in tags
     assert "topology_recommendation" in tags
+
+
+def test_pipeline_uses_standard_gravity(tmp_path: Path) -> None:
+    """Payload ratio must use standard gravity 9.80665, not 9.81."""
+    from reidce.pipeline import _GRAVITY_M_S2, compile_inputs, evaluate_nominal
+
+    design = _make_design()
+    mission = _make_mission()
+    state = compile_inputs(
+        design=design,
+        mission=mission,
+        environment=_make_environment(),
+        manufacturing_process=_make_manufacturing(),
+        run_config=_make_run_config(tmp_path),
+    )
+    nominal, constraints = evaluate_nominal(state)
+    force_eq = nominal.equilibrium.force_eq.value
+    assert force_eq is not None
+    expected_ratio = (force_eq / _GRAVITY_M_S2) / mission.payload_target.value
+    assert abs(nominal.kpis.payload_ratio.value - expected_ratio) < 1e-12

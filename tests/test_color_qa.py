@@ -168,6 +168,18 @@ def test_color_qa_neutral_threshold_failure() -> None:
     assert report.summary["neutrals"].status == QaStatus.FAIL
 
 
+def test_mean_hue_achromatic_returns_average() -> None:
+    """Regression: _mean_hue must return (h1+h2)/2 when either chroma is zero."""
+    from sfcs_mdp.color_qa import _mean_hue
+
+    result = _mean_hue(90.0, 270.0, 0.0, 1.0)
+    assert result == pytest.approx(180.0)
+    result2 = _mean_hue(60.0, 120.0, 1.0, 0.0)
+    assert result2 == pytest.approx(90.0)
+    result3 = _mean_hue(0.0, 0.0, 0.0, 0.0)
+    assert result3 == pytest.approx(0.0)
+
+
 def test_delta_e_handles_achromatic() -> None:
     scene = ColorProfileScene(
         icc_profile=ColorProfileInfo(profile_hash=None),

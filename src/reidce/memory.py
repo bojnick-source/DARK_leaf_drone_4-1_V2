@@ -156,7 +156,7 @@ class MemoryStore:
                 scored.append(MemorySearchResult(record=record, score=score))
 
         scored.sort(key=lambda item: item.score, reverse=True)
-        return scored[: max(top_k, 1)]
+        return scored[:top_k] if top_k > 0 else []
 
     def save(self, path: Optional[Path] = None) -> Path:
         target = path or self._path

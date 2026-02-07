@@ -714,7 +714,7 @@ def simulate_transient(
         for capacitor in circuit.capacitors:
             if capacitor.farads <= 0:
                 raise ValueError(f"Invalid capacitance for {capacitor.name}")
-            g = capacitor.farads / dt_s
+            g = 2.0 * capacitor.farads / dt_s
             a = idx(capacitor.node_a)
             b = idx(capacitor.node_b)
             v_a = prev.get(capacitor.node_a, 0.0)

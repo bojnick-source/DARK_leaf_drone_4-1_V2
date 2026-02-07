@@ -22,6 +22,12 @@
           }
         ]
       }
+    },
+    "constraints": {
+      "diameter_le_envelope": true,
+      "wall_lt_half_radius": true,
+      "length_le_envelope": true,
+      "all_positive": true
     }
   }
 }

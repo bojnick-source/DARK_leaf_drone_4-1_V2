@@ -47,6 +47,8 @@ from reidce.schemas import (
 )
 from reidce.topology import recommend_topology
 
+_GRAVITY_M_S2 = 9.80665
+
 
 @dataclass(frozen=True)
 class InputBundle:
@@ -212,7 +214,7 @@ def evaluate_nominal(state: PipelineState) -> tuple[NominalResult, ConstraintRep
     )
     payload_ratio = 0.0
     if mission.payload_target.value and mission.payload_target.value > 0:
-        payload_ratio = (force_eq / 9.81) / mission.payload_target.value
+        payload_ratio = (force_eq / _GRAVITY_M_S2) / mission.payload_target.value
     mass_total, missing_mass = _budget_totals(
         design.budgets.mass_budget.lines, "mass", "kg"
     )
@@ -239,9 +241,9 @@ def evaluate_nominal(state: PipelineState) -> tuple[NominalResult, ConstraintRep
         ConstraintEntry(
             name="C_force",
             domain="physics",
-            passed=force_eq >= (mission.payload_target.value or 0.0) * 9.81,
+            passed=force_eq >= (mission.payload_target.value or 0.0) * _GRAVITY_M_S2,
             value=force_eq,
-            limit=(mission.payload_target.value or 0.0) * 9.81,
+            limit=(mission.payload_target.value or 0.0) * _GRAVITY_M_S2,
             sense=">=",
             unit="N",
             evidence_ref="#/nominal/equilibrium/force_eq",

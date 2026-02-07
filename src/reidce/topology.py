@@ -68,7 +68,7 @@ def _collect_metrics(candidate_design: DesignSpec) -> Dict[str, float]:
         "stiffness_n_per_m": stiffness,
         "pressure_force": pressure * force_coeff,
         "max_deflection_m": max_deflection,
-        "deflection_capacity": stiffness * max_deflection,
+        "deflection_capacity": 0.5 * stiffness * max_deflection * max_deflection,
         "slenderness": length / span,
     }
 

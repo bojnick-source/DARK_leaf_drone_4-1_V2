@@ -314,7 +314,7 @@ def _solve_linear_system(a: List[List[float]], b: List[float]) -> List[float]:
         aug[col], aug[max_row] = aug[max_row], aug[col]
 
         pivot = aug[col][col]
-        if abs(pivot) < 1e-12:
+        if abs(pivot) < 1e-10:
             continue
 
         for row in range(col + 1, n):
@@ -325,7 +325,7 @@ def _solve_linear_system(a: List[List[float]], b: List[float]) -> List[float]:
     # Back substitution
     x = [0.0] * n
     for i in range(n - 1, -1, -1):
-        if abs(aug[i][i]) < 1e-12:
+        if abs(aug[i][i]) < 1e-10:
             x[i] = 0.0
             continue
         x[i] = aug[i][n]

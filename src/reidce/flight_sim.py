@@ -274,16 +274,15 @@ def _drag_force(speed: float, pitch: float, params: VehicleParams, atmosphere: A
 
 
 def _wrap_angle(angle: float) -> float:
-    while angle > math.pi:
-        angle -= 2.0 * math.pi
-    while angle < -math.pi:
-        angle += 2.0 * math.pi
-    return angle
+    return math.remainder(angle, 2.0 * math.pi)
 
 
 def _median(values: Iterable[float]) -> float:
     sorted_vals = sorted(values)
-    mid = len(sorted_vals) // 2
+    n = len(sorted_vals)
+    mid = n // 2
+    if n % 2 == 0:
+        return (sorted_vals[mid - 1] + sorted_vals[mid]) / 2.0
     return sorted_vals[mid]
 
 

@@ -137,7 +137,7 @@ def _delta_hue(h1: float, h2: float) -> float:
 
 def _mean_hue(h1: float, h2: float, c1: float, c2: float) -> float:
     if c1 * c2 == 0:
-        return h1 + h2
+        return (h1 + h2) / 2.0
     diff = abs(h1 - h2)
     if diff <= 180:
         return (h1 + h2) / 2
