@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/validity_test.dir/validity/validity_test.cpp.o -o validity_test  ../libv2_engine.a 

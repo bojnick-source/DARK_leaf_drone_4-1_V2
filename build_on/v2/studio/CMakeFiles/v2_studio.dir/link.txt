@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/v2_studio.dir/v2_studio_autogen/mocs_compilation.cpp.o CMakeFiles/v2_studio.dir/app/main.cpp.o -o v2_studio  /usr/lib/x86_64-linux-gnu/libQt6Widgets.so.6.4.2 /usr/lib/x86_64-linux-gnu/libQt6Gui.so.6.4.2 /usr/lib/x86_64-linux-gnu/libQt6Core.so.6.4.2 ../engine/libv2_engine.a /usr/lib/x86_64-linux-gnu/libGLX.so /usr/lib/x86_64-linux-gnu/libOpenGL.so 

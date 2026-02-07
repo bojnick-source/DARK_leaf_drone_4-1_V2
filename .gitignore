@@ -22,6 +22,10 @@ off_build/
 on_build/
 build-off/
 build-on/
+build-OFF/
+build-ON/
+build_off/
+build_on/
 _codeql_build_dir/
 Testing/
 _codeql_detected_source_root

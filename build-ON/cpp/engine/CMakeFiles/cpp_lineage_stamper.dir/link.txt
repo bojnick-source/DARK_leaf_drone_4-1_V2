@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcpp_lineage_stamper.a CMakeFiles/cpp_lineage_stamper.dir/analysis/lineage_stamper.cpp.o
-/usr/bin/ranlib libcpp_lineage_stamper.a
