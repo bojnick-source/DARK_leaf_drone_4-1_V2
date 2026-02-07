@@ -18,6 +18,7 @@ std::string fail_code_to_string(CommitFailCode code) {
         case CommitFailCode::ALREADY_COMMITTED: return "ALREADY_COMMITTED";
         case CommitFailCode::MISSING_INPUT: return "MISSING_INPUT";
         case CommitFailCode::HASH_MISMATCH: return "HASH_MISMATCH";
+        case CommitFailCode::RUN_ID_MISMATCH: return "RUN_ID_MISMATCH";
         case CommitFailCode::LINEAGE_MISSING: return "LINEAGE_MISSING";
     }
     return "UNKNOWN";
@@ -78,7 +79,7 @@ CommitDecision commit_gate_evaluate(const RunContext& ctx, const EvidenceSummary
         reasons.push_back(CommitFailCode::MISSING_INPUT);
     }
     if (evidence.run_id != ctx.expected_run_id) {
-        reasons.push_back(CommitFailCode::HASH_MISMATCH);
+        reasons.push_back(CommitFailCode::RUN_ID_MISMATCH);
     }
     if (evidence.lineage_id.empty()) {
         reasons.push_back(CommitFailCode::LINEAGE_MISSING);

@@ -105,13 +105,15 @@ def _create_traveler(spec_data: dict[str, Any], path: Path) -> None:
 
 def _create_simulated_outputs(step: ProcessStep, config: RunConfig) -> None:
     placeholders = _build_placeholders(config)
+    skipped_outputs = []
     for output in step.outputs:
         expanded = expand_placeholders(output, placeholders)
         if expanded.endswith("acceptance_data_package.zip"):
             continue
         try:
             output_path = resolve_path(config.repo_root, expanded)
-        except ValueError:
+        except ValueError as e:
+            skipped_outputs.append({"output": expanded, "reason": str(e)})
             continue
         if expanded.endswith("/"):
             create_placeholder_dir(output_path)
@@ -120,18 +122,31 @@ def _create_simulated_outputs(step: ProcessStep, config: RunConfig) -> None:
         else:
             create_placeholder_file(output_path, f"SIMULATED OUTPUT for {step.step_id}\n")
 
+    skipped_evidence = []
     for evidence in step.evidence.required:
         name, _ = normalize_optional_name(evidence)
         expanded_name = expand_placeholders(name, placeholders)
         try:
             evidence_path = resolve_path(_build_dir(config), expanded_name)
-        except ValueError:
+        except ValueError as e:
+            skipped_evidence.append({"evidence": expanded_name, "reason": str(e)})
             continue
         if name.endswith("/"):
             create_placeholder_dir(evidence_path)
             create_placeholder_file(evidence_path / "placeholder.txt", "SIMULATED EVIDENCE\n")
         else:
             create_placeholder_file(evidence_path, "SIMULATED EVIDENCE\n")
+
+    # Log skipped outputs and evidence for debugging
+    if skipped_outputs or skipped_evidence:
+        build_dir = _build_dir(config)
+        skipped_log = build_dir / f"simulation_skipped_{step.step_id}.json"
+        skipped_data = {
+            "step_id": step.step_id,
+            "skipped_outputs": skipped_outputs,
+            "skipped_evidence": skipped_evidence,
+        }
+        write_json(skipped_log, skipped_data)
 
     if step.acceptance.criteria:
         signoff = _signoff_path(_build_dir(config), step.step_id)

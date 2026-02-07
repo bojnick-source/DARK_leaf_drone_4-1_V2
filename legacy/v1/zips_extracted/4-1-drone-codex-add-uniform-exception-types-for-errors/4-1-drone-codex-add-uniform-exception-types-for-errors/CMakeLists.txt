@@ -48,10 +48,3 @@ add_executable(closeout_demo
 )
 
 target_link_libraries(closeout_demo PRIVATE lift_engine)
-
-# ---- CLI: closeout_cli (Closeout tool with CSV outputs) ----
-add_executable(closeout_cli
-  cpp/tools/closeout_cli.cpp
-)
-
-target_link_libraries(closeout_cli PRIVATE lift_engine)

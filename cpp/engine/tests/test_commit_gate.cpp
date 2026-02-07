@@ -44,6 +44,12 @@ int main() {
     assert(!third.allow_commit);
     assert(has_reason(third, CommitFailCode::HASH_MISMATCH));
 
+    // Mismatched run_id should fail with RUN_ID_MISMATCH.
+    EvidenceSummary wrong_run{"different-run-id", "hash-abc", "lineage-1"};
+    CommitDecision fourth = commit_gate_evaluate(ctx, wrong_run);
+    assert(!fourth.allow_commit);
+    assert(has_reason(fourth, CommitFailCode::RUN_ID_MISMATCH));
+
     // Missing lineage should fail before writing.
     std::filesystem::remove_all(root);
     EvidenceSummary missing_lineage{run_id, "hash-abc", ""};
