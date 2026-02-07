@@ -685,6 +685,7 @@ def simulate_transient(
                 prev[name] = value
 
     prev_inductor_currents = {inductor.name: 0.0 for inductor in circuit.inductors}
+    prev_capacitor_currents = {cap.name: 0.0 for cap in circuit.capacitors}
 
     times: List[float] = []
     voltages: List[Dict[str, float]] = []
@@ -720,12 +721,14 @@ def simulate_transient(
             v_a = prev.get(capacitor.node_a, 0.0)
             v_b = prev.get(capacitor.node_b, 0.0)
             v_prev = v_a - v_b
+            i_prev = prev_capacitor_currents[capacitor.name]
+            i_hist = g * v_prev + i_prev
             if a is not None:
                 matrix[a][a] += g
-                vector[a] += g * v_prev
+                vector[a] += i_hist
             if b is not None:
                 matrix[b][b] += g
-                vector[b] -= g * v_prev
+                vector[b] -= i_hist
             if a is not None and b is not None:
                 matrix[a][b] -= g
                 matrix[b][a] -= g
@@ -772,6 +775,20 @@ def simulate_transient(
         node_voltages = {"0": 0.0}
         for name, index in node_index.items():
             node_voltages[name] = solution[index]
+
+        for capacitor in circuit.capacitors:
+            g = 2.0 * capacitor.farads / dt_s
+            v_a_new = node_voltages.get(capacitor.node_a, 0.0)
+            v_b_new = node_voltages.get(capacitor.node_b, 0.0)
+            v_new = v_a_new - v_b_new
+            v_a_old = prev.get(capacitor.node_a, 0.0)
+            v_b_old = prev.get(capacitor.node_b, 0.0)
+            v_old = v_a_old - v_b_old
+            # Trapezoidal companion model: i_c(n) = g*(v(n) - v(n-1)) - i_c(n-1)
+            prev_capacitor_currents[capacitor.name] = (
+                g * (v_new - v_old) - prev_capacitor_currents[capacitor.name]
+            )
+
         prev = {name: node_voltages[name] for name in nodes}
 
         for l_idx, inductor in enumerate(circuit.inductors):

@@ -584,6 +584,7 @@
   // --- STL Export ---
   function exportSTL() {
     const r = params.diameter / 2;
+    const rInner = Math.max(r - params.wallThickness, MIN_INNER_RADIUS);
     const len = params.length;
     const segments = MESH_SEGMENTS;
     const lines = ["solid actuator"];
@@ -596,14 +597,32 @@
       const x2 = r * Math.cos(theta2);
       const y2 = r * Math.sin(theta2);
 
-      // Side tri 1
+      // Outer side triangles
       addTriangle(lines, [x1, y1, 0], [x2, y2, 0], [x1, y1, len]);
-      // Side tri 2
       addTriangle(lines, [x2, y2, 0], [x2, y2, len], [x1, y1, len]);
-      // Bottom cap
-      addTriangle(lines, [0, 0, 0], [x2, y2, 0], [x1, y1, 0]);
-      // Top cap
-      addTriangle(lines, [0, 0, len], [x1, y1, len], [x2, y2, len]);
+
+      if (rInner > MIN_INNER_RADIUS && rInner < r) {
+        const ix1 = rInner * Math.cos(theta1);
+        const iy1 = rInner * Math.sin(theta1);
+        const ix2 = rInner * Math.cos(theta2);
+        const iy2 = rInner * Math.sin(theta2);
+
+        // Inner side triangles (reversed winding for inward normals)
+        addTriangle(lines, [ix2, iy2, 0], [ix1, iy1, 0], [ix1, iy1, len]);
+        addTriangle(lines, [ix2, iy2, 0], [ix1, iy1, len], [ix2, iy2, len]);
+
+        // Bottom annular cap
+        addTriangle(lines, [x2, y2, 0], [x1, y1, 0], [ix1, iy1, 0]);
+        addTriangle(lines, [x2, y2, 0], [ix1, iy1, 0], [ix2, iy2, 0]);
+
+        // Top annular cap
+        addTriangle(lines, [x1, y1, len], [x2, y2, len], [ix2, iy2, len]);
+        addTriangle(lines, [x1, y1, len], [ix2, iy2, len], [ix1, iy1, len]);
+      } else {
+        // Solid caps (no inner cavity)
+        addTriangle(lines, [0, 0, 0], [x2, y2, 0], [x1, y1, 0]);
+        addTriangle(lines, [0, 0, len], [x1, y1, len], [x2, y2, len]);
+      }
     }
 
     lines.push("endsolid actuator");
