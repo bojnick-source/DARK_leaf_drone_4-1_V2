@@ -140,7 +140,7 @@ def _create_simulated_outputs(step: ProcessStep, config: RunConfig) -> None:
     # Log skipped outputs and evidence for debugging
     if skipped_outputs or skipped_evidence:
         build_dir = _build_dir(config)
-        skipped_log = build_dir / "simulation_skipped.json"
+        skipped_log = build_dir / f"simulation_skipped_{step.step_id}.json"
         skipped_data = {
             "step_id": step.step_id,
             "skipped_outputs": skipped_outputs,
