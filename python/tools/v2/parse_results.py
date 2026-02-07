@@ -20,7 +20,6 @@ def main() -> int:
     parser.add_argument("run_output", type=Path, help="Path to run_output.json")
     args = parser.parse_args()
 
-    data = json.loads(args.run_output.read_text())
     data = parse_run_output(args.run_output)
     json.dump(data, fp=sys.stdout, indent=2)
     return 0

@@ -14,7 +14,7 @@ struct EvidenceSummary {
     std::string lineage_id;
 };
 
-enum class CommitFailCode { ALREADY_COMMITTED, MISSING_INPUT, HASH_MISMATCH, LINEAGE_MISSING };
+enum class CommitFailCode { ALREADY_COMMITTED, MISSING_INPUT, HASH_MISMATCH, RUN_ID_MISMATCH, LINEAGE_MISSING };
 
 struct CommitDecision {
     bool allow_commit{false};

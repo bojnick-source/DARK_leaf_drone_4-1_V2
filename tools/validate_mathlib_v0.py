@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, List, Tuple
 
 try:
-    import yaml
+    import yaml  # type: ignore[import-untyped]
 except ImportError:  # pragma: no cover - handled in runtime
     yaml = None
 

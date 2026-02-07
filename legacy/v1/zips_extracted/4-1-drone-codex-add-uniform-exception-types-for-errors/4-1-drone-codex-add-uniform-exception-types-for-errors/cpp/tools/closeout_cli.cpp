@@ -45,7 +45,6 @@ static Args parse_args_or_throw(int argc, char** argv) {
     Args a{};
     auto require_value = [&](int& i, const char* flag) -> std::string {
         if (i + 1 >= argc) {
-            throw lift::bemt::BemtException(lift::bemt::ErrorCode::InvalidInput,
             throw lift::bemt::BemtException(lift::bemt::ErrorCode::MissingRequiredField,
                                             std::string("Missing value for ") + flag);
         }
