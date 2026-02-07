@@ -376,9 +376,9 @@ function generateCylinderWireframe(segments) {
     const by2 = radius * Math.sin(a2) * 0.4;
     edges.push({ x1: bx1, y1: by1 - height / 2, x2: bx2, y2: by2 - height / 2 });
     const tx1 = bx1 + skewX * height;
-    const ty1 = by1 * 0.4 + height / 2 + skewY * height;
+    const ty1 = by1 + height / 2 + skewY * height;
     const tx2 = bx2 + skewX * height;
-    const ty2 = by2 * 0.4 + height / 2 + skewY * height;
+    const ty2 = by2 + height / 2 + skewY * height;
     edges.push({ x1: tx1, y1: ty1, x2: tx2, y2: ty2 });
     if (i % 4 === 0) {
       edges.push({ x1: bx1, y1: by1 - height / 2, x2: tx1, y2: ty1 });
