@@ -22,6 +22,19 @@ std::string to_hex(std::uint64_t value) {
     return oss.str();
 }
 
+std::string escape_json_string(std::string_view in) {
+    std::string out;
+    out.reserve(in.size());
+    for (char c : in) {
+        switch (c) {
+            case '\\': out += "\\\\"; break;
+            case '\"': out += "\\\""; break;
+            default: out.push_back(c); break;
+        }
+    }
+    return out;
+}
+
 std::string canonical_join(const std::vector<std::string>& items) {
     std::ostringstream oss;
     for (std::size_t i = 0; i < items.size(); ++i) {
@@ -55,7 +68,7 @@ std::string build_lineage_json(const LineageInput& input, const std::string& lin
         oss << "\"" << input.output_artifacts[i] << "\"";
     }
     oss << "],";
-    oss << "\"canonical_inputs\":\"" << input.canonical_inputs << "\"";
+    oss << "\"canonical_inputs\":\"" << escape_json_string(input.canonical_inputs) << "\"";
     oss << "}";
     return oss.str();
 }
