@@ -347,7 +347,7 @@ def run_traveler(
         )
 
     # --- optional C++ v2 engine integration ---
-    engine_result: dict[str, Any] | None = None
+    engine_result: Optional[dict[str, Any]] = None
     resolved_engine = find_engine_cli(config.engine_cli) if config.engine_cli else None
     if resolved_engine:
         canonical = json.dumps(
