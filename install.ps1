@@ -15,10 +15,15 @@
     To build a standalone .exe (no Python install needed to run it):
 
         .\install.ps1 -Exe
+
+    To also build the C++ v2 engine (requires CMake and a C++20 compiler):
+
+        .\install.ps1 -Cpp
 #>
 param(
     [switch]$Dev,
-    [switch]$Exe
+    [switch]$Exe,
+    [switch]$Cpp
 )
 
 $ErrorActionPreference = "Stop"
@@ -80,4 +85,29 @@ if ($Exe) {
     Write-Host ""
     Write-Host "Standalone executable created in dist/sfcs-mdp.exe" -ForegroundColor Green
     Write-Host "You can copy dist\sfcs-mdp.exe anywhere and run it without Python." -ForegroundColor Green
+}
+
+if ($Cpp) {
+    Write-Host ""
+    Write-Host "Building C++ v2 engine ..." -ForegroundColor Cyan
+    $cmake = Get-Command cmake -ErrorAction SilentlyContinue |
+             Select-Object -ExpandProperty Source -First 1
+    if (-not $cmake) {
+        Write-Error "CMake was not found on your PATH. Install CMake 3.20+ from https://cmake.org and try again."
+        exit 1
+    }
+    & $cmake -S . -B build -DENABLE_V2_ENGINE=ON
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "CMake configure failed."
+        exit 1
+    }
+    & $cmake --build build --config Release
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "C++ build failed."
+        exit 1
+    }
+    Write-Host ""
+    Write-Host "C++ v2 engine built successfully." -ForegroundColor Green
+    Write-Host "Use the integrated workflow:" -ForegroundColor Cyan
+    Write-Host "  python -m sfcs_mdp simulate --build-id BUILD_0001 --rev-tag REV_A --engine-cli build/v2/engine/v2_engine_cli" -ForegroundColor White
 }

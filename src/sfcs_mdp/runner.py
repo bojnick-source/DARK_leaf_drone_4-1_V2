@@ -20,6 +20,7 @@ from sfcs_mdp.artifacts import (
 )
 from sfcs_mdp.hashutil import hash_files, sha256_bytes
 from sfcs_mdp.model import BlockLevel, ProcessStep, StepType
+from sfcs_mdp.v2_engine import find_engine_cli, run_engine
 from sfcs_mdp.validate import load_spec, topological_sort, validate_spec
 
 
@@ -33,6 +34,7 @@ class RunConfig:
     lot_id: str
     ncr_id: str
     repo_root: Path
+    engine_cli: Optional[str] = None
 
 
 def _utc_now() -> str:
@@ -291,6 +293,7 @@ def run_traveler(
     lot_id: Optional[str] = None,
     ncr_id: Optional[str] = None,
     repo_root: Optional[Path] = None,
+    engine_cli: Optional[str] = None,
 ) -> Path:
     repo_root = repo_root or Path.cwd()
     env_lot_id = os.getenv("SFCS_LOT_ID")
@@ -306,6 +309,7 @@ def run_traveler(
         lot_id=resolved_lot_id,
         ncr_id=resolved_ncr_id,
         repo_root=repo_root,
+        engine_cli=engine_cli,
     )
 
     spec_text = spec_path.read_text(encoding="utf-8")
@@ -342,6 +346,24 @@ def run_traveler(
             },
         )
 
+    # --- optional C++ v2 engine integration ---
+    engine_result: dict[str, Any] | None = None
+    resolved_engine = find_engine_cli(config.engine_cli) if config.engine_cli else None
+    if resolved_engine:
+        canonical = json.dumps(
+            {"build_id": config.build_id, "rev_tag": config.rev_tag},
+            sort_keys=True,
+        )
+        artifact_dir = (build_dir / "v2_engine").as_posix()
+        try:
+            engine_result = run_engine(
+                resolved_engine, canonical, artifact_root=artifact_dir
+            )
+            write_json(build_dir / "v2_engine_output.json", engine_result)
+        except RuntimeError as exc:
+            engine_result = {"ok": False, "error": str(exc)}
+            write_json(build_dir / "v2_engine_output.json", engine_result)
+
     ledger: dict[str, Any] = {
         "run_id": run_id,
         "build_id": config.build_id,
@@ -353,6 +375,8 @@ def run_traveler(
         "started_at": _utc_now(),
         "steps": [],
     }
+    if engine_result is not None:
+        ledger["v2_engine"] = engine_result
 
     pipeline_failed = False
     gates_passed = True

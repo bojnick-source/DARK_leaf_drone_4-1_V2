@@ -94,8 +94,34 @@ cmake --build build --config Release
 ctest --test-dir build --build-config Release
 ```
 
+Or use the install script:
+
+```powershell
+.\install.ps1 -Cpp
+```
+
 When `ENABLE_V2_ENGINE` is `OFF` (the default), CMake skips the C++ targets
 entirely.
+
+### Using Python + C++ together
+
+Once the C++ engine is built, pass `--engine-cli` to the `run` or `simulate`
+commands so the traveler pipeline calls the C++ engine and archives its output:
+
+```bash
+sfcs-mdp simulate --build-id BUILD_0001 --rev-tag REV_A \
+    --engine-cli build/v2/engine/v2_engine_cli
+```
+
+The engine result is written to `records/builds/<build_id>/v2_engine_output.json`
+and included in the ledger under the `v2_engine` key.
+
+You can also call the engine directly:
+
+```bash
+sfcs-mdp engine --engine-cli build/v2/engine/v2_engine_cli \
+    --canonical-input '{"alpha":"1.250000","beta":"2.500000"}'
+```
 
 ### Verify the installation
 
