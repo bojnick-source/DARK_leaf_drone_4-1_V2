@@ -24,6 +24,19 @@ Build isolation:
 The `sfcs-mdp` CLI validates and executes the SFCS manufacturing traveler in a deterministic,
 auditable pipeline. String-based acceptance criteria require a manual signoff artifact.
 
+The CLI can be invoked in two ways:
+
+```bash
+sfcs-mdp <command> [options]
+```
+
+```bash
+python -m sfcs_mdp <command> [options]
+```
+
+The `python -m sfcs_mdp` form works on every shell including **PowerShell** and
+**cmd.exe** on Windows, so use it if `sfcs-mdp` is not recognised.
+
 ### Validate the spec
 
 ```bash
@@ -62,6 +75,18 @@ sfcs-mdp package --build-id BUILD_0001
 ```
 
 Packaging only produces `acceptance_data_package.zip` when all gates pass.
+
+### PowerShell / Windows examples
+
+If `sfcs-mdp` is not on your PATH or PowerShell does not recognise the command,
+use `python -m sfcs_mdp` instead:
+
+```powershell
+python -m sfcs_mdp validate --spec manufacturing/sfcs_drone_mdp_v0.yaml
+python -m sfcs_mdp simulate --build-id BUILD_0001 --rev-tag REV_A
+python -m sfcs_mdp status --build-id BUILD_0001
+python -m sfcs_mdp package --build-id BUILD_0001
+```
 
 ## Daily Dashboard UI
 

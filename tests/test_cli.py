@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -116,3 +118,14 @@ def test_cli_validate_outputs_grading_footer(
     output = capsys.readouterr().out
     assert "VALIDATION FAILED" in output
     assert "Total: 100.00/100.00" in output
+
+
+def test_module_invocation_help() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "sfcs_mdp", "--help"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+    assert "validate" in result.stdout
+    assert "simulate" in result.stdout
