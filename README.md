@@ -19,6 +19,48 @@ Not included (future work):
 
 Build isolation:
 - v2 targets are opt-in via `-DENABLE_V2_ENGINE=ON` (default OFF to preserve baseline builds).
+## Getting Started
+
+### Prerequisites
+
+* **Python 3.11 or newer** – download from <https://www.python.org>.
+  When installing on Windows make sure **"Add Python to PATH"** is checked.
+* **Git** – to clone the repository.
+
+### Clone and install
+
+**PowerShell / Windows:**
+
+```powershell
+git clone https://github.com/bojnick-source/DARK_leaf_drone_4-1_V2.git
+cd DARK_leaf_drone_4-1_V2
+.\install.ps1          # installs sfcs-mdp so you can run it like an exe
+```
+
+To include development tools (pytest, ruff, mypy):
+
+```powershell
+.\install.ps1 -Dev
+```
+
+**Bash / macOS / Linux:**
+
+```bash
+git clone https://github.com/bojnick-source/DARK_leaf_drone_4-1_V2.git
+cd DARK_leaf_drone_4-1_V2
+pip install -e .       # or: pip install -e ".[dev]"
+```
+
+After installation, the `sfcs-mdp` command is available system-wide.
+
+### Verify the installation
+
+```powershell
+python -m sfcs_mdp validate
+```
+
+If the spec file is found you will see `VALIDATION OK`.
+
 ## Manufacturing Digital Thread / Traveler Runner
 
 The `sfcs-mdp` CLI validates and executes the SFCS manufacturing traveler in a deterministic,
