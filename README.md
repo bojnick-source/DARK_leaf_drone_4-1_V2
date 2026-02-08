@@ -53,6 +53,25 @@ pip install -e .       # or: pip install -e ".[dev]"
 
 After installation, the `sfcs-mdp` command is available system-wide.
 
+### Build a standalone EXE (Windows)
+
+If you want a single `.exe` file that runs without needing Python installed:
+
+```powershell
+.\install.ps1 -Exe
+```
+
+Or manually:
+
+```bash
+pip install ".[exe]"
+python build_exe.py
+```
+
+The executable is written to `dist/sfcs-mdp.exe` (or `dist/sfcs-mdp` on
+Linux/macOS). Copy it anywhere and run it directly — no Python required on the
+target machine.
+
 ### Verify the installation
 
 ```powershell

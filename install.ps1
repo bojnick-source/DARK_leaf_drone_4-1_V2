@@ -11,9 +11,14 @@
     To include development tools (pytest, ruff, mypy) pass -Dev:
 
         .\install.ps1 -Dev
+
+    To build a standalone .exe (no Python install needed to run it):
+
+        .\install.ps1 -Exe
 #>
 param(
-    [switch]$Dev
+    [switch]$Dev,
+    [switch]$Exe
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,3 +63,21 @@ Write-Host ""
 Write-Host "Quick start:" -ForegroundColor Cyan
 Write-Host "  python -m sfcs_mdp validate" -ForegroundColor White
 Write-Host "  python -m sfcs_mdp simulate --build-id BUILD_0001 --rev-tag REV_A" -ForegroundColor White
+
+if ($Exe) {
+    Write-Host ""
+    Write-Host "Building standalone .exe ..." -ForegroundColor Cyan
+    & $python -m pip install ".[exe]"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to install PyInstaller."
+        exit 1
+    }
+    & $python build_exe.py
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "EXE build failed."
+        exit 1
+    }
+    Write-Host ""
+    Write-Host "Standalone executable created in dist/sfcs-mdp.exe" -ForegroundColor Green
+    Write-Host "You can copy dist\sfcs-mdp.exe anywhere and run it without Python." -ForegroundColor Green
+}
