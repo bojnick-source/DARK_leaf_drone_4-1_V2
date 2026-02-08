@@ -72,6 +72,31 @@ The executable is written to `dist/sfcs-mdp.exe` (or `dist/sfcs-mdp` on
 Linux/macOS). Copy it anywhere and run it directly — no Python required on the
 target machine.
 
+### C++ engine (optional)
+
+The repository also contains a C++ computational engine under `v2/engine/` and
+`cpp/engine/`.  These components are **completely optional** — the Python
+`sfcs-mdp` CLI works without compiling any C++ code.
+
+If you want to build the C++ engine (requires a C++20 compiler and CMake 3.20+):
+
+```bash
+cmake -S . -B build -DENABLE_V2_ENGINE=ON
+cmake --build build
+ctest --test-dir build        # run the C++ tests
+```
+
+On Windows with Visual Studio:
+
+```powershell
+cmake -S . -B build -DENABLE_V2_ENGINE=ON
+cmake --build build --config Release
+ctest --test-dir build --build-config Release
+```
+
+When `ENABLE_V2_ENGINE` is `OFF` (the default), CMake skips the C++ targets
+entirely.
+
 ### Verify the installation
 
 ```powershell
