@@ -1,57 +1,104 @@
 meta:
-  program: "SFCS Drone Manufacturing"
+  program: "Additive Manufacturing (AM) Digital Thread"
   owner: "OLYTHI.EONS"
-  scope: "Non-weaponized smart airframe manufacturing (structure + embedded sensing/comms/power distribution)."
+  scope: "Auditable AM process routes (metal and polymer) with deterministic gating, evidence, and artifact hashing."
   exclusions:
     - "No weapon integration"
     - "No targeting/fire-control"
     - "No payload optimization guidance"
     - "No operational deployment guidance"
-  maturity_model:
-    levels:
-      - name: "BLOCK_0_STRUCTURE_ONLY"
-        goal: "Composite primary structure + metallic interfaces + geometry control."
-      - name: "BLOCK_1_STRUCTURAL_SENSING"
-        goal: "Add embedded structural health monitoring (e.g., optical sensing) + baseline capture."
-      - name: "BLOCK_2_POWER_DISTRIBUTION"
-        goal: "Add embedded power distribution (busbars/harness paths) + insulation QA."
-      - name: "BLOCK_3_DISTRIBUTED_ELECTRONICS"
-        goal: "Add embedded sensor tiles/flex nodes + deterministic comms segmentation."
-      - name: "BLOCK_4_ENERGY_STORAGE_INTEGRATION"
-        goal: "Add conformal modules (post-cure). Structural batteries remain separate R&D program."
 
 digital_thread:
   single_source_of_truth:
-    parameter_registry: "db/parameters/sfcs_params.yaml"
-    requirements_db: "requirements/sfcs_srd.yaml"
+    parameter_registry: "db/parameters/am_params.yaml"
+    requirements_db: "requirements/am_srd.yaml"
     cad_revision: "cad/release/<REV_TAG>"
-    toolpaths:
-      afp_paths: "mfg/afp/<REV_TAG>/paths/"
-      insert_placement: "mfg/fixtures/<REV_TAG>/insert_maps/"
-      machining_ops: "mfg/cnc/<REV_TAG>/ops/"
+    build_files:
+      build_job_files: "mfg/am/<REV_TAG>/jobs/"
+      scan_strategies: "mfg/am/<REV_TAG>/scan_strategies/"
+      supports: "mfg/am/<REV_TAG>/supports/"
     process_parameter_sets:
-      afp: "mfg/process_params/afp.yaml"
-      cure_cycle: "mfg/process_params/cure.yaml"
-      bonding_surface_prep: "mfg/process_params/surface_prep.yaml"
-      optical_embed_rules: "mfg/process_params/optical_embed.yaml"
-      electrical_embed_rules: "mfg/process_params/electrical_embed.yaml"
-      ndi_plan: "quality/ndi/ndi_plan.yaml"
-      metrology_plan: "quality/metrology/metrology_plan.yaml"
+      lpbf: "mfg/process_params/am_lpbf.yaml"
+      ebm: "mfg/process_params/am_ebm.yaml"
+      ded: "mfg/process_params/am_ded.yaml"
+      waam: "mfg/process_params/am_waam.yaml"
+      binder_jet: "mfg/process_params/am_binder_jet.yaml"
+      polymer_fdm: "mfg/process_params/am_polymer_fdm.yaml"
+      polymer_vat: "mfg/process_params/am_polymer_vat.yaml"
+      heat_treat: "mfg/process_params/heat_treat.yaml"
+      hip: "mfg/process_params/hip.yaml"
+      surface_finish: "mfg/process_params/surface_finish.yaml"
+      ndi_plan: "quality/ndi/am_ndi_plan.yaml"
+      metrology_plan: "quality/metrology/am_metrology_plan.yaml"
+
   build_manifest:
     fields_required:
       - build_id
-      - block_level
+      - route_id
       - cad_rev
-      - afp_path_hash
-      - cure_profile_hash
+      - build_job_hash
       - materials_lot_ids
-      - insert_lot_ids
       - operator_ids
       - machine_ids
       - calibration_set_ids
       - environment_log (temp, humidity)
       - qc_gate_results
+    fields_optional_by_route:
+      METAL_LPBF_V0:
+        - powder_lot_ids
+        - recoater_log_hash
+        - layerwise_monitoring_hashes
+        - gas_chemistry_log_hash
+        - stress_relief_profile_hash
+        - hip_profile_hash
+        - ct_report_hash
+      METAL_DED_V0:
+        - wire_lot_ids
+        - shielding_gas_log_hash
+        - bead_geometry_monitoring_hashes
+        - interpass_temperature_log_hash
+        - heat_treat_profile_hash
+      BINDER_JET_V0:
+        - powder_lot_ids
+        - binder_lot_ids
+        - depowder_log_hash
+        - sinter_profile_hash
+        - density_report_hash
     output: "records/builds/<build_id>/manifest.json"
+
+routes:
+  METAL_LPBF_V0:
+    description: "Laser Powder Bed Fusion (LPBF) route with in-situ monitoring + postprocess gates."
+    steps:
+      - "AM-000"
+      - "AM-010"
+      - "AM-020"
+      - "AM-030"
+      - "AM-040"
+      - "AM-050"
+      - "AM-060"
+      - "AM-070"
+
+  METAL_DED_V0:
+    description: "Directed Energy Deposition (DED/WAAM) route with bead monitoring + NDT gates."
+    steps:
+      - "AM-000"
+      - "AM-011"
+      - "AM-021"
+      - "AM-031"
+      - "AM-051"
+      - "AM-061"
+      - "AM-070"
+
+  BINDER_JET_V0:
+    description: "Binder jet route with sinter/density gates."
+    steps:
+      - "AM-000"
+      - "AM-012"
+      - "AM-022"
+      - "AM-032"
+      - "AM-062"
+      - "AM-070"
 
 quality_system:
   configuration_management:
@@ -62,30 +109,14 @@ quality_system:
     ncr_record: "quality/ncr/<ncr_id>.yaml"
     mrb_disposition:
       options: ["use_as_is", "rework", "repair", "scrap"]
-  first_article_inspection:
-    required_for:
-      - "new CAD revision"
-      - "new tooling revision"
-      - "new material lot family"
-      - "new insert process route"
-    evidence_package: "records/builds/<build_id>/FAI/"
-  acceptance_data_package:
-    required_artifacts:
-      - "Traveler signed"
-      - "Material certs (CoC)"
-      - "NDI report"
-      - "Metrology report"
-      - "Electrical test report (if applicable)"
-      - "Optical continuity/baseline report (if applicable)"
-      - "As-built digital twin export"
 
 process_flow:
-  - step_id: "SFCS-000"
-    name: "Program Gate: Block selection + SRD freeze"
+  - step_id: "AM-000"
+    name: "Program Gate: Route selection + requirements freeze"
     type: "GATE"
     inputs:
-      - "requirements/sfcs_srd.yaml"
-      - "db/parameters/sfcs_params.yaml"
+      - "requirements/am_srd.yaml"
+      - "db/parameters/am_params.yaml"
     outputs:
       - "records/builds/<build_id>/manifest.json"
       - "records/builds/<build_id>/traveler.yaml"
@@ -93,256 +124,114 @@ process_flow:
       criteria:
         - "SRD baseline frozen for this build_id"
         - "Parameter registry locked (hash recorded)"
-        - "Block level declared (BLOCK_0..BLOCK_4)"
+        - "Route declared (route_id)"
     evidence:
       required:
         - "manifest.json"
         - "hashes.txt"
 
-  - step_id: "SFCS-010"
-    name: "Tooling qualification + datum scheme verification"
+  - step_id: "AM-010"
+    name: "LPBF: Powder qualification + machine readiness"
     type: "PROCESS"
-    prerequisites: ["SFCS-000"]
+    prerequisites: ["AM-000"]
     inputs:
-      - "tooling/primary_mold/<REV_TAG>"
-      - "quality/metrology/metrology_plan.yaml"
+      - "mfg/process_params/am_lpbf.yaml"
     outputs:
-      - "records/builds/<build_id>/tooling_datum_report.pdf"
+      - "records/builds/<build_id>/powder_qualification.json"
+      - "records/builds/<build_id>/machine_readiness.json"
     acceptance:
       criteria:
-        - "Tooling datum features within tolerance"
-        - "Vacuum integrity passes leak threshold (parameterized)"
+        - "Powder lot verified + logged"
+        - "Machine calibration set verified"
     evidence:
       required:
-        - "datum_measurements.csv"
-        - "leak_test_log.json"
+        - "powder_certificates/"
+        - "calibration_report.pdf"
 
-  - step_id: "SFCS-020"
-    name: "AFP Layup Phase A (foundation plies)"
+  - step_id: "AM-020"
+    name: "LPBF: Build execution + in-situ monitoring capture"
     type: "PROCESS"
-    prerequisites: ["SFCS-010"]
-    inputs:
-      - "mfg/afp/<REV_TAG>/paths/"
-      - "mfg/process_params/afp.yaml"
-      - "materials/prepreg_lots/<lot_id>.json"
+    prerequisites: ["AM-010"]
     outputs:
-      - "records/builds/<build_id>/afp_phase_a_log.json"
+      - "records/builds/<build_id>/build_log.json"
+      - "records/builds/<build_id>/monitoring_manifest.json"
     acceptance:
       criteria:
-        - "Tow placement within allowable deviation (parameterized)"
-        - "No unapproved gaps/overlaps beyond threshold"
+        - "Build completed without critical alarms"
+        - "Monitoring artifacts captured and hashed"
     evidence:
       required:
-        - "afp_machine_log.bin"
-        - "operator_checklist_phase_a.signed"
+        - "layerwise_monitoring/"
+        - "gas_chemistry_log.csv"
 
-  - step_id: "SFCS-030"
-    name: "Embed structural sensing pathways (optional; BLOCK_1+)"
+  - step_id: "AM-030"
+    name: "LPBF: Depowder + stress relief (post-process logging)"
     type: "PROCESS"
-    prerequisites: ["SFCS-020"]
+    prerequisites: ["AM-020"]
+    inputs:
+      - "mfg/process_params/heat_treat.yaml"
+    outputs:
+      - "records/builds/<build_id>/postprocess_log.json"
+    acceptance:
+      criteria:
+        - "Stress relief profile within allowable band"
+    evidence:
+      required:
+        - "heat_treat_log.csv"
+
+  - step_id: "AM-040"
+    name: "LPBF: HIP (optional)"
+    type: "PROCESS"
+    prerequisites: ["AM-030"]
     when:
-      block_level_at_least: "BLOCK_1_STRUCTURAL_SENSING"
+      enabled: true
     inputs:
-      - "mfg/process_params/optical_embed.yaml"
-      - "components/optical/<lot_id>.json"
+      - "mfg/process_params/hip.yaml"
     outputs:
-      - "records/builds/<build_id>/optical_pre_cure_continuity.json"
+      - "records/builds/<build_id>/hip_log.json"
     acceptance:
       criteria:
-        - "Optical continuity passes"
-        - "Routing bend radius >= min (parameterized)"
+        - "HIP profile within allowable band"
     evidence:
       required:
-        - "otdr_trace_pre_cure.dat"
-        - "embed_photo_set/"
+        - "hip_cycle_log.csv"
 
-  - step_id: "SFCS-040"
-    name: "Node/insert integration (interfaces + local reinforcement)"
+  - step_id: "AM-050"
+    name: "AM: Support removal + machining/finishing"
     type: "PROCESS"
-    prerequisites: ["SFCS-020"]
-    inputs:
-      - "mfg/fixtures/<REV_TAG>/insert_maps/"
-      - "mfg/process_params/surface_prep.yaml"
-      - "components/inserts/<lot_id>.json"
-    outputs:
-      - "records/builds/<build_id>/insert_install_log.json"
-    acceptance:
-      criteria:
-        - "Insert position within tolerance envelope (parameterized)"
-        - "Surface prep procedure executed + recorded"
-    evidence:
-      required:
-        - "insert_metrology.csv"
-        - "surface_prep_log.json"
-
-  - step_id: "SFCS-050"
-    name: "AFP Layup Phase B (capture inserts + close structure)"
-    type: "PROCESS"
-    prerequisites: ["SFCS-040"]
-    inputs:
-      - "mfg/afp/<REV_TAG>/paths/"
-      - "mfg/process_params/afp.yaml"
-    outputs:
-      - "records/builds/<build_id>/afp_phase_b_log.json"
-    acceptance:
-      criteria:
-        - "Ply schedule matches traveler"
-        - "Localized toughening plies installed at insert zones (if specified)"
-    evidence:
-      required:
-        - "afp_machine_log_phase_b.bin"
-        - "operator_checklist_phase_b.signed"
-
-  - step_id: "SFCS-060"
-    name: "Embed power distribution (optional; BLOCK_2+)"
-    type: "PROCESS"
-    prerequisites: ["SFCS-050"]
-    when:
-      block_level_at_least: "BLOCK_2_POWER_DISTRIBUTION"
-    inputs:
-      - "mfg/process_params/electrical_embed.yaml"
-      - "components/busbars/<lot_id>.json"
-    outputs:
-      - "records/builds/<build_id>/electrical_pre_cure_tests.json"
-    acceptance:
-      criteria:
-        - "Continuity passes"
-        - "Insulation resistance meets threshold (parameterized)"
-        - "Strain relief implemented at transitions"
-    evidence:
-      required:
-        - "megger_results_pre_cure.csv"
-        - "embed_photo_set_power/"
-
-  - step_id: "SFCS-070"
-    name: "Consolidation/cure (full process logging)"
-    type: "PROCESS"
-    prerequisites: ["SFCS-050"]
-    inputs:
-      - "mfg/process_params/cure.yaml"
-    outputs:
-      - "records/builds/<build_id>/cure_log.json"
-    acceptance:
-      criteria:
-        - "Cure profile within allowable band"
-        - "Vacuum/pressure maintained above threshold"
-    evidence:
-      required:
-        - "oven_autoclave_log.csv"
-        - "vacuum_log.csv"
-
-  - step_id: "SFCS-080"
-    name: "Post-cure machining + interface finishing"
-    type: "PROCESS"
-    prerequisites: ["SFCS-070"]
-    inputs:
-      - "mfg/cnc/<REV_TAG>/ops/"
+    prerequisites: ["AM-030"]
     outputs:
       - "records/builds/<build_id>/machining_log.json"
     acceptance:
       criteria:
-        - "Critical datums within tolerance (parameterized)"
-        - "Connector/port features meet clearance envelopes"
+        - "Critical datums within tolerance envelope (parameterized)"
     evidence:
       required:
-        - "cnc_machine_log.bin"
         - "cmm_report_post_machine.pdf"
 
-  - step_id: "SFCS-090"
-    name: "NDI gate (voids/delams) + metrology gate (as-built geometry)"
+  - step_id: "AM-060"
+    name: "AM: NDI + metrology gate"
     type: "GATE"
-    prerequisites: ["SFCS-080"]
+    prerequisites: ["AM-050"]
     inputs:
-      - "quality/ndi/ndi_plan.yaml"
-      - "quality/metrology/metrology_plan.yaml"
+      - "quality/ndi/am_ndi_plan.yaml"
+      - "quality/metrology/am_metrology_plan.yaml"
     outputs:
       - "records/builds/<build_id>/ndi_report.pdf"
       - "records/builds/<build_id>/metrology_report.pdf"
-      - "records/builds/<build_id>/as_built_mesh.obj"
     acceptance:
       criteria:
-        - "NDI indications below reject threshold (parameterized)"
+        - "Indications below reject threshold (parameterized)"
         - "Geometry within tolerance envelope (parameterized)"
     evidence:
       required:
-        - "ultrasound_cscan_raw/"
+        - "ct_or_ut_raw/"
         - "laser_scan_pointcloud.pcd"
 
-  - step_id: "SFCS-100"
-    name: "Optical baseline capture (optional; BLOCK_1+)"
-    type: "PROCESS"
-    prerequisites: ["SFCS-090"]
-    when:
-      block_level_at_least: "BLOCK_1_STRUCTURAL_SENSING"
-    outputs:
-      - "records/builds/<build_id>/optical_baseline.json"
-    acceptance:
-      criteria:
-        - "Baseline signature recorded and versioned"
-    evidence:
-      required:
-        - "baseline_traces/"
-
-  - step_id: "SFCS-110"
-    name: "Electrical QA + isolation (optional; BLOCK_2+)"
-    type: "PROCESS"
-    prerequisites: ["SFCS-090"]
-    when:
-      block_level_at_least: "BLOCK_2_POWER_DISTRIBUTION"
-    outputs:
-      - "records/builds/<build_id>/electrical_post_cure_tests.json"
-    acceptance:
-      criteria:
-        - "Continuity passes"
-        - "Insulation resistance meets threshold"
-        - "No shorts under flex/thermal soak (parameterized test)"
-    evidence:
-      required:
-        - "megger_results_post_cure.csv"
-        - "thermal_soak_electrical_log.json"
-
-  - step_id: "SFCS-120"
-    name: "Distributed electronics install (optional; BLOCK_3+)"
-    type: "PROCESS"
-    prerequisites: ["SFCS-090"]
-    when:
-      block_level_at_least: "BLOCK_3_DISTRIBUTED_ELECTRONICS"
-    outputs:
-      - "records/builds/<build_id>/node_install_log.json"
-      - "records/builds/<build_id>/comms_timing_report.json"
-    acceptance:
-      criteria:
-        - "Node self-test pass"
-        - "Time sync meets skew bound (parameterized)"
-        - "Telemetry schema validated"
-    evidence:
-      required:
-        - "node_selftest_logs/"
-        - "ptp_sync_logs.csv"
-
-  - step_id: "SFCS-130"
-    name: "Energy module integration (optional; BLOCK_4)"
-    type: "PROCESS"
-    prerequisites: ["SFCS-090"]
-    when:
-      block_level_at_least: "BLOCK_4_ENERGY_STORAGE_INTEGRATION"
-    outputs:
-      - "records/builds/<build_id>/energy_module_install_log.json"
-      - "records/builds/<build_id>/battery_safety_checks.json"
-    acceptance:
-      criteria:
-        - "Mechanical containment passes"
-        - "Electrical safety checks pass (parameterized)"
-        - "Thermal safety checks pass (parameterized)"
-    evidence:
-      required:
-        - "battery_install_photos/"
-        - "safety_checklist.signed"
-
-  - step_id: "SFCS-140"
-    name: "Final assembly (airframe-level) + acceptance package release"
+  - step_id: "AM-070"
+    name: "Release gate: Acceptance package generation"
     type: "GATE"
-    prerequisites: ["SFCS-090"]
+    prerequisites: ["AM-060"]
     outputs:
       - "records/builds/<build_id>/acceptance_data_package.zip"
       - "records/builds/<build_id>/as_built_digital_twin.json"
@@ -350,41 +239,34 @@ process_flow:
       criteria:
         - "All required evidence present"
         - "All NCRs closed or dispositioned by MRB"
-        - "As-built twin generated and stored"
     evidence:
       required:
         - "manifest.json"
         - "traveler.yaml"
         - "ndi_report.pdf"
         - "metrology_report.pdf"
-        - "optical_baseline.json (if applicable)"
-        - "electrical_tests.json (if applicable)"
 
 instrumentation_minimum:
-  manufacturing:
-    - "AFP machine logs (placement, compaction, temperature)"
-    - "Cure logs (temp/pressure/vacuum vs time)"
-    - "Insert placement metrology"
-    - "NDI raw + report"
-    - "Laser scan / CMM reports"
-  embedded_systems:
-    - "Optical continuity + baseline traces (if used)"
-    - "Electrical continuity + insulation resistance (if used)"
-    - "Node self-tests + timing reports (if used)"
+  metal_am:
+    - "Machine logs (laser/beam, recoater/feed, alarms)"
+    - "In-situ monitoring (layerwise images/meltpool where available)"
+    - "Gas chemistry logs (where applicable)"
+    - "Post-process logs (heat treat/HIP) with time-series"
+    - "NDI raw + report (CT/UT as specified)"
+    - "Metrology (CMM/scan) reports"
+  polymer_am:
+    - "Extrusion/UV exposure logs"
+    - "Chamber/environment logs"
+    - "Post-cure/anneal logs"
+    - "Dimensional + mechanical coupon evidence (where required)"
 
 risk_register_top:
-  - id: "R-001"
-    risk: "Thermal mismatch at metal-composite interfaces causing debonding/fatigue."
-    mitigation: ["block staging", "surface prep qualification", "coupon testing", "NDI acceptance limits"]
-  - id: "R-002"
-    risk: "Optical fiber damage during layup/cure."
-    mitigation: ["routing rules", "pre/post cure continuity", "protective channels", "serviceable connectors"]
-  - id: "R-003"
-    risk: "Electrical insulation degradation under flex/thermal cycling."
-    mitigation: ["strain relief design", "post-cure isolation tests", "thermal soak QA", "design for replaceability"]
-  - id: "R-004"
-    risk: "Integration complexity (too many subsystems too early)."
-    mitigation: ["BLOCK_0..BLOCK_4 gating", "exit criteria discipline", "no skipping gates"]
-  - id: "R-005"
-    risk: "Inadequate as-built geometry control for modular assembly."
-    mitigation: ["datum scheme", "metrology gate", "as-built digital twin update of interface models"]
+  - id: "AM-R-001"
+    risk: "Powder variability causing density/porosity drift."
+    mitigation: ["powder qualification gate", "lot traceability", "CT/UT gating", "parameter freeze per build_id"]
+  - id: "AM-R-002"
+    risk: "Residual stress distortion and cracking."
+    mitigation: ["stress relief", "support strategy validation", "metrology gate", "process window enforcement"]
+  - id: "AM-R-003"
+    risk: "In-situ monitoring gaps or missing artifacts."
+    mitigation: ["monitoring manifest required", "artifact hashing", "build halt on missing evidence"]
