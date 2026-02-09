@@ -12,6 +12,11 @@ import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from reidce.energy_maneuverability import (
+    StructuralLimits,
+    compute_em_state,
+    find_sustained_turn_rate,
+)
 from reidce.flight_sim import (
     Atmosphere,
     GuidanceTarget,
@@ -67,7 +72,12 @@ def _downsample(values: List[float], max_points: int) -> List[float]:
     return sampled[:max_points]
 
 
-def build_report(result: SimulationResult, *, max_points: int = 600) -> Dict[str, Any]:
+def build_report(
+    result: SimulationResult,
+    *,
+    max_points: int = 600,
+    params_override: Optional[VehicleParams] = None,
+) -> Dict[str, Any]:
     """Convert a SimulationResult into a JSON-serializable report dictionary."""
     time = _downsample(result.time_s, max_points)
     altitude = _downsample([s.z_m for s in result.state], max_points)
@@ -88,6 +98,15 @@ def build_report(result: SimulationResult, *, max_points: int = 600) -> Dict[str
     final = result.state[-1]
     final_speed = math.sqrt(final.vx_m_s**2 + final.vy_m_s**2 + final.vz_m_s**2)
 
+    # E-M metrics at the final state
+    params = params_override or VehicleParams()
+    atm = Atmosphere()
+    limits = StructuralLimits()
+    em = compute_em_state(final, 0.8, 0.0, params, atm, limits)
+    str_turn = find_sustained_turn_rate(
+        max(final_speed, 5.0), max(final.z_m, 1.0), 0.9, params, atm,
+    )
+
     return {
         "schema": "dark/flight_sim/report/1.0",
         "summary": {
@@ -105,6 +124,9 @@ def build_report(result: SimulationResult, *, max_points: int = 600) -> Dict[str
             "energy_used_j": round(result.energy_used_j[-1], 1),
             "battery_remaining_pct": round(result.battery_pct[-1], 1),
             "max_temperature_c": round(max(result.temperature_c), 1),
+            "ps_m_s": em.ps_m_s,
+            "sustained_turn_rate_deg_s": round(str_turn, 2),
+            "specific_energy_j_per_kg": em.specific_energy_j_per_kg,
         },
         "telemetry": {
             "time_s": [round(v, 3) for v in time],
