@@ -11,6 +11,7 @@ from sfcs_mdp.color_qa import ColorProfileScene, evaluate_color_profile_scene
 from sfcs_mdp.grading import format_grading_footer
 from sfcs_mdp.model import BlockLevel
 from sfcs_mdp.runner import package_build, run_traveler, status_build
+from sfcs_mdp.v2_engine import find_engine_cli, run_engine
 from sfcs_mdp.validate import SpecValidationError, load_spec, validate_spec
 
 
@@ -51,6 +52,10 @@ def _add_run_args(parser: argparse.ArgumentParser, include_simulate_flag: bool) 
     )
     parser.add_argument("--lot-id")
     parser.add_argument("--ncr-id")
+    parser.add_argument(
+        "--engine-cli",
+        help="Path to v2_engine_cli binary (enables C++ engine integration)",
+    )
     if include_simulate_flag:
         parser.add_argument("--simulate", action="store_true")
 
@@ -76,6 +81,21 @@ def _build_parser() -> argparse.ArgumentParser:
 
     package_parser = subparsers.add_parser("package", help="Package acceptance data")
     package_parser.add_argument("--build-id", required=True)
+
+    engine_parser = subparsers.add_parser(
+        "engine", help="Run the C++ v2 engine directly"
+    )
+    engine_parser.add_argument(
+        "--engine-cli",
+        default=None,
+        help="Path to v2_engine_cli binary (auto-detected on PATH if omitted)",
+    )
+    engine_parser.add_argument(
+        "--canonical-input", required=True, help="JSON input string for the engine"
+    )
+    engine_parser.add_argument(
+        "--artifact-root", default=None, help="Override artifact root directory"
+    )
 
     return parser
 
@@ -129,6 +149,7 @@ def main() -> int:
                 simulate=args.simulate,
                 lot_id=args.lot_id,
                 ncr_id=args.ncr_id,
+                engine_cli=args.engine_cli,
             )
         except (SpecValidationError, ValueError, RuntimeError) as exc:
             print(f"RUN FAILED: {exc}")
@@ -156,6 +177,7 @@ def main() -> int:
                 simulate=True,
                 lot_id=args.lot_id,
                 ncr_id=args.ncr_id,
+                engine_cli=args.engine_cli,
             )
         except (SpecValidationError, ValueError, RuntimeError) as exc:
             print(f"SIMULATION FAILED: {exc}")
@@ -188,6 +210,30 @@ def main() -> int:
             print(format_grading_footer())
             return 1
         print(f"PACKAGE OK: {package_path.as_posix()}")
+        print(format_grading_footer())
+        return 0
+
+    if args.command == "engine":
+        cli_path = find_engine_cli(args.engine_cli)
+        if cli_path is None:
+            print(
+                "v2_engine_cli not found. Build the C++ engine first:\n"
+                "  cmake -S . -B build -DENABLE_V2_ENGINE=ON\n"
+                "  cmake --build build"
+            )
+            print(format_grading_footer())
+            return 1
+        try:
+            result = run_engine(
+                cli_path,
+                args.canonical_input,
+                artifact_root=args.artifact_root,
+            )
+        except RuntimeError as exc:
+            print(f"ENGINE FAILED: {exc}")
+            print(format_grading_footer())
+            return 1
+        print(json.dumps(result, indent=2, sort_keys=True))
         print(format_grading_footer())
         return 0
 

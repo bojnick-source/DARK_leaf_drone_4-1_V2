@@ -114,6 +114,10 @@ REQUIRED (match exactly; keep in sync with meta tags below):
             Open CAD Viewer
             <span class="shortcut">⌘3</span>
           </a>
+          <a class="menu-item" href="./flight_sim.html">
+            Open Flight Sim Dashboard
+            <span class="shortcut">⌘4</span>
+          </a>
         </div>
         <div class="menu-panel" data-menu-panel="tools">
           <button class="menu-item" type="button" data-action="self-test">
@@ -319,6 +323,10 @@ REQUIRED (match exactly; keep in sync with meta tags below):
                 <span class="caret">▸</span>
                 <span>Thermal Sweep</span>
               </li>
+              <li class="tree-item">
+                <span class="caret">▸</span>
+                <span>Flight Test</span>
+              </li>
             </ul>
           </aside>
 
@@ -328,7 +336,11 @@ REQUIRED (match exactly; keep in sync with meta tags below):
               <span class="panel-tag accent">SIM</span>
             </div>
             <div class="viewport-canvas">
-              <div class="viewport-label">Simulation viewport placeholder</div>
+              <div class="viewport-label">
+                <a href="./flight_sim.html" style="color:var(--accent-cyan);text-decoration:none;">
+                  🛩️ Open Flight Simulation Dashboard →
+                </a>
+              </div>
             </div>
           </section>
 
@@ -337,9 +349,18 @@ REQUIRED (match exactly; keep in sync with meta tags below):
               <span>Simulation Viewer</span>
               <span class="panel-tag accent">RUN</span>
             </div>
-            <div class="stat-row"><span>Solver</span><span>Standby</span></div>
-            <div class="stat-row"><span>Frames</span><span>0</span></div>
-            <div class="stat-row"><span>Energy</span><span>—</span></div>
+            <div class="stat-row"><span>Solver</span><span>AI Autopilot</span></div>
+            <div class="stat-row"><span>Mode</span><span>Triple-Redundant</span></div>
+            <div class="stat-row"><span>Integrator</span><span>RK4</span></div>
+            <div class="stat-row"><span>dt</span><span>0.05 s</span></div>
+            <div class="panel-header">
+              <span>Quick Telemetry</span>
+              <span class="panel-tag accent">LIVE</span>
+            </div>
+            <div class="stat-row"><span>Altitude</span><span>—</span></div>
+            <div class="stat-row"><span>Speed</span><span>—</span></div>
+            <div class="stat-row"><span>Battery</span><span>—</span></div>
+            <div class="stat-row"><span>Motor Temp</span><span>—</span></div>
           </aside>
         </div>
 

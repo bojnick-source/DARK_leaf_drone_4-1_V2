@@ -67,6 +67,9 @@ class SimulationResult:
     time_s: List[float]
     state: List[VehicleState]
     commands: List[ControlCommand]
+    energy_used_j: List[float]
+    battery_pct: List[float]
+    temperature_c: List[float]
 
 
 class PID:
@@ -163,6 +166,8 @@ def simulate_flight(
     atmosphere: Optional[Atmosphere] = None,
     controller: Optional[TripleRedundantController] = None,
     guidance_profile: Optional[Callable[[float, GuidanceTarget], GuidanceTarget]] = None,
+    battery_capacity_j: float = 180000.0,
+    ambient_temp_c: float = 25.0,
 ) -> SimulationResult:
     if duration_s <= 0.0 or dt_s <= 0.0:
         raise ValueError("duration_s and dt_s must be > 0")
@@ -177,6 +182,12 @@ def simulate_flight(
     time: List[float] = []
     states: List[VehicleState] = []
     commands: List[ControlCommand] = []
+    energy_used: List[float] = []
+    battery_pct: List[float] = []
+    temperature_c: List[float] = []
+
+    cumulative_energy_j = 0.0
+    motor_temp_c = ambient_temp_c
 
     for step in range(steps + 1):
         t = step * dt_s
@@ -184,11 +195,31 @@ def simulate_flight(
         sensed = _sense(state)
         cmd = controller.compute(active_target, sensed, dt_s)
         state = _integrate(state, cmd, dt_s, params, atmosphere)
+
+        # Power model: motor efficiency ~30%, plus 15 W idle draw
+        power_w = cmd.throttle * params.max_thrust_n * sensed.speed_m_s * 0.3 + 15.0
+        cumulative_energy_j += power_w * dt_s
+        remaining_pct = max(0.0, 100.0 * (1.0 - cumulative_energy_j / battery_capacity_j))
+        # Thermal model: 0.08 °C/s heating per unit throttle, 0.005 dissipation coeff
+        heating = cmd.throttle * 0.08 * dt_s
+        cooling = (motor_temp_c - ambient_temp_c) * 0.005 * dt_s
+        motor_temp_c += heating - cooling
+
         time.append(t)
         states.append(_clone_state(state))
         commands.append(cmd)
+        energy_used.append(cumulative_energy_j)
+        battery_pct.append(remaining_pct)
+        temperature_c.append(motor_temp_c)
 
-    return SimulationResult(time_s=time, state=states, commands=commands)
+    return SimulationResult(
+        time_s=time,
+        state=states,
+        commands=commands,
+        energy_used_j=energy_used,
+        battery_pct=battery_pct,
+        temperature_c=temperature_c,
+    )
 
 
 def _sense(state: VehicleState) -> SensorSample:
