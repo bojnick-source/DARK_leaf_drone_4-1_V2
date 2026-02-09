@@ -1,0 +1,510 @@
+<!-- ui/flight_sim.html — Flight Simulation Telemetry Dashboard
+     Displays AI-controlled flight test results with interactive gauges,
+     time-series graphs, and a trajectory plot.
+     Uses Plotly.js (loaded from CDN per CSP policy in dashboard.html).
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dark Leaf Drone — Flight Simulation Results</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self' https://cdn.plot.ly 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data:;
+        font-src 'self';
+        connect-src 'self';
+        base-uri 'self';
+        frame-ancestors 'none';"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0f14;
+        --surface: #161c28;
+        --glass: rgba(20, 26, 38, 0.85);
+        --border: rgba(255, 255, 255, 0.12);
+        --cyan: #38f3ff;
+        --violet: #7c5cff;
+        --magenta: #c77dff;
+        --green: #4ade80;
+        --amber: #fbbf24;
+        --red: #f87171;
+        --text: #f4f7ff;
+        --text-soft: #c7d2fe;
+      }
+      * { box-sizing: border-box; margin: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #101827 0%, var(--bg) 50%);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      header {
+        text-align: center;
+        padding: 16px 0 24px;
+      }
+      header h1 {
+        font-size: 22px;
+        letter-spacing: 0.5px;
+      }
+      header .subtitle {
+        font-size: 13px;
+        color: var(--text-soft);
+        margin-top: 4px;
+      }
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .controls button, .controls label {
+        padding: 8px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--glass);
+        color: var(--text);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .controls button:hover { border-color: var(--cyan); }
+      .controls input[type="file"] { display: none; }
+
+      /* Gauge grid */
+      .gauge-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .gauge-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .gauge-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 40%);
+        pointer-events: none;
+      }
+      .gauge-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-soft);
+        margin-bottom: 8px;
+      }
+      .gauge-value {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      .gauge-unit {
+        font-size: 12px;
+        color: var(--text-soft);
+        margin-top: 2px;
+      }
+      .gauge-bar {
+        margin-top: 10px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.08);
+        overflow: hidden;
+      }
+      .gauge-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 0.4s ease;
+      }
+
+      /* SVG gauge (speedometer / thermometer) */
+      .svg-gauge { width: 100%; max-width: 140px; margin: 0 auto 6px; }
+
+      /* Charts */
+      .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .chart-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        min-height: 280px;
+      }
+      .chart-card h3 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: var(--text-soft);
+        margin-bottom: 12px;
+      }
+
+      /* Summary table */
+      .summary-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+      }
+      .summary-card h3 {
+        font-size: 13px;
+        text-transform: uppercase;
+        color: var(--text-soft);
+        margin-bottom: 12px;
+      }
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        font-size: 14px;
+      }
+      .summary-row:last-child { border-bottom: none; }
+
+      .back-link {
+        display: inline-block;
+        margin-top: 16px;
+        color: var(--cyan);
+        text-decoration: none;
+        font-size: 13px;
+      }
+      .back-link:hover { text-decoration: underline; }
+
+      #status {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-soft);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🛩️ Flight Simulation — Telemetry Dashboard</h1>
+      <p class="subtitle">AI Autopilot Flight Test Results</p>
+    </header>
+
+    <div class="controls">
+      <button id="btnRunSim" type="button">▶ Run Simulation</button>
+      <label id="lblLoad">
+        📂 Load Report
+        <input id="fileInput" type="file" accept="application/json" />
+      </label>
+      <button id="btnSample" type="button">📊 Load Sample</button>
+      <a href="./dashboard.html" class="back-link">← Back to Dashboard</a>
+    </div>
+
+    <div id="status">Click <strong>Run Simulation</strong> or <strong>Load Report</strong> to view flight data.</div>
+
+    <div id="dashboard" style="display:none;">
+      <!-- Gauges -->
+      <div class="gauge-row" id="gaugeRow">
+        <div class="gauge-card">
+          <div class="gauge-label">Speed</div>
+          <svg class="svg-gauge" id="speedGauge" viewBox="0 0 140 90"></svg>
+          <div class="gauge-value" id="speedVal">0</div>
+          <div class="gauge-unit">m/s</div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-label">Altitude</div>
+          <div class="gauge-value" id="altVal">0</div>
+          <div class="gauge-unit">m</div>
+          <div class="gauge-bar"><div class="gauge-bar-fill" id="altBar" style="width:0%;background:var(--cyan);"></div></div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-label">Throttle</div>
+          <div class="gauge-value" id="throttleVal">0</div>
+          <div class="gauge-unit">%</div>
+          <div class="gauge-bar"><div class="gauge-bar-fill" id="throttleBar" style="width:0%;background:var(--violet);"></div></div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-label">Battery</div>
+          <div class="gauge-value" id="batteryVal">100</div>
+          <div class="gauge-unit">%</div>
+          <div class="gauge-bar"><div class="gauge-bar-fill" id="batteryBar" style="width:100%;background:var(--green);"></div></div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-label">Temperature</div>
+          <svg class="svg-gauge" id="tempGauge" viewBox="0 0 140 90"></svg>
+          <div class="gauge-value" id="tempVal">25</div>
+          <div class="gauge-unit">°C</div>
+        </div>
+        <div class="gauge-card">
+          <div class="gauge-label">Heading</div>
+          <div class="gauge-value" id="headingVal">0</div>
+          <div class="gauge-unit">°</div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-card" id="summaryCard">
+        <h3>Flight Summary</h3>
+        <div id="summaryRows"></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>Altitude & Speed vs Time</h3>
+          <div id="chartAltSpeed"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Throttle & Battery vs Time</h3>
+          <div id="chartThrottleBattery"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Temperature vs Time</h3>
+          <div id="chartTemp"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Attitude (Roll / Pitch / Heading)</h3>
+          <div id="chartAttitude"></div>
+        </div>
+        <div class="chart-card" style="grid-column: 1 / -1;">
+          <h3>2D Trajectory (Top-Down)</h3>
+          <div id="chartTrajectory"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+    <script>
+      const DARK_LAYOUT = {
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(22,28,40,0.6)",
+        font: { color: "#c7d2fe", size: 11 },
+        margin: { l: 48, r: 16, t: 8, b: 36 },
+        xaxis: { gridcolor: "rgba(255,255,255,0.06)", zerolinecolor: "rgba(255,255,255,0.1)" },
+        yaxis: { gridcolor: "rgba(255,255,255,0.06)", zerolinecolor: "rgba(255,255,255,0.1)" },
+        legend: { orientation: "h", y: -0.18, x: 0.5, xanchor: "center" },
+      };
+
+      function drawSpeedGauge(svg, value, max) {
+        const pct = Math.min(value / max, 1);
+        const startAngle = Math.PI;
+        const endAngle = 0;
+        const angle = startAngle - pct * Math.PI;
+        const cx = 70, cy = 80, r = 60;
+        const arcPath = describeArc(cx, cy, r, startAngle, endAngle);
+        const fillPath = describeArc(cx, cy, r, startAngle, angle);
+        const nx = cx + r * Math.cos(angle);
+        const ny = cy - r * Math.sin(angle);
+        svg.innerHTML = `
+          <path d="${arcPath}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" stroke-linecap="round"/>
+          <path d="${fillPath}" fill="none" stroke="#38f3ff" stroke-width="10" stroke-linecap="round"/>
+          <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="#f4f7ff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="${cx}" cy="${cy}" r="5" fill="#38f3ff"/>
+        `;
+      }
+
+      function drawTempGauge(svg, value, min, max) {
+        const pct = Math.min(Math.max((value - min) / (max - min), 0), 1);
+        const barW = 16, barH = 70;
+        const x = 62, y = 10;
+        const fillH = pct * barH;
+        const color = pct < 0.5 ? "#4ade80" : pct < 0.75 ? "#fbbf24" : "#f87171";
+        svg.innerHTML = `
+          <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="8" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <rect x="${x}" y="${y + barH - fillH}" width="${barW}" height="${fillH}" rx="8" fill="${color}"/>
+          <circle cx="${x + barW / 2}" cy="${y + barH + 8}" r="10" fill="${color}" opacity="0.7"/>
+          <text x="${x - 12}" y="${y + 6}" fill="#c7d2fe" font-size="9" text-anchor="end">${max}°</text>
+          <text x="${x - 12}" y="${y + barH}" fill="#c7d2fe" font-size="9" text-anchor="end">${min}°</text>
+        `;
+      }
+
+      function describeArc(cx, cy, r, startAngle, endAngle) {
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy - r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy - r * Math.sin(endAngle);
+        const largeArc = (startAngle - endAngle) > Math.PI ? 1 : 0;
+        return `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 0 ${x2} ${y2}`;
+      }
+
+      function renderReport(report) {
+        document.getElementById("status").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        const s = report.summary;
+        const t = report.telemetry;
+
+        // Gauges
+        const finalIdx = t.time_s.length - 1;
+        const finalSpeed = t.speed_m_s[finalIdx];
+        const finalAlt = t.altitude_m[finalIdx];
+        const finalThrottle = t.throttle_pct[finalIdx];
+        const finalBattery = t.battery_pct[finalIdx];
+        const finalTemp = t.temperature_c[finalIdx];
+        const finalHeading = t.heading_deg[finalIdx];
+
+        document.getElementById("speedVal").textContent = finalSpeed.toFixed(1);
+        document.getElementById("altVal").textContent = finalAlt.toFixed(1);
+        document.getElementById("throttleVal").textContent = finalThrottle.toFixed(0);
+        document.getElementById("batteryVal").textContent = finalBattery.toFixed(0);
+        document.getElementById("tempVal").textContent = finalTemp.toFixed(1);
+        document.getElementById("headingVal").textContent = finalHeading.toFixed(0);
+
+        document.getElementById("altBar").style.width = Math.min(100, (finalAlt / Math.max(s.max_altitude_m, 1)) * 100) + "%";
+        document.getElementById("throttleBar").style.width = finalThrottle + "%";
+        document.getElementById("batteryBar").style.width = finalBattery + "%";
+        const battBar = document.getElementById("batteryBar");
+        battBar.style.background = finalBattery > 50 ? "var(--green)" : finalBattery > 20 ? "var(--amber)" : "var(--red)";
+
+        drawSpeedGauge(document.getElementById("speedGauge"), finalSpeed, s.max_speed_m_s * 1.2 || 60);
+        drawTempGauge(document.getElementById("tempGauge"), finalTemp, 20, Math.max(s.max_temperature_c * 1.2, 40));
+
+        // Summary
+        const summaryItems = [
+          ["Duration", s.duration_s.toFixed(1) + " s"],
+          ["Max Altitude", s.max_altitude_m.toFixed(1) + " m"],
+          ["Max Speed", s.max_speed_m_s.toFixed(1) + " m/s"],
+          ["Final Altitude", s.final_altitude_m.toFixed(1) + " m"],
+          ["Final Speed", s.final_speed_m_s.toFixed(1) + " m/s"],
+          ["Energy Used", (s.energy_used_j / 1000).toFixed(1) + " kJ"],
+          ["Battery Remaining", s.battery_remaining_pct.toFixed(1) + " %"],
+          ["Max Temperature", s.max_temperature_c.toFixed(1) + " °C"],
+        ];
+        const rows = document.getElementById("summaryRows");
+        rows.innerHTML = summaryItems.map(([k, v]) =>
+          `<div class="summary-row"><span>${k}</span><span>${v}</span></div>`
+        ).join("");
+
+        // Charts
+        const cfg = { displayModeBar: false, responsive: true };
+
+        Plotly.newPlot("chartAltSpeed", [
+          { x: t.time_s, y: t.altitude_m, name: "Altitude (m)", line: { color: "#38f3ff" } },
+          { x: t.time_s, y: t.speed_m_s, name: "Speed (m/s)", yaxis: "y2", line: { color: "#c77dff" } },
+        ], { ...DARK_LAYOUT, yaxis: { ...DARK_LAYOUT.yaxis, title: "Altitude (m)" }, yaxis2: { title: "Speed (m/s)", overlaying: "y", side: "right", gridcolor: "rgba(255,255,255,0.04)" } }, cfg);
+
+        Plotly.newPlot("chartThrottleBattery", [
+          { x: t.time_s, y: t.throttle_pct, name: "Throttle (%)", line: { color: "#7c5cff" } },
+          { x: t.time_s, y: t.battery_pct, name: "Battery (%)", yaxis: "y2", line: { color: "#4ade80" } },
+        ], { ...DARK_LAYOUT, yaxis: { ...DARK_LAYOUT.yaxis, title: "Throttle (%)" }, yaxis2: { title: "Battery (%)", overlaying: "y", side: "right", gridcolor: "rgba(255,255,255,0.04)" } }, cfg);
+
+        Plotly.newPlot("chartTemp", [
+          { x: t.time_s, y: t.temperature_c, name: "Motor Temp (°C)", line: { color: "#fbbf24" }, fill: "tozeroy", fillcolor: "rgba(251,191,36,0.08)" },
+        ], { ...DARK_LAYOUT, yaxis: { ...DARK_LAYOUT.yaxis, title: "Temperature (°C)" } }, cfg);
+
+        Plotly.newPlot("chartAttitude", [
+          { x: t.time_s, y: t.roll_deg, name: "Roll (°)", line: { color: "#38f3ff" } },
+          { x: t.time_s, y: t.pitch_deg, name: "Pitch (°)", line: { color: "#c77dff" } },
+          { x: t.time_s, y: t.heading_deg, name: "Heading (°)", line: { color: "#fbbf24" } },
+        ], { ...DARK_LAYOUT, yaxis: { ...DARK_LAYOUT.yaxis, title: "Degrees" } }, cfg);
+
+        Plotly.newPlot("chartTrajectory", [
+          { x: t.x_m, y: t.y_m, mode: "lines+markers", name: "Path", line: { color: "#38f3ff", width: 2 }, marker: { size: 3, color: t.altitude_m, colorscale: "Viridis", showscale: true, colorbar: { title: "Alt (m)", titleside: "right" } } },
+          { x: [t.x_m[0]], y: [t.y_m[0]], mode: "markers", name: "Start", marker: { size: 12, color: "#4ade80", symbol: "circle" } },
+          { x: [t.x_m[finalIdx]], y: [t.y_m[finalIdx]], mode: "markers", name: "End", marker: { size: 12, color: "#f87171", symbol: "x" } },
+        ], { ...DARK_LAYOUT, xaxis: { ...DARK_LAYOUT.xaxis, title: "X (m)", scaleanchor: "y" }, yaxis: { ...DARK_LAYOUT.yaxis, title: "Y (m)" } }, cfg);
+      }
+
+      // Generate sample report in-browser (simple physics model)
+      function generateSampleReport() {
+        const n = 600, dt = 0.05, dur = n * dt;
+        const time = [], alt = [], spd = [], thr = [], roll = [], pitch = [], hdg = [];
+        const energy = [], batt = [], temp = [], xp = [], yp = [];
+        let z = 0, vx = 5, vz = 0, x = 0, y = 0, e = 0, mt = 25, yaw = 0;
+        const tgt_alt = 50, tgt_spd = 12;
+        for (let i = 0; i <= n; i++) {
+          const t = i * dt;
+          const altErr = tgt_alt - z;
+          const spdErr = tgt_spd - Math.sqrt(vx*vx + vz*vz);
+          const throttle = Math.max(0, Math.min(1, 0.5 + spdErr * 0.1));
+          const pitchCmd = Math.max(-0.5, Math.min(0.5, altErr * 0.02));
+          vz += (pitchCmd * 9.81 + throttle * 20 * Math.sin(pitchCmd) - 9.81) * dt * 0.3;
+          vx += (throttle * 20 * Math.cos(pitchCmd) - 0.1 * vx * vx * 0.35) / 2.4 * dt;
+          z = Math.max(0, z + vz * dt);
+          x += vx * dt;
+          const pw = throttle * 45 * Math.sqrt(vx*vx+vz*vz) * 0.3 + 15;
+          e += pw * dt;
+          mt += throttle * 0.08 * dt - (mt - 25) * 0.005 * dt;
+          time.push(+t.toFixed(3));
+          alt.push(+z.toFixed(2));
+          spd.push(+Math.sqrt(vx*vx+vz*vz).toFixed(2));
+          thr.push(+(throttle*100).toFixed(1));
+          roll.push(0); pitch.push(+(Math.degrees ? 0 : (pitchCmd * 57.3)).toFixed(2));
+          hdg.push(0);
+          energy.push(+e.toFixed(1));
+          batt.push(+Math.max(0, 100*(1-e/180000)).toFixed(1));
+          temp.push(+mt.toFixed(1));
+          xp.push(+x.toFixed(2)); yp.push(+y.toFixed(2));
+        }
+        const maxAlt = Math.max(...alt), maxSpd = Math.max(...spd);
+        return {
+          schema: "dark/flight_sim/report/1.0",
+          summary: {
+            duration_s: dur, final_altitude_m: alt[n], final_speed_m_s: spd[n],
+            max_altitude_m: maxAlt, max_speed_m_s: maxSpd,
+            energy_used_j: energy[n], battery_remaining_pct: batt[n],
+            max_temperature_c: Math.max(...temp),
+          },
+          telemetry: {
+            time_s: time, altitude_m: alt, speed_m_s: spd, throttle_pct: thr,
+            roll_deg: roll, pitch_deg: pitch, heading_deg: hdg,
+            energy_used_j: energy, battery_pct: batt, temperature_c: temp,
+            x_m: xp, y_m: yp,
+          },
+        };
+      }
+
+      // Event handlers
+      document.getElementById("btnRunSim").addEventListener("click", () => {
+        document.getElementById("status").textContent = "Running AI flight simulation...";
+        document.getElementById("status").style.display = "block";
+        setTimeout(() => {
+          const report = generateSampleReport();
+          renderReport(report);
+        }, 100);
+      });
+
+      document.getElementById("btnSample").addEventListener("click", async () => {
+        try {
+          const res = await fetch("./flight_sim_report.json");
+          if (!res.ok) {
+            const report = generateSampleReport();
+            renderReport(report);
+            return;
+          }
+          const report = await res.json();
+          renderReport(report);
+        } catch (_e) {
+          const report = generateSampleReport();
+          renderReport(report);
+        }
+      });
+
+      document.getElementById("fileInput").addEventListener("change", (evt) => {
+        const file = evt.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const report = JSON.parse(reader.result);
+            renderReport(report);
+          } catch (e) {
+            document.getElementById("status").textContent = "Error parsing JSON: " + e.message;
+            document.getElementById("status").style.display = "block";
+          }
+        };
+        reader.readAsText(file);
+      });
+    </script>
+  </body>
+</html>
