@@ -196,9 +196,11 @@ def simulate_flight(
         cmd = controller.compute(active_target, sensed, dt_s)
         state = _integrate(state, cmd, dt_s, params, atmosphere)
 
+        # Power model: motor efficiency ~30%, plus 15 W idle draw
         power_w = cmd.throttle * params.max_thrust_n * sensed.speed_m_s * 0.3 + 15.0
         cumulative_energy_j += power_w * dt_s
         remaining_pct = max(0.0, 100.0 * (1.0 - cumulative_energy_j / battery_capacity_j))
+        # Thermal model: 0.08 °C/s heating per unit throttle, 0.005 dissipation coeff
         heating = cmd.throttle * 0.08 * dt_s
         cooling = (motor_temp_c - ambient_temp_c) * 0.005 * dt_s
         motor_temp_c += heating - cooling
