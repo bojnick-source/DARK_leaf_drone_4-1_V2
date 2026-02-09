@@ -245,6 +245,20 @@ def _run_endurance_test(
 
 # ── Learning / adjustment engine ─────────────────────────────────────────
 
+# Tuning constants for the AI learning adjustments
+_THRUST_INCREASE = 1.15        # +15 % per iteration
+_THRUST_CAP_N = 120.0          # absolute thrust ceiling (N)
+_DRAG_REDUCE = 0.9             # −10 % drag for thermal issues
+_DRAG_MIN = 0.01               # minimum parasitic drag coefficient
+_DRAG_INCREASE = 1.05          # +5 % drag for overspeed
+_TILT_REDUCE = 0.9             # −10 % max bank for structural g
+_TILT_MIN_RAD = math.radians(10.0)
+_WING_INCREASE = 1.1           # +10 % wing area for turn rate
+_WING_CAP_M2 = 1.0             # max wing area (m²)
+_MASS_REDUCE = 0.95            # −5 % mass for endurance
+_MASS_FLOOR_KG = 0.5           # minimum mass (kg)
+_BANK_SWEEP_MAX_DEG = 80       # max bank angle for sustained turn sweep
+
 
 def _analyse_failures(
     params: VehicleParams, results: List[FlightTestResult]
@@ -257,42 +271,42 @@ def _analyse_failures(
             continue
 
         if r.failure_reason == "insufficient_climb":
-            new_thrust = min(params.max_thrust_n * 1.15, 120.0)
+            new_thrust = min(params.max_thrust_n * _THRUST_INCREASE, _THRUST_CAP_N)
             adjustments.append(DesignAdjustment(
                 "max_thrust_n", params.max_thrust_n, round(new_thrust, 2),
                 "Increase thrust 15% to improve climb rate",
             ))
 
         elif r.failure_reason == "thermal_limit":
-            new_cd0 = max(params.cd0 * 0.9, 0.01)
+            new_cd0 = max(params.cd0 * _DRAG_REDUCE, _DRAG_MIN)
             adjustments.append(DesignAdjustment(
                 "cd0", params.cd0, round(new_cd0, 4),
                 "Reduce parasitic drag 10% to lower power demand and heat",
             ))
 
         elif r.failure_reason == "speed_limit_exceeded":
-            new_cd0 = params.cd0 * 1.05
+            new_cd0 = params.cd0 * _DRAG_INCREASE
             adjustments.append(DesignAdjustment(
                 "cd0", params.cd0, round(new_cd0, 4),
                 "Increase drag 5% to limit top speed within structural envelope",
             ))
 
         elif r.failure_reason == "structural_g_limit":
-            new_tilt = max(params.max_tilt_rad * 0.9, math.radians(10.0))
+            new_tilt = max(params.max_tilt_rad * _TILT_REDUCE, _TILT_MIN_RAD)
             adjustments.append(DesignAdjustment(
                 "max_tilt_rad", params.max_tilt_rad, round(new_tilt, 4),
                 "Reduce max bank angle to keep g-load within structural limits",
             ))
 
         elif r.failure_reason == "insufficient_turn_rate":
-            new_area = min(params.wing_area_m2 * 1.1, 1.0)
+            new_area = min(params.wing_area_m2 * _WING_INCREASE, _WING_CAP_M2)
             adjustments.append(DesignAdjustment(
                 "wing_area_m2", params.wing_area_m2, round(new_area, 4),
                 "Increase wing area 10% to improve lift-to-drag and turn rate",
             ))
 
         elif r.failure_reason == "battery_depleted":
-            new_mass = max(params.mass_kg * 0.95, 0.5)
+            new_mass = max(params.mass_kg * _MASS_REDUCE, _MASS_FLOOR_KG)
             adjustments.append(DesignAdjustment(
                 "mass_kg", params.mass_kg, round(new_mass, 3),
                 "Reduce mass 5% to improve specific energy and endurance",

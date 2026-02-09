@@ -103,6 +103,7 @@ def build_report(
     atm = Atmosphere()
     limits = StructuralLimits()
     em = compute_em_state(final, 0.8, 0.0, params, atm, limits)
+    # Clamp speed/altitude to small positive values to avoid degenerate E-M calc
     str_turn = find_sustained_turn_rate(
         max(final_speed, 5.0), max(final.z_m, 1.0), 0.9, params, atm,
     )

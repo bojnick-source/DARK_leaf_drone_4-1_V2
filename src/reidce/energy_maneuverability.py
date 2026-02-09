@@ -182,8 +182,8 @@ def find_sustained_turn_rate(
     """
     limits = StructuralLimits()
     best_omega = 0.0
-    # Sweep bank angles from 0 to 80 degrees in 1-degree increments
-    for bank_deg in range(0, 81):
+    max_bank_deg = 80  # practical upper bound for coordinated turn search
+    for bank_deg in range(0, max_bank_deg + 1):
         bank_rad = math.radians(bank_deg)
         state = VehicleState(z_m=altitude_m, vx_m_s=speed_m_s)
         em = compute_em_state(state, throttle, bank_rad, params, atmosphere, limits)
