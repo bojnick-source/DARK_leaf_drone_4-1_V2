@@ -19,7 +19,9 @@ def _derive_key(build_id: str, rev_tag: str) -> bytes:
     """Derive a build-specific HMAC key from identity parameters.
 
     The key is deterministic so that any party with the same build_id and
-    rev_tag can independently reproduce the authentication tag.
+    rev_tag can independently reproduce and verify the authentication tag.
+    This is intentional: the DARPA LIFT digital thread requires reproducible
+    integrity checks across manufacturing sites without shared secrets.
     """
     seed = f"{DARPA_CIPHER_DOMAIN}:{DARPA_CIPHER_VERSION}:{build_id}:{rev_tag}"
     return hashlib.sha256(seed.encode("utf-8")).digest()

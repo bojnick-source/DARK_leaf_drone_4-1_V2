@@ -365,6 +365,7 @@ def run_traveler(
             engine_result = {"ok": False, "error": str(exc)}
             write_json(build_dir / "v2_engine_output.json", engine_result)
 
+    spec_bytes = spec_text.encode("utf-8")
     ledger: dict[str, Any] = {
         "run_id": run_id,
         "build_id": config.build_id,
@@ -372,7 +373,7 @@ def run_traveler(
         "block_level": config.block_level.value,
         "simulate": simulate,
         "spec_path": spec_path.as_posix(),
-        "spec_hash": sha256_bytes(spec_text.encode("utf-8")),
+        "spec_hash": sha256_bytes(spec_bytes),
         "darpa_cipher": cipher_metadata(config.build_id, config.rev_tag),
         "started_at": _utc_now(),
         "steps": [],
@@ -431,9 +432,7 @@ def run_traveler(
 
     artifact_paths = _collect_files(build_dir, exclude={"ledger.json", "hashes.txt"})
     ledger["artifact_hashes"] = hash_files(artifact_paths, build_dir)
-    ledger["spec_hmac"] = compute_hmac(
-        spec_text.encode("utf-8"), config.build_id, config.rev_tag
-    )
+    ledger["spec_hmac"] = compute_hmac(spec_bytes, config.build_id, config.rev_tag)
     write_json(build_dir / "ledger.json", ledger)
 
     hash_paths = _collect_files(build_dir, exclude={"hashes.txt"})
