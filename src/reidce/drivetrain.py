@@ -1,7 +1,8 @@
-"""Drivetrain and proportional control systems for drone propulsion.
+"""Drivetrain and propulsion units synthesis for drone systems.
 
-Covers linear and non-linear gear trains, chain drives, belt drives,
-and PID-based proportional control loops for drive regulation.
+Covers linear and non-linear gear trains, chain drives, belt drives
+following deep learning non-linear and linear ways to find solutions,
+and PID-based control loops for drive regulation.
 """
 
 from __future__ import annotations
