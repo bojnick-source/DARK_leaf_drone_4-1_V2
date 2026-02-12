@@ -188,7 +188,7 @@ def test_query_engine_to_dict() -> None:
 def test_query_engine_from_knowledge_dir(tmp_path: Path) -> None:
     md = tmp_path / "test_math.md"
     md.write_text(
-        "# Basics\nForce equals mass times acceleration per Newton second law.\n",
+        "# Basics\nForce equals mass times acceleration per Newton's second law.\n",
         encoding="utf-8",
     )
     engine = EngineeringQueryEngine.from_knowledge_dir(tmp_path)
