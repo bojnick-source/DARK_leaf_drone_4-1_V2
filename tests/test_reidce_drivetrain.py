@@ -1,3 +1,5 @@
+import reidce.design_loop as design_loop_mod
+import reidce.drivetrain as drivetrain_mod
 from reidce.drivetrain import (
     Backlash,
     BeltDrive,
@@ -118,3 +120,25 @@ def test_simulate_drivetrain_linear() -> None:
     assert len(result.times_s) > 0
     # Final output speed should have moved towards the target
     assert result.output_speeds_rpm[-1] != 0.0
+
+
+def test_drivetrain_docstring_describes_propulsion_units_synthesis() -> None:
+    """The module docstring should reference propulsion units synthesis."""
+    doc = drivetrain_mod.__doc__ or ""
+    assert "propulsion units synthesis" in doc
+    assert "proportional control systems" not in doc
+
+
+def test_drivetrain_docstring_references_deep_learning() -> None:
+    """The module docstring should reference deep learning approaches."""
+    doc = drivetrain_mod.__doc__ or ""
+    assert "deep learning" in doc
+    assert "non-linear and linear" in doc
+
+
+def test_design_loop_docstring_differentiates_ai_ml_dl() -> None:
+    """The design loop module should distinguish AI, ML, and deep learning."""
+    doc = design_loop_mod.__doc__ or ""
+    assert "AI" in doc
+    assert "machine learning" in doc
+    assert "Deep learning" in doc

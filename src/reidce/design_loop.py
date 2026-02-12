@@ -12,6 +12,13 @@ cycle inspired by fighter-jet development programs.  Each iteration:
 
 The loop produces an ``IterationLog`` with full traceability of every
 design tried, every failure encountered, and every improvement made.
+
+This module implements the *AI* layer: rule-based failure analysis and
+orchestration.  The *machine learning* aspect lives in the iterative
+parameter optimization that learns from flight-test outcomes across
+cycles.  *Deep learning* non-linear and linear solution methods are
+provided by the drivetrain and electromagnetic modules which synthesize
+propulsion units (see ``drivetrain.py`` and ``electromagnetic.py``).
 """
 
 from __future__ import annotations
@@ -245,7 +252,7 @@ def _run_endurance_test(
 
 # ── Learning / adjustment engine ─────────────────────────────────────────
 
-# Tuning constants for the AI learning adjustments
+# Tuning constants for the machine learning parameter adjustments
 _THRUST_INCREASE = 1.15        # +15 % per iteration
 _THRUST_CAP_N = 120.0          # absolute thrust ceiling (N)
 _DRAG_REDUCE = 0.9             # −10 % drag for thermal issues
