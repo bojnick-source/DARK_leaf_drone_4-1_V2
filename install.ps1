@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Install sfcs-mdp after cloning the repository.
+    Install DARK leaf Drone — Vibe Engineering Studio.
 .DESCRIPTION
     Installs the sfcs-mdp package in the current Python environment so that
     both ``sfcs-mdp`` and ``python -m sfcs_mdp`` work from any shell.
@@ -19,11 +19,16 @@
     To also build the C++ v2 engine (requires CMake and a C++20 compiler):
 
         .\install.ps1 -Cpp
+
+    To create a desktop shortcut after installation:
+
+        .\install.ps1 -Shortcut
 #>
 param(
     [switch]$Dev,
     [switch]$Exe,
-    [switch]$Cpp
+    [switch]$Cpp,
+    [switch]$Shortcut
 )
 
 $ErrorActionPreference = "Stop"
@@ -111,3 +116,36 @@ if ($Cpp) {
     Write-Host "Use the integrated workflow:" -ForegroundColor Cyan
     Write-Host "  python -m sfcs_mdp simulate --build-id BUILD_0001 --rev-tag REV_A --engine-cli build/v2/engine/v2_engine_cli" -ForegroundColor White
 }
+
+# ── Desktop shortcut ──────────────────────────────────────────────────
+if ($Shortcut) {
+    Write-Host ""
+    Write-Host "Creating desktop shortcut..." -ForegroundColor Cyan
+    $repoRoot   = (Get-Location).Path
+    $launcherHtml = Join-Path $repoRoot "ui" "launcher.html"
+    $iconPath    = Join-Path $repoRoot "ui" "icon.svg"
+
+    if (-not (Test-Path $launcherHtml)) {
+        Write-Warning "ui/launcher.html not found — skipping shortcut."
+    } else {
+        $desktop = [Environment]::GetFolderPath("Desktop")
+        $lnkPath = Join-Path $desktop "DARK leaf Drone.url"
+
+        # Create a .url shortcut (works for browser-based apps)
+        @"
+[InternetShortcut]
+URL=file:///$($launcherHtml -replace '\\','/')
+IconIndex=0
+"@ | Out-File -FilePath $lnkPath -Encoding ASCII
+
+        Write-Host "Desktop shortcut created: $lnkPath" -ForegroundColor Green
+        Write-Host "Double-click 'DARK leaf Drone' on your desktop to launch the studio." -ForegroundColor Green
+    }
+}
+
+# ── Final summary ─────────────────────────────────────────────────────
+Write-Host ""
+Write-Host "=== DARK leaf Drone — Vibe Engineering Studio ===" -ForegroundColor Cyan
+Write-Host "Launch the studio:  open ui/launcher.html in your browser" -ForegroundColor White
+Write-Host "  or run:  cd ui && python -m http.server" -ForegroundColor White
+Write-Host "  then open:  http://localhost:8000/launcher.html" -ForegroundColor White

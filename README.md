@@ -1,5 +1,47 @@
 # DARK_leaf_drone_4-1_V2
-impoved drone computational engineering software
+Improved drone computational engineering software — **Vibe Engineering Studio**
+
+## Vibe Engineering Workflow
+
+The DARK leaf Drone studio provides an end-to-end workflow for designing,
+testing, and presenting drone builds:
+
+1. **Install & Launch** — Run `install.ps1 -Shortcut` on Windows to install
+   and create a desktop icon.  Open `ui/launcher.html` to start the studio.
+2. **Project** — Create a new project or import data (STEP, STL, JSON, YAML,
+   images).  Drag & drop files into the project panel.
+3. **Vibe Engineer** — Chat with the AI to describe your drone.  Mention
+   components (frame, motor, propeller, battery, camera) and they get
+   generated automatically.
+4. **Assembly Lab** — Generated components are assembled by AI.  Validate
+   the assembly for watertight/manifold mesh integrity.
+5. **CAD Mesh Viewer** — High-fidelity 3D view of the assembled drone.
+   Switch between high-fidelity and low-res editing modes.  Exploded view
+   for inspection.
+6. **Flight Simulation** — Background physics-based flight sim with a
+   map-dot tracker, live telemetry gauges, and full telemetry dashboard.
+7. **Presentation** — Disassemble and reassemble the drone in an animated
+   "gun-table" style view for clients and investors.
+
+### Quick Start
+
+```bash
+# Clone and install
+git clone https://github.com/bojnick-source/DARK_leaf_drone_4-1_V2.git
+cd DARK_leaf_drone_4-1_V2
+pip install -e .          # or: .\install.ps1 on Windows
+
+# Launch the studio
+cd ui && python -m http.server
+# Open http://localhost:8000/launcher.html
+```
+
+### Windows installer with desktop shortcut
+
+```powershell
+.\install.ps1 -Shortcut
+# Creates "DARK leaf Drone" shortcut on your desktop
+```
 
 ## Scope (this PR)
 Included:
@@ -202,14 +244,18 @@ python -m sfcs_mdp package --build-id BUILD_0001
 
 ## Daily Dashboard UI
 
-The UI shell lives in `ui/` and can be previewed by running a static server:
+The studio lives in `ui/` and can be previewed by running a static server:
 
 ```bash
 cd ui
 python -m http.server
 ```
 
-Then open `http://localhost:8000/dashboard.html`.
+Then open:
+- **Studio (Vibe Engineering)**: `http://localhost:8000/launcher.html`
+- **Daily Dashboard**: `http://localhost:8000/dashboard.html`
+- **CAD Viewer**: `http://localhost:8000/cad_viewer.html`
+- **Flight Sim Telemetry**: `http://localhost:8000/flight_sim.html`
 
 ### Evaluate color QA
 

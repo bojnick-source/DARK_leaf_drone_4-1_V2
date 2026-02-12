@@ -89,6 +89,19 @@ from reidce.kite_power import (
     optimal_reeling_speed,
 )
 from reidce.memory import MemoryRecord, MemorySearchResult, MemoryStore
+from reidce.mesh_validator import (
+    IndexedMesh,
+    ValidationResult,
+    check_manifold,
+    check_normals_consistent,
+    check_watertight,
+    compute_face_normals,
+    compute_mesh_quality_score,
+    compute_surface_area,
+    compute_vertex_normals,
+    find_degenerate_faces,
+    validate_mesh,
+)
 from reidce.pico_gk import PicoGKResult, apply_pico_gk, generate_cad_ref
 from reidce.pipeline import (
     compile_inputs,
@@ -272,4 +285,15 @@ __all__ = [
     "evaluate_design_fea",
     "generate_beam_mesh",
     "solve_static",
+    "IndexedMesh",
+    "ValidationResult",
+    "check_manifold",
+    "check_normals_consistent",
+    "check_watertight",
+    "compute_face_normals",
+    "compute_mesh_quality_score",
+    "compute_surface_area",
+    "compute_vertex_normals",
+    "find_degenerate_faces",
+    "validate_mesh",
 ]

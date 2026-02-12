@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DARK leaf Drone — Vibe Engineering Studio</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="launcher.css">
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- ── Sidebar ──────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="icon.svg" alt="DARK leaf">
+      <div>
+        <h1>DARK leaf</h1>
+        <small>Vibe Engineering Studio</small>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Workflow</div>
+        <button class="nav-item active" data-view="home">
+          <span class="nav-icon">🏠</span> Home
+        </button>
+        <button class="nav-item" data-view="project">
+          <span class="nav-icon">📁</span> Project
+          <span class="nav-badge" id="projectCount">0</span>
+        </button>
+        <button class="nav-item" data-view="vibe">
+          <span class="nav-icon">💬</span> Vibe Engineer
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Build</div>
+        <button class="nav-item" data-view="assembly">
+          <span class="nav-icon">🔧</span> Assembly Lab
+        </button>
+        <button class="nav-item" data-view="cad">
+          <span class="nav-icon">🖥️</span> CAD Mesh Viewer
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Test</div>
+        <button class="nav-item" data-view="flightsim">
+          <span class="nav-icon">✈️</span> Flight Sim
+          <span class="nav-badge" id="simStatus">idle</span>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Present</div>
+        <button class="nav-item" data-view="presentation">
+          <span class="nav-icon">🎬</span> Presentation
+        </button>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- ── Home ───────────────────────────────────────────────────── -->
+    <section class="view-panel active" id="view-home">
+      <div class="view-header">
+        <h2>Welcome to DARK leaf</h2>
+        <p>Vibe-engineer your next drone — from idea to high-fidelity presentation.</p>
+      </div>
+
+      <div class="workflow-steps" id="workflowProgress">
+        <span class="workflow-step current">1 · Project</span>
+        <span class="workflow-step">2 · Vibe Engineer</span>
+        <span class="workflow-step">3 · Assembly</span>
+        <span class="workflow-step">4 · CAD Mesh</span>
+        <span class="workflow-step">5 · Flight Sim</span>
+        <span class="workflow-step">6 · Present</span>
+      </div>
+
+      <div class="card-grid">
+        <div class="card" data-goto="project">
+          <div class="card-icon">📁</div>
+          <h3>Start a Project</h3>
+          <p>Create a new drone design project or import existing data — STEP files, images, specs.</p>
+        </div>
+        <div class="card" data-goto="vibe">
+          <div class="card-icon">💬</div>
+          <h3>Vibe Engineer</h3>
+          <p>Chat with AI about your ideas. Describe what you want, and components get generated.</p>
+        </div>
+        <div class="card" data-goto="assembly">
+          <div class="card-icon">🔧</div>
+          <h3>Assembly Lab</h3>
+          <p>Components are assembled by AI. View the build in the CAD mesh viewer.</p>
+        </div>
+        <div class="card" data-goto="cad">
+          <div class="card-icon">🖥️</div>
+          <h3>CAD Mesh Viewer</h3>
+          <p>High-fidelity 3D view of your assembled drone with interactive inspection.</p>
+        </div>
+        <div class="card" data-goto="flightsim">
+          <div class="card-icon">✈️</div>
+          <h3>Flight Simulation</h3>
+          <p>Test your design in a physics-based flight simulator running in the background.</p>
+        </div>
+        <div class="card" data-goto="presentation">
+          <div class="card-icon">🎬</div>
+          <h3>Presentation View</h3>
+          <p>Exploded assembly animation for clients and investors — like a Call of Duty gun table.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Project ────────────────────────────────────────────────── -->
+    <section class="view-panel" id="view-project">
+      <div class="view-header">
+        <h2>Project</h2>
+        <p>Create a new project or import data to get started.</p>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-bottom:24px;">
+        <button class="btn btn-primary" id="btnNewProject">✚ New Project</button>
+        <button class="btn" id="btnImportFiles">📂 Import Files</button>
+        <input type="file" id="fileInput" multiple accept=".step,.stp,.stl,.json,.yaml,.yml,.png,.jpg,.jpeg" hidden>
+      </div>
+
+      <div class="import-zone" id="dropZone">
+        <div class="import-icon">📥</div>
+        <h3>Drop files here</h3>
+        <p>STEP, STL, JSON, YAML, images — drag & drop or click Import</p>
+      </div>
+
+      <div class="file-chips" id="fileChips"></div>
+
+      <h3 style="margin-top:32px; margin-bottom:12px; font-size:15px;">Projects</h3>
+      <div class="project-list" id="projectList">
+        <div style="color:var(--text-muted); font-size:13px; padding:20px 0;">No projects yet. Click "New Project" to begin.</div>
+      </div>
+    </section>
+
+    <!-- ── Vibe Engineer (AI Chat) ────────────────────────────────── -->
+    <section class="view-panel" id="view-vibe">
+      <div class="view-header">
+        <h2>Vibe Engineer</h2>
+        <p>Describe your drone ideas — the AI will help generate components.</p>
+      </div>
+
+      <div class="prompt-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg assistant">
+            <div class="msg-label">DARK leaf AI</div>
+            Hey! I'm your vibe-engineering partner. Tell me about the drone you want to build — the purpose, size, payload, flight characteristics — and I'll help generate the components. You can also share images or reference files.
+          </div>
+        </div>
+
+        <div class="prompt-input-row">
+          <textarea id="promptInput" rows="2" placeholder="Describe your drone idea, ask questions, or paste specs..."></textarea>
+          <button class="btn btn-primary btn-icon" id="btnSend" title="Send">▶</button>
+          <button class="btn btn-icon" id="btnAttach" title="Attach file">📎</button>
+          <input type="file" id="chatFileInput" multiple hidden>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Assembly Lab ───────────────────────────────────────────── -->
+    <section class="view-panel" id="view-assembly">
+      <div class="view-header">
+        <h2>AI Assembly Lab</h2>
+        <p>Components generated during vibe engineering are assembled here.</p>
+      </div>
+
+      <div class="workflow-steps">
+        <span class="workflow-step completed">Components Generated</span>
+        <span class="workflow-step current">Assembly</span>
+        <span class="workflow-step">Validation</span>
+      </div>
+
+      <div class="assembly-toolbar">
+        <button class="btn" id="btnAutoAssemble">🤖 Auto-Assemble</button>
+        <button class="btn" id="btnValidateAssembly">✅ Validate</button>
+        <button class="btn" id="btnOpenCad">🖥️ Open in CAD</button>
+      </div>
+
+      <div class="assembly-viewport" id="assemblyViewport">
+        <canvas id="assemblyCanvas"></canvas>
+      </div>
+    </section>
+
+    <!-- ── CAD Mesh Viewer ────────────────────────────────────────── -->
+    <section class="view-panel" id="view-cad">
+      <div class="view-header">
+        <h2>CAD Mesh Viewer</h2>
+        <p>High-fidelity 3D view — inspect, rotate, and edit your design.</p>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <button class="btn" id="btnHighFidelity">🔬 High Fidelity</button>
+        <button class="btn" id="btnLowRes">📐 Low-Res Edit</button>
+        <button class="btn" id="btnExplode">💥 Exploded View</button>
+        <button class="btn" id="btnExportStl">💾 Export STL</button>
+      </div>
+
+      <div class="assembly-viewport" id="cadViewport">
+        <canvas id="cadCanvas"></canvas>
+      </div>
+    </section>
+
+    <!-- ── Flight Sim ─────────────────────────────────────────────── -->
+    <section class="view-panel" id="view-flightsim">
+      <div class="view-header">
+        <h2>Flight Simulation</h2>
+        <p>Test your design in a physics-based flight sim. Runs in the background.</p>
+      </div>
+
+      <div class="sim-status-bar">
+        <div class="sim-status-item">
+          <div class="sim-status-dot idle" id="simDot"></div>
+          <span id="simStatusText">Idle — ready to start</span>
+        </div>
+        <div class="sim-status-item" style="margin-left:auto;">
+          <span id="simTime">T+0.0s</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <button class="btn btn-primary" id="btnStartSim">▶ Start Simulation</button>
+        <button class="btn" id="btnStopSim" disabled>⏹ Stop</button>
+        <button class="btn" id="btnOpenTelemetry">📊 Full Telemetry</button>
+      </div>
+
+      <div class="sim-map-container" id="simMapContainer">
+        <canvas class="sim-map-canvas" id="simMapCanvas"></canvas>
+      </div>
+
+      <div id="simTelemetryBar" style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:12px;">
+        <div class="card" style="padding:12px; text-align:center;">
+          <div style="font-size:11px; color:var(--text-muted);">Altitude</div>
+          <div style="font-size:20px; font-weight:700;" id="telAlt">0 m</div>
+        </div>
+        <div class="card" style="padding:12px; text-align:center;">
+          <div style="font-size:11px; color:var(--text-muted);">Speed</div>
+          <div style="font-size:20px; font-weight:700;" id="telSpeed">0 m/s</div>
+        </div>
+        <div class="card" style="padding:12px; text-align:center;">
+          <div style="font-size:11px; color:var(--text-muted);">Throttle</div>
+          <div style="font-size:20px; font-weight:700;" id="telThrottle">0%</div>
+        </div>
+        <div class="card" style="padding:12px; text-align:center;">
+          <div style="font-size:11px; color:var(--text-muted);">Battery</div>
+          <div style="font-size:20px; font-weight:700;" id="telBattery">100%</div>
+        </div>
+        <div class="card" style="padding:12px; text-align:center;">
+          <div style="font-size:11px; color:var(--text-muted);">Temp</div>
+          <div style="font-size:20px; font-weight:700;" id="telTemp">25°C</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Presentation ───────────────────────────────────────────── -->
+    <section class="view-panel" id="view-presentation">
+      <div class="view-header">
+        <h2>Presentation Mode</h2>
+        <p>Disassemble and reassemble your drone for clients and investors.</p>
+      </div>
+
+      <div class="presentation-controls">
+        <button class="btn" id="btnDisassemble">💥 Disassemble</button>
+        <button class="btn" id="btnAssembleAnim">🔧 Assemble Animation</button>
+        <button class="btn" id="btnResetView">🔄 Reset</button>
+        <span class="step-label" id="animStepLabel">Ready</span>
+      </div>
+
+      <div class="assembly-viewport" id="presentationViewport">
+        <canvas id="presentationCanvas"></canvas>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="lib/three.min.js"></script>
+<script src="launcher.js"></script>
+</body>
+</html>
