@@ -10,6 +10,8 @@
 "use strict";
 
 // ── State ────────────────────────────────────────────────────────────
+const MAX_SIM_DURATION = 120; // seconds — auto-stop after this time
+
 const State = {
   currentView:   "home",
   projects:      JSON.parse(localStorage.getItem("dl_projects") || "[]"),
@@ -95,7 +97,7 @@ function createNewProject() {
   const name = prompt("Project name:");
   if (!name) return;
   const proj = {
-    id:       Date.now().toString(36),
+    id:       Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     name:     name,
     created:  new Date().toISOString(),
     files:    [],
@@ -115,7 +117,9 @@ function handleFiles(fileList) {
 }
 
 function guessType(name) {
-  const ext = name.split(".").pop().toLowerCase();
+  const dotIdx = name.lastIndexOf(".");
+  if (dotIdx < 0) return "application/octet-stream";
+  const ext = name.slice(dotIdx + 1).toLowerCase();
   const map = { step: "model/step", stp: "model/step", stl: "model/stl",
                 json: "application/json", yaml: "text/yaml", yml: "text/yaml",
                 png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg" };
@@ -237,8 +241,13 @@ function appendChat(role, text) {
   const el = document.getElementById("chatMessages");
   const label = role === "user" ? "You" : "DARK leaf AI";
   const div = document.createElement("div");
-  div.className = "chat-msg " + role;
-  div.innerHTML = `<div class="msg-label">${label}</div>${escHtml(text)}`;
+  div.className = "chat-msg " + (role === "user" ? "user" : "assistant");
+  const labelDiv = document.createElement("div");
+  labelDiv.className = "msg-label";
+  labelDiv.textContent = label;
+  div.appendChild(labelDiv);
+  const textNode = document.createTextNode(text);
+  div.appendChild(textNode);
   el.appendChild(div);
   el.scrollTop = el.scrollHeight;
   State.chatHistory.push({ role, text });
@@ -371,8 +380,9 @@ function create3DScene(container, canvas) {
     prevY = e.clientY;
   });
   canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
     camera.position.multiplyScalar(e.deltaY > 0 ? 1.05 : 0.95);
-  });
+  }, { passive: false });
 
   return { scene, camera, renderer, group };
 }
@@ -520,7 +530,7 @@ function startSim() {
     State.simT += 0.5;
     updateSimTelemetry();
     drawSimMap();
-    if (State.simT >= 120) stopSim(); // auto-stop after 2 min
+    if (State.simT >= MAX_SIM_DURATION) stopSim();
   }, 500);
 }
 
@@ -534,10 +544,14 @@ function stopSim() {
   document.getElementById("simStatus").textContent = "idle";
 }
 
+function simAltitude(t) {
+  return Math.min(50, 50 * (1 - Math.exp(-t / 15)));
+}
+
 function updateSimTelemetry() {
   const t   = State.simT;
   // Simple physics model for telemetry display
-  const alt = Math.min(50, 50 * (1 - Math.exp(-t / 15)));
+  const alt = simAltitude(t);
   const spd = 5 + 8 * Math.sin(t * 0.1);
   const thr = Math.max(0, Math.min(100, 60 + 20 * Math.sin(t * 0.15)));
   const bat = Math.max(0, 100 - t * 0.3);
@@ -626,7 +640,7 @@ function drawSimMap() {
   // Label
   ctx.fillStyle = "#e6edf3";
   ctx.font = "11px system-ui";
-  ctx.fillText(`Drone · Alt ${(Math.min(50, 50 * (1 - Math.exp(-maxT / 15)))).toFixed(1)}m`, px + 10, py - 8);
+  ctx.fillText(`Drone · Alt ${simAltitude(maxT).toFixed(1)}m`, px + 10, py - 8);
 }
 
 // ── Utility ──────────────────────────────────────────────────────────
