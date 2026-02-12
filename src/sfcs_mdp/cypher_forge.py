@@ -264,15 +264,14 @@ def check_safety(
         if est.metric not in constraints:
             continue
         lo, hi = constraints[est.metric]
-
-        violations = 0
         total = est.samples
-        if est.p10 < lo:
-            violations += 1
-        if est.p90 > hi:
-            violations += 1
 
-        p_viol = violations / max(total, 1)
+        # Estimate violation probability from percentile bounds.
+        # P10 represents the 10th-percentile: ~10% of samples fall below it.
+        # P90 represents the 90th-percentile: ~10% of samples fall above it.
+        p_below = 0.10 if est.p10 < lo else 0.0
+        p_above = 0.10 if est.p90 > hi else 0.0
+        p_viol = p_below + p_above
         safe = p_viol <= max_violation_probability and total >= n_samples_required
 
         assurances.append(
