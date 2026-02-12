@@ -5,9 +5,15 @@ import hmac
 from typing import Any
 
 # ---------------------------------------------------------------------------
-# DARPA LIFT programme cipher configuration
-# Derived from DARPA LIFT digital-thread integrity requirements.
-# Algorithm: HMAC-SHA-256 with a programme-scoped domain separator.
+# DARPA CyPhER Forge — digital-thread integrity component.
+#
+# CyPhER Forge is a DARPA programme that accelerates testing of complex
+# systems via a continuous cipher loop between a physics-informed digital
+# twin, an AI test agent, and the system under test.  See
+# ``cypher_forge.py`` for the full orchestration layer.
+#
+# This module provides the HMAC-SHA-256 integrity mechanism used by the
+# manufacturing digital thread to authenticate build artifacts.
 # ---------------------------------------------------------------------------
 
 DARPA_CIPHER_VERSION = "1"
