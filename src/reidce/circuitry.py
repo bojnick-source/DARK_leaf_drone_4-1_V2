@@ -1010,3 +1010,92 @@ def simulate_electro_thermal_dc(
     if result is None:
         raise RuntimeError("Electro-thermal simulation did not run.")
     return ElectroThermalResult(circuit=result, temperatures_c=temps, iterations=max_iters)
+
+
+# ---------------------------------------------------------------------------
+# Circuit board mapping — component placement and net connectivity
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class BoardComponent:
+    """A physical component placed on a circuit board."""
+
+    ref_des: str  # reference designator, e.g. "U1", "R3"
+    package: str  # footprint name, e.g. "QFN-48", "0603"
+    x_mm: float
+    y_mm: float
+    rotation_deg: float = 0.0
+    layer: str = "top"
+
+
+@dataclass(frozen=True)
+class NetConnection:
+    """A single pad-to-pad connection within a net."""
+
+    ref_des: str
+    pad: str  # pad identifier on the component
+
+
+@dataclass(frozen=True)
+class Net:
+    """Electrical net connecting component pads."""
+
+    name: str
+    connections: Tuple[NetConnection, ...]
+
+
+@dataclass(frozen=True)
+class CircuitBoardMap:
+    """Full board mapping: components, nets, and board outline."""
+
+    name: str
+    width_mm: float
+    height_mm: float
+    components: Tuple[BoardComponent, ...]
+    nets: Tuple[Net, ...]
+
+    def component_by_ref(self, ref_des: str) -> BoardComponent | None:
+        for comp in self.components:
+            if comp.ref_des == ref_des:
+                return comp
+        return None
+
+    def nets_for_component(self, ref_des: str) -> List[Net]:
+        return [
+            net
+            for net in self.nets
+            if any(conn.ref_des == ref_des for conn in net.connections)
+        ]
+
+    def net_by_name(self, name: str) -> Net | None:
+        for net in self.nets:
+            if net.name == name:
+                return net
+        return None
+
+    def component_count(self) -> int:
+        return len(self.components)
+
+    def net_count(self) -> int:
+        return len(self.nets)
+
+    def manhattan_distance_mm(self, ref_a: str, ref_b: str) -> float:
+        """Manhattan distance between two component centres."""
+        a = self.component_by_ref(ref_a)
+        b = self.component_by_ref(ref_b)
+        if a is None or b is None:
+            raise ValueError(f"Component not found: {ref_a if a is None else ref_b}")
+        return abs(a.x_mm - b.x_mm) + abs(a.y_mm - b.y_mm)
+
+    def validate(self) -> List[str]:
+        """Return a list of validation errors (empty == valid)."""
+        errors: List[str] = []
+        ref_set = {comp.ref_des for comp in self.components}
+        for net in self.nets:
+            for conn in net.connections:
+                if conn.ref_des not in ref_set:
+                    errors.append(
+                        f"Net {net.name}: ref_des {conn.ref_des!r} not in components"
+                    )
+        return errors
