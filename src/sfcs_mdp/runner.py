@@ -18,6 +18,7 @@ from sfcs_mdp.artifacts import (
     write_text,
     write_yaml,
 )
+from sfcs_mdp.darpa_cipher import cipher_metadata, compute_hmac
 from sfcs_mdp.hashutil import hash_files, sha256_bytes
 from sfcs_mdp.model import BlockLevel, ProcessStep, StepType
 from sfcs_mdp.v2_engine import find_engine_cli, run_engine
@@ -372,6 +373,7 @@ def run_traveler(
         "simulate": simulate,
         "spec_path": spec_path.as_posix(),
         "spec_hash": sha256_bytes(spec_text.encode("utf-8")),
+        "darpa_cipher": cipher_metadata(config.build_id, config.rev_tag),
         "started_at": _utc_now(),
         "steps": [],
     }
@@ -429,6 +431,9 @@ def run_traveler(
 
     artifact_paths = _collect_files(build_dir, exclude={"ledger.json", "hashes.txt"})
     ledger["artifact_hashes"] = hash_files(artifact_paths, build_dir)
+    ledger["spec_hmac"] = compute_hmac(
+        spec_text.encode("utf-8"), config.build_id, config.rev_tag
+    )
     write_json(build_dir / "ledger.json", ledger)
 
     hash_paths = _collect_files(build_dir, exclude={"hashes.txt"})
