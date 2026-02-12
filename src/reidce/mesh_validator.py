@@ -33,18 +33,22 @@ class IndexedMesh:
     # -- factories ----------------------------------------------------------
 
     @classmethod
-    def from_cad_mesh(cls, mesh: CadMesh, tolerance: int = 10) -> IndexedMesh:
+    def from_cad_mesh(cls, mesh: CadMesh, rounding_precision: int = 10) -> IndexedMesh:
         """Build an ``IndexedMesh`` from a ``CadMesh``.
 
-        *tolerance* is the number of decimal places used when rounding
-        vertex positions for de-duplication.
+        *rounding_precision* is the number of decimal places used when
+        rounding vertex positions for de-duplication.
         """
         vertex_map: Dict[Tuple[float, float, float], int] = {}
         vertices: List[Tuple[float, float, float]] = []
         faces: List[Tuple[int, int, int]] = []
 
         def _get_or_add(v: Vec3) -> int:
-            key = (round(v.x, tolerance), round(v.y, tolerance), round(v.z, tolerance))
+            key = (
+                round(v.x, rounding_precision),
+                round(v.y, rounding_precision),
+                round(v.z, rounding_precision),
+            )
             idx = vertex_map.get(key)
             if idx is None:
                 idx = len(vertices)
@@ -61,7 +65,7 @@ class IndexedMesh:
         return cls(vertices=vertices, faces=faces)
 
     @classmethod
-    def from_stl_text(cls, text: str, tolerance: int = 10) -> IndexedMesh:
+    def from_stl_text(cls, text: str, rounding_precision: int = 10) -> IndexedMesh:
         """Parse an ASCII STL string and return an ``IndexedMesh``."""
         vertex_map: Dict[Tuple[float, float, float], int] = {}
         vertices: List[Tuple[float, float, float]] = []
@@ -75,7 +79,11 @@ class IndexedMesh:
                 if len(parts) < 4:
                     continue
                 x, y, z = float(parts[1]), float(parts[2]), float(parts[3])
-                key = (round(x, tolerance), round(y, tolerance), round(z, tolerance))
+                key = (
+                    round(x, rounding_precision),
+                    round(y, rounding_precision),
+                    round(z, rounding_precision),
+                )
                 idx = vertex_map.get(key)
                 if idx is None:
                     idx = len(vertices)
