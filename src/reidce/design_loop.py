@@ -15,9 +15,9 @@ design tried, every failure encountered, and every improvement made.
 
 This module implements the *AI* layer: rule-based failure analysis and
 orchestration.  The *machine learning* aspect lives in the iterative
-parameter optimisation that learns from flight-test outcomes across
+parameter optimization that learns from flight-test outcomes across
 cycles.  *Deep learning* non-linear and linear solution methods are
-provided by the drivetrain and electromagnetic modules which synthesise
+provided by the drivetrain and electromagnetic modules which synthesize
 propulsion units (see ``drivetrain.py`` and ``electromagnetic.py``).
 """
 
