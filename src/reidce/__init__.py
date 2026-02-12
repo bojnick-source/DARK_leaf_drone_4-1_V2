@@ -83,6 +83,13 @@ from reidce.electromagnetic import (
     evaluate_motor,
     saturation_curve,
 )
+from reidce.engineering_ai import (
+    EngineeringKnowledgeBase,
+    EngineeringQueryEngine,
+    KnowledgeChunk,
+    QueryResult,
+    RetrievedPassage,
+)
 from reidce.fea import (
     BeamElement,
     BoundaryCondition,
@@ -142,6 +149,14 @@ from reidce.mesh_validator import (
     compute_vertex_normals,
     find_degenerate_faces,
     validate_mesh,
+)
+from reidce.ml_models import (
+    DenseLayer,
+    FeatureScaler,
+    FeedForwardNetwork,
+    SurrogateModel,
+    TrainingHistory,
+    build_design_surrogate,
 )
 from reidce.pico_gk import PicoGKResult, apply_pico_gk, generate_cad_ref
 from reidce.pipeline import (
@@ -376,4 +391,17 @@ __all__ = [
     "CircuitBoardMap",
     "Net",
     "NetConnection",
+    # machine learning / deep learning
+    "DenseLayer",
+    "FeatureScaler",
+    "FeedForwardNetwork",
+    "SurrogateModel",
+    "TrainingHistory",
+    "build_design_surrogate",
+    # engineering AI knowledge engine
+    "EngineeringKnowledgeBase",
+    "EngineeringQueryEngine",
+    "KnowledgeChunk",
+    "QueryResult",
+    "RetrievedPassage",
 ]

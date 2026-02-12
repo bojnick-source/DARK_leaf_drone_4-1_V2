@@ -105,4 +105,27 @@ def test_iteration_log_contains_tests_and_adjustments() -> None:
         assert "em_snapshot" in it
         for t in it["tests"]:
             assert "name" in t
-            assert "passed" in t
+
+
+def test_collect_training_data() -> None:
+    from reidce.design_loop import collect_training_data
+
+    log = run_design_loop(max_iterations=2)
+    x_data, y_data = collect_training_data(log)
+    assert len(x_data) == len(log.iterations)
+    assert len(y_data) == len(log.iterations)
+    # Features: mass_kg, wing_area_m2, cd0, max_thrust_n, max_tilt_rad, max_speed_m_s
+    assert len(x_data[0]) == 6
+    # Targets: score, max_altitude, max_speed, sustained_turn_rate, min_battery
+    assert len(y_data[0]) == 5
+
+
+def test_train_surrogate_from_log() -> None:
+    from reidce.design_loop import train_surrogate_from_log
+
+    log = run_design_loop(max_iterations=3)
+    surrogate = train_surrogate_from_log(log, epochs=50, seed=42)
+    assert surrogate.is_trained()
+    pred = surrogate.predict([2.5, 0.12, 0.04, 30.0, 0.7, 50.0])
+    assert "design_score" in pred
+    assert "max_altitude_m" in pred

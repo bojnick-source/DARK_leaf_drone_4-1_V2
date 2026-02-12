@@ -16,9 +16,11 @@ design tried, every failure encountered, and every improvement made.
 This module implements the *AI* layer: rule-based failure analysis and
 orchestration.  The *machine learning* aspect lives in the iterative
 parameter optimization that learns from flight-test outcomes across
-cycles.  *Deep learning* non-linear and linear solution methods are
-provided by the drivetrain and electromagnetic modules which synthesize
-propulsion units (see ``drivetrain.py`` and ``electromagnetic.py``).
+cycles, and a ``SurrogateModel`` (``ml_models.py``) can be trained
+on the collected engineering data.  *Deep learning* non-linear and
+linear solution methods are provided by the drivetrain and
+electromagnetic modules which synthesize propulsion units (see
+``drivetrain.py`` and ``electromagnetic.py``).
 """
 
 from __future__ import annotations
@@ -484,3 +486,68 @@ def iteration_log_to_dict(log: IterationLog) -> Dict[str, Any]:
             for rec in log.iterations
         ],
     }
+
+
+# ── Surrogate model integration ─────────────────────────────────────────
+
+
+def _params_to_features(params: VehicleParams) -> List[float]:
+    """Extract the feature vector used by the ML surrogate."""
+    return [
+        params.mass_kg,
+        params.wing_area_m2,
+        params.cd0,
+        params.max_thrust_n,
+        params.max_tilt_rad,
+        params.max_speed_m_s,
+    ]
+
+
+def _results_to_targets(results: List[FlightTestResult], score: float) -> List[float]:
+    """Extract target metrics from a set of flight-test results."""
+    max_alt = max((r.max_altitude_m for r in results), default=0.0)
+    max_spd = max((r.max_speed_m_s for r in results), default=0.0)
+    str_rate = max((r.sustained_turn_rate_deg_s for r in results), default=0.0)
+    min_batt = min((r.min_battery_pct for r in results), default=0.0)
+    return [score, max_alt, max_spd, str_rate, min_batt]
+
+
+def collect_training_data(
+    log: IterationLog,
+) -> tuple[List[List[float]], List[List[float]]]:
+    """Extract ML training pairs from a completed design loop.
+
+    Returns ``(x_data, y_data)`` where each row in *x_data* is a
+    design-parameter feature vector and each row in *y_data* is the
+    corresponding performance target vector.
+    """
+    x_data: List[List[float]] = []
+    y_data: List[List[float]] = []
+    for record in log.iterations:
+        x_data.append(_params_to_features(record.params))
+        y_data.append(_results_to_targets(record.test_results, record.score))
+    return x_data, y_data
+
+
+def train_surrogate_from_log(
+    log: IterationLog,
+    *,
+    epochs: int = 200,
+    learning_rate: float = 0.01,
+    hidden_sizes: Optional[List[int]] = None,
+    seed: int = 42,
+) -> Any:
+    """Train a ``SurrogateModel`` on data collected from a design loop.
+
+    Returns the trained ``SurrogateModel`` (imported lazily to avoid
+    circular imports at module level).
+    """
+    from reidce.ml_models import build_design_surrogate
+
+    x_data, y_data = collect_training_data(log)
+    if not x_data:
+        raise ValueError("No training data: design loop has no iterations.")
+
+    surrogate = build_design_surrogate(hidden_sizes=hidden_sizes, seed=seed)
+    surrogate.train(x_data, y_data, epochs=epochs, learning_rate=learning_rate, seed=seed)
+    return surrogate
