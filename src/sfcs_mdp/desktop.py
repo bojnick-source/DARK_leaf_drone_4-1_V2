@@ -19,6 +19,7 @@ import socketserver
 import sys
 import webbrowser
 from pathlib import Path
+from urllib.parse import urlencode
 
 
 def _find_ui_dir() -> Path:
@@ -202,7 +203,7 @@ def launch(
         port = _find_free_port()
 
     hw = detect_hardware()
-    qs = "&".join(f"{k}={v}" for k, v in hw.items())
+    qs = urlencode(hw)
     url = f"http://127.0.0.1:{port}/launcher.html?{qs}"
 
     _serve_dir = str(serve_dir)
