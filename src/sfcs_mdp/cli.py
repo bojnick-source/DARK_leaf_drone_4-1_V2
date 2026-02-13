@@ -97,6 +97,22 @@ def _build_parser() -> argparse.ArgumentParser:
         "--artifact-root", default=None, help="Override artifact root directory"
     )
 
+    launch_parser = subparsers.add_parser(
+        "launch",
+        help="Open the Vibe Engineering Studio as a desktop application",
+    )
+    launch_parser.add_argument(
+        "--ui-dir", type=Path, default=None, help="Path to the ui/ directory"
+    )
+    launch_parser.add_argument(
+        "--port", type=int, default=None, help="HTTP port (auto-selected if omitted)"
+    )
+    launch_parser.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Start the server without opening a browser window",
+    )
+
     return parser
 
 
@@ -236,6 +252,15 @@ def main() -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         print(format_grading_footer())
         return 0
+
+    if args.command == "launch":
+        from sfcs_mdp.desktop import launch as desktop_launch
+
+        return desktop_launch(
+            ui_dir=args.ui_dir,
+            port=args.port,
+            no_browser=args.no_browser,
+        )
 
     parser.print_help()
     print(format_grading_footer())

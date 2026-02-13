@@ -36,17 +36,92 @@ const State = {
   assemblyCam:   null,
   assemblyRenderer: null,
   assemblyGroup: null,
+  // Hardware-adaptive rendering
+  hwProfile:     null,  // populated by detectHardwareProfile()
 };
+
+// ── Hardware capability detection ────────────────────────────────────
+function detectHardwareProfile() {
+  const profile = { tier: "high", segments: 24, pixelRatio: 1, reason: "" };
+
+  // Read server-side hints from query parameters (set by desktop launcher)
+  const params = new URLSearchParams(window.location.search);
+  const ramGb = parseInt(params.get("ram_gb") || "0", 10);
+  const cores = parseInt(params.get("cores") || "0", 10);
+
+  // Probe WebGL for GPU info
+  const canvas = document.createElement("canvas");
+  const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+  let gpuRenderer = "";
+  if (gl) {
+    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+    if (dbg) {
+      gpuRenderer = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "";
+    }
+  }
+  profile.gpu = gpuRenderer;
+
+  // Device memory hint (Chrome-only API, in GiB)
+  const devMem = navigator.deviceMemory || 0;
+
+  // Screen resolution
+  const screenW = screen.width * (window.devicePixelRatio || 1);
+  const screenH = screen.height * (window.devicePixelRatio || 1);
+  const megapixels = (screenW * screenH) / 1e6;
+  profile.megapixels = megapixels;
+
+  // Heuristic: classify into low / medium / high
+  const isLowGpu = /swiftshader|llvmpipe|software|mesa/i.test(gpuRenderer);
+  const isIntegrated = /intel|integrated/i.test(gpuRenderer) && !/iris xe/i.test(gpuRenderer);
+  const lowMem = (devMem > 0 && devMem <= 4) || (ramGb > 0 && ramGb <= 4);
+  const lowCores = cores > 0 && cores <= 2;
+
+  if (isLowGpu || (lowMem && lowCores)) {
+    profile.tier = "low";
+    profile.segments = 8;
+    profile.pixelRatio = 1;
+    profile.reason = "Software/low-end GPU detected";
+  } else if (isIntegrated || lowMem || megapixels < 2) {
+    profile.tier = "medium";
+    profile.segments = 16;
+    profile.pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+    profile.reason = "Integrated GPU or limited memory";
+  } else {
+    profile.tier = "high";
+    profile.segments = 32;
+    profile.pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    profile.reason = "Dedicated GPU with sufficient resources";
+  }
+
+  return profile;
+}
 
 // ── Boot ─────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
+  State.hwProfile = detectHardwareProfile();
   initNavigation();
   initProjectPanel();
   initVibeEngineer();
   initFlightSim();
   renderProjectList();
+  renderHardwareBadge();
   // 3D viewports are initialized lazily when their tab is shown
 });
+
+function renderHardwareBadge() {
+  const hw = State.hwProfile;
+  if (!hw) return;
+  const el = document.getElementById("workflowProgress");
+  if (!el) return;
+  const badge = document.createElement("div");
+  badge.style.cssText = "margin-top:12px;font-size:12px;color:var(--text-muted,#8b949e);";
+  const tierColors = { low: "#d29922", medium: "#58a6ff", high: "#3fb950" };
+  const color = tierColors[hw.tier] || "#8b949e";
+  badge.innerHTML =
+    `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${escHtml(color)};margin-right:4px;"></span>` +
+    `Rendering: <strong>${escHtml(hw.tier)}</strong> (${escHtml(hw.reason)})`;
+  el.insertAdjacentElement("afterend", badge);
+}
 
 // ── Navigation ───────────────────────────────────────────────────────
 function initNavigation() {
@@ -345,9 +420,11 @@ function create3DScene(container, canvas) {
   canvas.width  = w;
   canvas.height = h;
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  const hw = State.hwProfile || { pixelRatio: 1 };
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: hw.tier !== "low", alpha: true });
   renderer.setSize(w, h);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(hw.pixelRatio || Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x0d1117, 1);
 
   const scene  = new THREE.Scene();
@@ -405,7 +482,8 @@ function clearGroup(group) {
 }
 
 function buildDroneModel(group, exploded, segments) {
-  segments = segments || 24;
+  const hw = State.hwProfile || { segments: 24 };
+  segments = segments || hw.segments || 24;
   const mat = (color) => new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.6 });
 
   // Central body

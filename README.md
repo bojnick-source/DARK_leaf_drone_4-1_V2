@@ -31,9 +31,9 @@ git clone https://github.com/bojnick-source/DARK_leaf_drone_4-1_V2.git
 cd DARK_leaf_drone_4-1_V2
 pip install -e .          # or: .\install.ps1 on Windows
 
-# Launch the studio
-cd ui && python -m http.server
-# Open http://localhost:8000/launcher.html
+# Launch the studio as a desktop app (opens in a chromeless window)
+sfcs-mdp launch
+# Or via the browser: cd ui && python -m http.server
 ```
 
 ### Windows installer with desktop shortcut
@@ -42,6 +42,32 @@ cd ui && python -m http.server
 .\install.ps1 -Shortcut
 # Creates "DARK leaf Drone" shortcut on your desktop
 ```
+
+The Windows installer automatically installs Python 3.11 and Git via
+``winget`` if they are not already on the system — no manual downloads
+needed:
+
+```powershell
+.\install.ps1              # auto-installs prerequisites + sfcs-mdp
+.\install.ps1 -Launch      # same as above, then opens the desktop studio
+```
+
+### Desktop app mode
+
+The studio can run as a native-feeling desktop application.  The ``launch``
+command starts a local server and opens the UI in a chromeless browser window
+(Edge or Chrome ``--app`` mode):
+
+```bash
+sfcs-mdp launch              # auto-detect browser and port
+sfcs-mdp launch --port 9000  # use a specific port
+python -m sfcs_mdp launch    # alternative invocation
+```
+
+The launcher auto-detects the computer's hardware capabilities (GPU, RAM,
+CPU cores, screen resolution) and adjusts the 3D rendering fidelity
+accordingly — low-end machines get a lighter render while powerful
+workstations get full detail.
 
 ## Scope
 Included:
