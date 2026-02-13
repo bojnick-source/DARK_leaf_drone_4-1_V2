@@ -106,6 +106,7 @@ from reidce.fea import (
 from reidce.flight_sim import (
     Atmosphere,
     AutopilotChannel,
+    AutopilotConfig,
     ControlCommand,
     GuidanceTarget,
     SensorSample,
@@ -168,6 +169,7 @@ from reidce.pipeline import (
     gate_build_ready,
     sensitivity,
 )
+from reidce.protocols import AcceptanceEvaluator, DesignValidator, Simulator
 from reidce.sales_shipping import (
     SalesInputs,
     SalesSummary,
@@ -233,6 +235,7 @@ __all__ = [
     "MemoryStore",
     "Atmosphere",
     "AutopilotChannel",
+    "AutopilotConfig",
     "ControlCommand",
     "GuidanceTarget",
     "SensorSample",
@@ -404,4 +407,8 @@ __all__ = [
     "KnowledgeChunk",
     "QueryResult",
     "RetrievedPassage",
+    # protocols
+    "AcceptanceEvaluator",
+    "DesignValidator",
+    "Simulator",
 ]

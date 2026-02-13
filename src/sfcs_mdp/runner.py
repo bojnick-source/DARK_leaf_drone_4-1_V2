@@ -20,7 +20,13 @@ from sfcs_mdp.artifacts import (
 )
 from sfcs_mdp.darpa_cipher import cipher_metadata, compute_hmac
 from sfcs_mdp.hashutil import hash_files, sha256_bytes
-from sfcs_mdp.model import BlockLevel, ProcessStep, StepType
+from sfcs_mdp.model import (
+    AcceptanceCriterionType,
+    BlockLevel,
+    ProcessStep,
+    StepDisposition,
+    StepType,
+)
 from sfcs_mdp.v2_engine import find_engine_cli, run_engine
 from sfcs_mdp.validate import load_spec, topological_sort, validate_spec
 
@@ -170,7 +176,7 @@ def _evaluate_acceptance(
                 results.append(
                     {
                         "criterion": text,
-                        "status": "OPTIONAL",
+                        "status": StepDisposition.OPTIONAL.value,
                         "manual_signoff_required": False,
                     }
                 )
@@ -179,7 +185,7 @@ def _evaluate_acceptance(
                 results.append(
                     {
                         "criterion": text,
-                        "status": "PASS",
+                        "status": StepDisposition.PASS.value,
                         "manual_signoff_required": True,
                         "signoff_path": signoff.as_posix(),
                     }
@@ -188,7 +194,7 @@ def _evaluate_acceptance(
                 results.append(
                     {
                         "criterion": text,
-                        "status": "FAIL",
+                        "status": StepDisposition.FAIL.value,
                         "manual_signoff_required": True,
                         "signoff_path": signoff.as_posix(),
                     }
@@ -197,12 +203,18 @@ def _evaluate_acceptance(
         elif isinstance(criterion, dict):
             criterion_type = str(criterion.get("type", "")).lower()
             path = criterion.get("path")
-            if criterion_type == "file_exists" and isinstance(path, str):
+            if criterion_type == AcceptanceCriterionType.FILE_EXISTS.value and isinstance(
+                path, str
+            ):
                 expanded = expand_placeholders(path, placeholders)
                 try:
                     target = resolve_path(config.repo_root, expanded)
-                    status = "PASS" if target.exists() else "FAIL"
-                    if status == "FAIL":
+                    status = (
+                        StepDisposition.PASS.value
+                        if target.exists()
+                        else StepDisposition.FAIL.value
+                    )
+                    if status == StepDisposition.FAIL.value:
                         all_passed = False
                     results.append(
                         {
@@ -215,7 +227,7 @@ def _evaluate_acceptance(
                     results.append(
                         {
                             "criterion": f"file_exists:{expanded}",
-                            "status": "FAIL",
+                            "status": StepDisposition.FAIL.value,
                             "manual_signoff_required": False,
                             "error": str(exc),
                         }
@@ -225,7 +237,7 @@ def _evaluate_acceptance(
                 results.append(
                     {
                         "criterion": str(criterion),
-                        "status": "FAIL",
+                        "status": StepDisposition.FAIL.value,
                         "manual_signoff_required": False,
                     }
                 )
@@ -234,7 +246,7 @@ def _evaluate_acceptance(
             results.append(
                 {
                     "criterion": str(criterion),
-                    "status": "FAIL",
+                    "status": StepDisposition.FAIL.value,
                     "manual_signoff_required": False,
                 }
             )
@@ -251,17 +263,23 @@ def _evaluate_evidence(
     for evidence in step.evidence.required:
         name, optional = normalize_optional_name(evidence)
         if optional:
-            results.append({"evidence": name, "status": "OPTIONAL"})
+            results.append({"evidence": name, "status": StepDisposition.OPTIONAL.value})
             continue
         expanded = expand_placeholders(name, placeholders)
         try:
             evidence_path = resolve_path(_build_dir(config), expanded)
-            status = "PASS" if evidence_path.exists() else "FAIL"
-            if status == "FAIL":
+            status = (
+                StepDisposition.PASS.value
+                if evidence_path.exists()
+                else StepDisposition.FAIL.value
+            )
+            if status == StepDisposition.FAIL.value:
                 all_present = False
             results.append({"evidence": expanded, "status": status})
         except ValueError as exc:
-            results.append({"evidence": expanded, "status": "FAIL", "error": str(exc)})
+            results.append(
+                {"evidence": expanded, "status": StepDisposition.FAIL.value, "error": str(exc)}
+            )
             all_present = False
     return all_present, results
 
@@ -393,11 +411,11 @@ def run_traveler(
             "inputs": step.inputs,
         }
         if pipeline_failed:
-            step_entry["status"] = "SKIPPED"
+            step_entry["status"] = StepDisposition.SKIPPED.value
             ledger["steps"].append(step_entry)
             continue
         if not _step_applicable(step, config.block_level):
-            step_entry["status"] = "SKIPPED"
+            step_entry["status"] = StepDisposition.SKIPPED.value
             ledger["steps"].append(step_entry)
             continue
 
@@ -413,7 +431,9 @@ def run_traveler(
         step_entry["acceptance"] = acceptance_results
 
         step_passed = evidence_ok and acceptance_ok
-        step_entry["status"] = "PASS" if step_passed else "FAIL"
+        step_entry["status"] = (
+            StepDisposition.PASS.value if step_passed else StepDisposition.FAIL.value
+        )
         step_entry["ended_at"] = _utc_now()
         ledger["steps"].append(step_entry)
         _log_event(
@@ -428,7 +448,10 @@ def run_traveler(
 
     ledger["ended_at"] = _utc_now()
     ledger["gates_passed"] = gates_passed
-    ledger["final_disposition"] = "PASS" if not pipeline_failed and gates_passed else "FAIL"
+    ledger["final_disposition"] = (
+        StepDisposition.PASS.value if not pipeline_failed and gates_passed
+        else StepDisposition.FAIL.value
+    )
 
     artifact_paths = _collect_files(build_dir, exclude={"ledger.json", "hashes.txt"})
     ledger["artifact_hashes"] = hash_files(artifact_paths, build_dir)

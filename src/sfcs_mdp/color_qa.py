@@ -113,6 +113,30 @@ class ColorQaReport(BaseModel):
     passed: bool
 
 
+class GroupThreshold(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    max: float
+    mean: float
+
+
+class ColorQaConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    grayscale: GroupThreshold = GroupThreshold(max=1.0, mean=0.4)
+    neutrals: GroupThreshold = GroupThreshold(max=2.0, mean=0.8)
+    saturated: GroupThreshold = GroupThreshold(max=3.0, mean=1.2)
+
+    def thresholds_for(self, group: PatchGroup) -> GroupThreshold:
+        return {
+            PatchGroup.GRAYSCALE: self.grayscale,
+            PatchGroup.NEUTRALS: self.neutrals,
+            PatchGroup.SATURATED: self.saturated,
+        }[group]
+
+
+_DEFAULT_QA_CONFIG = ColorQaConfig()
+
 _GROUP_THRESHOLDS = {
     PatchGroup.GRAYSCALE: {"max": 1.0, "mean": 0.4},
     PatchGroup.NEUTRALS: {"max": 2.0, "mean": 0.8},
@@ -248,7 +272,11 @@ def _resolve_output_mode(scene: ColorProfileScene) -> OutputTransformMode:
     return OutputTransformMode.SRGB_FALLBACK
 
 
-def evaluate_color_profile_scene(scene: ColorProfileScene) -> ColorQaReport:
+def evaluate_color_profile_scene(
+    scene: ColorProfileScene,
+    config: ColorQaConfig | None = None,
+) -> ColorQaReport:
+    qa_config = config or _DEFAULT_QA_CONFIG
     _require_patch_roles(scene.patches)
     output_mode = _resolve_output_mode(scene)
     icc_hash = (
@@ -260,6 +288,7 @@ def evaluate_color_profile_scene(scene: ColorProfileScene) -> ColorQaReport:
     patches: list[PatchDelta] = []
     group_values: dict[PatchGroup, list[float]] = {key: [] for key in _GROUP_THRESHOLDS}
     oversaturation_failures: list[str] = []
+    sat_threshold = qa_config.thresholds_for(PatchGroup.SATURATED)
     for patch in scene.patches:
         delta_e = delta_e_ciede2000(patch.reference_lab, patch.sample_lab)
         group = _patch_group(patch.role)
@@ -270,7 +299,7 @@ def evaluate_color_profile_scene(scene: ColorProfileScene) -> ColorQaReport:
             PatchRole.PRIMARY_GREEN,
             PatchRole.PRIMARY_BLUE,
         }:
-            if chroma_delta > 0 and delta_e > _GROUP_THRESHOLDS[PatchGroup.SATURATED]["max"]:
+            if chroma_delta > 0 and delta_e > sat_threshold.max:
                 oversaturation_failures.append(patch.name)
         patches.append(
             PatchDelta(
@@ -285,18 +314,18 @@ def evaluate_color_profile_scene(scene: ColorProfileScene) -> ColorQaReport:
     summary: dict[str, GroupSummary] = {}
     passed = True
     for group, values in group_values.items():
-        thresholds = _GROUP_THRESHOLDS[group]
+        thresh = qa_config.thresholds_for(group)
         max_value = max(values)
         mean_value = sum(values) / len(values)
         status = QaStatus.PASS
-        if max_value > thresholds["max"] or mean_value > thresholds["mean"]:
+        if max_value > thresh.max or mean_value > thresh.mean:
             status = QaStatus.FAIL
             passed = False
         summary[group.value] = GroupSummary(
             max_delta_e00=max_value,
             mean_delta_e00=mean_value,
-            threshold_max=thresholds["max"],
-            threshold_mean=thresholds["mean"],
+            threshold_max=thresh.max,
+            threshold_mean=thresh.mean,
             status=status,
         )
 

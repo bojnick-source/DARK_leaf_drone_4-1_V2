@@ -11,6 +11,18 @@ class StepType(str, Enum):
     PROCESS = "PROCESS"
 
 
+class AcceptanceCriterionType(str, Enum):
+    FILE_EXISTS = "file_exists"
+    MANUAL_SIGNOFF = "manual_signoff"
+
+
+class StepDisposition(str, Enum):
+    PASS = "PASS"
+    FAIL = "FAIL"
+    SKIPPED = "SKIPPED"
+    OPTIONAL = "OPTIONAL"
+
+
 class BlockLevel(str, Enum):
     BLOCK_0_STRUCTURE_ONLY = "BLOCK_0_STRUCTURE_ONLY"
     BLOCK_1_STRUCTURAL_SENSING = "BLOCK_1_STRUCTURAL_SENSING"
