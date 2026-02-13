@@ -18,11 +18,17 @@ import math
 import re
 from dataclasses import dataclass
 
-# Unicode dashes that should be treated as a plain hyphen-minus
+# Unicode dashes that should be treated as a plain hyphen-minus:
+# \u2013 en-dash, \u2014 em-dash, \u2015 horizontal bar,
+# \u2012 figure dash, \u2010 hyphen
 _UNICODE_DASHES = "\u2013\u2014\u2015\u2012\u2010"
 _DASH_RE = re.compile(f"[{_UNICODE_DASHES}]")
 
-# After normalisation the separator must be one of these tokens
+# After normalisation the separator must be one of these tokens:
+#   :   colon       (4:1)
+#   /   slash       (4/1)
+#   -to-            (4-to-1)
+#   -   hyphen      (4-1) — accepted because it appears in repo naming (e.g. "4-1 drone")
 _SEPARATOR_RE = re.compile(r"^(\d+)\s*(?::|/|-to-|-)\s*(\d+)$")
 
 # "to" written as a word: "4 to 1"
