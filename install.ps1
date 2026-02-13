@@ -4,6 +4,10 @@
 .DESCRIPTION
     Installs the sfcs-mdp package in the current Python environment so that
     both ``sfcs-mdp`` and ``python -m sfcs_mdp`` work from any shell.
+
+    The installer automatically checks for prerequisites and offers to
+    install them via winget (ships with Windows 10/11) when they are missing.
+
     Run this script from the repository root:
 
         .\install.ps1
@@ -23,25 +27,94 @@
     To create a desktop shortcut after installation:
 
         .\install.ps1 -Shortcut
+
+    To launch the studio in desktop-app mode after installation:
+
+        .\install.ps1 -Launch
 #>
 param(
     [switch]$Dev,
     [switch]$Exe,
     [switch]$Cpp,
-    [switch]$Shortcut
+    [switch]$Shortcut,
+    [switch]$Launch
 )
 
 $ErrorActionPreference = "Stop"
 
-# Locate python
-$python = Get-Command python -ErrorAction SilentlyContinue |
-          Select-Object -ExpandProperty Source -First 1
-if (-not $python) {
-    Write-Error "Python was not found on your PATH. Install Python 3.11+ from https://www.python.org and try again."
-    exit 1
+# ── Helper: check whether winget is available ─────────────────────────
+function Test-Winget {
+    $wg = Get-Command winget -ErrorAction SilentlyContinue
+    return [bool]$wg
 }
 
-# Verify minimum version
+# ── Helper: install a package via winget (non-interactive) ────────────
+function Install-Prerequisite {
+    param(
+        [string]$PackageId,
+        [string]$FriendlyName,
+        [string]$ManualUrl
+    )
+    if (Test-Winget) {
+        Write-Host "  Installing $FriendlyName via winget ($PackageId)..." -ForegroundColor Cyan
+        winget install --id $PackageId --exact --accept-source-agreements --accept-package-agreements --silent
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "  winget install returned exit code $LASTEXITCODE.  You may need to install $FriendlyName manually from $ManualUrl"
+        } else {
+            Write-Host "  $FriendlyName installed successfully." -ForegroundColor Green
+            # Refresh the session PATH so newly installed binaries are visible.
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" +
+                        [System.Environment]::GetEnvironmentVariable("Path","User")
+        }
+    } else {
+        Write-Warning "  winget is not available on this system."
+        Write-Warning "  Please install $FriendlyName manually from $ManualUrl and re-run this script."
+        exit 1
+    }
+}
+
+# ── Prerequisite: Git ─────────────────────────────────────────────────
+$git = Get-Command git -ErrorAction SilentlyContinue |
+       Select-Object -ExpandProperty Source -First 1
+if (-not $git) {
+    Write-Host "Git was not found on your PATH." -ForegroundColor Yellow
+    Install-Prerequisite -PackageId "Git.Git" `
+                         -FriendlyName "Git" `
+                         -ManualUrl "https://git-scm.com"
+    $git = Get-Command git -ErrorAction SilentlyContinue |
+           Select-Object -ExpandProperty Source -First 1
+}
+
+# ── Prerequisite: Python 3.11+ ────────────────────────────────────────
+$python = Get-Command python -ErrorAction SilentlyContinue |
+          Select-Object -ExpandProperty Source -First 1
+
+$needsPython = $false
+if (-not $python) {
+    $needsPython = $true
+} else {
+    $ver = & $python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>&1
+    $parts = $ver -split '\.'
+    if ([int]$parts[0] -lt 3 -or ([int]$parts[0] -eq 3 -and [int]$parts[1] -lt 11)) {
+        Write-Host "Python $ver found but 3.11+ is required." -ForegroundColor Yellow
+        $needsPython = $true
+    }
+}
+
+if ($needsPython) {
+    Write-Host "Python 3.11+ was not found on your PATH." -ForegroundColor Yellow
+    Install-Prerequisite -PackageId "Python.Python.3.11" `
+                         -FriendlyName "Python 3.11" `
+                         -ManualUrl "https://www.python.org"
+    $python = Get-Command python -ErrorAction SilentlyContinue |
+              Select-Object -ExpandProperty Source -First 1
+    if (-not $python) {
+        Write-Error "Python is still not on your PATH after installation. Please close and re-open PowerShell, then re-run this script."
+        exit 1
+    }
+}
+
+# Re-verify the version after potential install
 $ver = & $python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>&1
 $parts = $ver -split '\.'
 if ([int]$parts[0] -lt 3 -or ([int]$parts[0] -eq 3 -and [int]$parts[1] -lt 11)) {
@@ -98,8 +171,16 @@ if ($Cpp) {
     $cmake = Get-Command cmake -ErrorAction SilentlyContinue |
              Select-Object -ExpandProperty Source -First 1
     if (-not $cmake) {
-        Write-Error "CMake was not found on your PATH. Install CMake 3.20+ from https://cmake.org and try again."
-        exit 1
+        Write-Host "CMake was not found on your PATH." -ForegroundColor Yellow
+        Install-Prerequisite -PackageId "Kitware.CMake" `
+                             -FriendlyName "CMake" `
+                             -ManualUrl "https://cmake.org"
+        $cmake = Get-Command cmake -ErrorAction SilentlyContinue |
+                 Select-Object -ExpandProperty Source -First 1
+        if (-not $cmake) {
+            Write-Error "CMake is still not on your PATH after installation. Please close and re-open PowerShell, then re-run this script."
+            exit 1
+        }
     }
     & $cmake -S . -B build -DENABLE_V2_ENGINE=ON
     if ($LASTEXITCODE -ne 0) {
@@ -143,9 +224,19 @@ IconIndex=0
     }
 }
 
+# ── Launch in desktop mode ─────────────────────────────────────────────
+if ($Launch) {
+    Write-Host ""
+    Write-Host "Launching studio in desktop mode..." -ForegroundColor Cyan
+    & $python -m sfcs_mdp launch
+}
+
 # ── Final summary ─────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "=== DARK leaf Drone — Vibe Engineering Studio ===" -ForegroundColor Cyan
 Write-Host "Launch the studio:  open ui/launcher.html in your browser" -ForegroundColor White
 Write-Host "  or run:  cd ui && python -m http.server" -ForegroundColor White
 Write-Host "  then open:  http://localhost:8000/launcher.html" -ForegroundColor White
+Write-Host ""
+Write-Host "Desktop mode:  sfcs-mdp launch" -ForegroundColor White
+Write-Host "  or:  python -m sfcs_mdp launch" -ForegroundColor White
