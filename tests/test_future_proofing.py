@@ -191,6 +191,4 @@ def test_deprecated_decorator_without_version() -> None:
         result = legacy()
         assert result == 42
         assert len(caught) == 1
-        assert "removal" not in str(caught[0].message).lower() or "None" not in str(
-            caught[0].message
-        )
+        assert "Scheduled for removal" not in str(caught[0].message)

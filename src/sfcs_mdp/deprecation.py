@@ -23,7 +23,11 @@ def deprecated(reason: str, *, removal_version: str | None = None) -> Callable[[
     """
 
     def decorator(func: F) -> F:
-        removal_note = f" Scheduled for removal in {removal_version}." if removal_version else ""
+        removal_note = (
+            f" Scheduled for removal in {removal_version}."
+            if removal_version is not None
+            else ""
+        )
         message = f"{func.__qualname__} is deprecated: {reason}{removal_note}"
 
         @functools.wraps(func)
