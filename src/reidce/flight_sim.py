@@ -95,12 +95,47 @@ class PID:
         return max(-self.limit, min(self.limit, value))
 
 
+@dataclass(frozen=True)
+class AutopilotConfig:
+    altitude_kp: float = 0.6
+    altitude_ki: float = 0.05
+    altitude_kd: float = 0.12
+    altitude_limit: float = 0.35
+    speed_kp: float = 0.8
+    speed_ki: float = 0.02
+    speed_kd: float = 0.08
+    speed_limit: float = 0.6
+    heading_kp: float = 1.2
+    heading_ki: float = 0.01
+    heading_kd: float = 0.15
+    heading_limit: float = 0.6
+    roll_kp: float = 2.0
+    roll_ki: float = 0.02
+    roll_kd: float = 0.2
+    roll_limit: float = 0.6
+    throttle_trim: float = 0.5
+
+
 class AutopilotChannel:
-    def __init__(self) -> None:
-        self.altitude_pid = PID(0.6, 0.05, 0.12, limit=0.35)
-        self.speed_pid = PID(0.8, 0.02, 0.08, limit=0.6)
-        self.heading_pid = PID(1.2, 0.01, 0.15, limit=0.6)
-        self.roll_pid = PID(2.0, 0.02, 0.2, limit=0.6)
+    def __init__(self, config: Optional[AutopilotConfig] = None) -> None:
+        config = config or AutopilotConfig()
+        self.config = config
+        self.altitude_pid = PID(
+            config.altitude_kp, config.altitude_ki, config.altitude_kd,
+            limit=config.altitude_limit,
+        )
+        self.speed_pid = PID(
+            config.speed_kp, config.speed_ki, config.speed_kd,
+            limit=config.speed_limit,
+        )
+        self.heading_pid = PID(
+            config.heading_kp, config.heading_ki, config.heading_kd,
+            limit=config.heading_limit,
+        )
+        self.roll_pid = PID(
+            config.roll_kp, config.roll_ki, config.roll_kd,
+            limit=config.roll_limit,
+        )
 
     def reset(self) -> None:
         self.altitude_pid.reset()
@@ -114,7 +149,7 @@ class AutopilotChannel:
         heading_error = _wrap_angle(target.heading_rad - sensed.heading_rad)
 
         pitch_cmd = self.altitude_pid.step(altitude_error, dt)
-        throttle = 0.5 + self.speed_pid.step(speed_error, dt)
+        throttle = self.config.throttle_trim + self.speed_pid.step(speed_error, dt)
         roll_cmd = self.heading_pid.step(heading_error, dt)
         yaw_rate = self.roll_pid.step(roll_cmd - sensed.roll_rad, dt)
 
