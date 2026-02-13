@@ -279,7 +279,7 @@ function vibeEngineerResponse(prompt) {
   const lower = prompt.toLowerCase();
   const components = [];
 
-  // Simple keyword-based component generation for the demo
+  // ── Component generation (keyword-based) ──────────────────────────
   if (lower.includes("propeller") || lower.includes("rotor") || lower.includes("prop")) {
     components.push({ name: "Propeller", type: "rotor",       diameter: 0.25, color: 0x00d4ff });
   }
@@ -299,17 +299,103 @@ function vibeEngineerResponse(prompt) {
     components.push({ name: "Arm",       type: "structure",   length: 0.2,  color: 0x58a6ff });
   }
 
-  // If no specific keywords, generate a generic response
+  // ── Intent-based drone presets ────────────────────────────────────
+  const isRacing   = /rac(e|ing)|fast|speed|fpv|freestyle/i.test(prompt);
+  const isPhoto    = /photo|video|film|cinema|landscape|aerial/i.test(prompt);
+  const isDelivery = /deliver|cargo|carry|transport|payload|heavy.?lift/i.test(prompt);
+  const isSurvey   = /survey|map|inspect|agriculture|thermal|multispectral/i.test(prompt);
+  const isExplore  = /explor|option|idea|suggest|recommend|show me|not sure|help me|what can|what should/i.test(prompt);
+
+  if (isRacing && !components.length) {
+    components.push(
+      { name: "Racing Frame",  type: "structure", length: 0.22,  color: 0x3fb950 },
+      { name: "Motor ×4",      type: "actuator",  diameter: 0.023, color: 0xa855f7 },
+      { name: "Racing Prop ×4", type: "rotor",    diameter: 0.13,  color: 0x00d4ff },
+      { name: "LiPo 4S",      type: "power",     length: 0.06,   color: 0xd29922 },
+    );
+  } else if (isPhoto && !components.length) {
+    components.push(
+      { name: "Stable Frame",  type: "structure", length: 0.35,   color: 0x3fb950 },
+      { name: "Motor ×4",      type: "actuator",  diameter: 0.03,  color: 0xa855f7 },
+      { name: "Low-KV Prop ×4", type: "rotor",   diameter: 0.25,  color: 0x00d4ff },
+      { name: "Camera Gimbal", type: "sensor",    diameter: 0.03,  color: 0xf85149 },
+      { name: "LiPo 6S",      type: "power",     length: 0.08,   color: 0xd29922 },
+    );
+  } else if (isDelivery && !components.length) {
+    components.push(
+      { name: "Heavy-Lift Frame", type: "structure", length: 0.5,  color: 0x3fb950 },
+      { name: "Motor ×6",      type: "actuator",  diameter: 0.04,  color: 0xa855f7 },
+      { name: "Large Prop ×6", type: "rotor",     diameter: 0.38,  color: 0x00d4ff },
+      { name: "Cargo Bay",     type: "structure",  length: 0.15,   color: 0x58a6ff },
+      { name: "LiPo 6S ×2",   type: "power",     length: 0.1,    color: 0xd29922 },
+    );
+  } else if (isSurvey && !components.length) {
+    components.push(
+      { name: "Survey Frame",  type: "structure", length: 0.4,   color: 0x3fb950 },
+      { name: "Motor ×4",      type: "actuator",  diameter: 0.03,  color: 0xa855f7 },
+      { name: "Efficient Prop ×4", type: "rotor", diameter: 0.28,  color: 0x00d4ff },
+      { name: "Sensor Array",  type: "sensor",    diameter: 0.025, color: 0xf85149 },
+      { name: "LiPo 6S",      type: "power",     length: 0.09,   color: 0xd29922 },
+    );
+  }
+
+  // ── Response generation ───────────────────────────────────────────
   let message;
-  if (components.length) {
-    message = `I understand — let me generate the components you described. I'm creating ${components.length} part(s) based on your description.`;
-  } else if (lower.includes("?") || lower.includes("how") || lower.includes("what") || lower.includes("why")) {
-    message = "Great question! For a typical drone build, you'll want to describe the key components — frame, motors, propellers, battery, and any payload (camera, sensors). Tell me what kind of drone you're building and I'll generate the parts.";
+
+  if (components.length && (isRacing || isPhoto || isDelivery || isSurvey)) {
+    // Matched a drone type — give an enthusiastic, conversational response
+    const presetMessages = {
+      racing: "Nice, a racing build! 🏁 I've put together a lightweight 5\" quad setup — small frame, high-KV motors, and a punchy 4S battery. This should rip. Want me to tweak the prop size or swap to a 6S setup for more top speed?",
+      photo: "Great choice! 📷 I've set up a stable photography platform — larger props for smooth flight, a camera gimbal, and a 6S battery for longer flight times. Want to add GPS hold or adjust the frame size?",
+      delivery: "Got it — heavy-lift config coming up! 📦 I've gone with a hex (6 motors) for redundancy and a dedicated cargo bay. The larger props will handle the extra weight. How much payload are we targeting? I can adjust the motor size.",
+      survey: "Perfect for mapping work! 🔬 I've configured a survey quad with efficient props for max flight time, plus a sensor array mount. Want to add RTK GPS or a specific sensor type like multispectral or thermal?",
+    };
+    const key = isRacing ? "racing" : isPhoto ? "photo" : isDelivery ? "delivery" : "survey";
+    message = presetMessages[key];
+  } else if (components.length) {
+    // Matched specific component keywords
+    const names = components.map(c => c.name).join(", ");
+    message = `On it! I'm generating ${names} for you. These will show up in the Assembly Lab once we're ready.\n\nWant me to add anything else? For a complete build you'd typically also need ${suggestMissing(components)}.`;
+  } else if (isExplore) {
+    // User is exploring / not sure what they want
+    message = "No problem — let's figure it out together! Here are some popular starting points:\n\n" +
+      "🏁 **Racing/FPV** — Small, fast, agile. Think 5\" props and 4S power.\n" +
+      "📷 **Photography** — Stable, smooth, long flight time. Gimbal + GPS.\n" +
+      "📦 **Delivery/Cargo** — Heavy-lift hex or octo with a cargo bay.\n" +
+      "🔬 **Survey/Mapping** — Max endurance, sensor array, RTK GPS.\n" +
+      "🎮 **Freestyle** — Durable frame, punchy motors, acro-ready.\n\n" +
+      "Just say which one sounds closest to what you're after, or describe your own idea — even something vague like \"I want something that flies far\" works!";
+  } else if (lower.includes("?") || lower.includes("how") || lower.includes("what") || lower.includes("why") || lower.includes("can")) {
+    // Question — give a helpful, conversational answer
+    const answers = [
+      "Good question! Here's the quick version — most drones share the same core: frame, motors, propellers, a flight controller, and a battery. The differences come down to what you want it *to do*. A racing quad is light with tiny props; a photography rig is big with a gimbal. Tell me the mission and I'll pick the right combo for you.",
+      "I can definitely help with that! The key variables are: how much weight it needs to carry, how long it needs to fly, and how fast. Once I know the mission profile, I can suggest the right frame size, motor KV, prop diameter, and battery. What are you trying to achieve?",
+      "Absolutely! Think of it this way — every drone design is really just balancing weight, thrust, and flight time. More thrust means bigger motors and props (but heavier). Longer flight means bigger battery (but also heavier). I can help you find the sweet spot. What's the primary use case?",
+    ];
+    message = answers[State.chatHistory.length % answers.length];
   } else {
-    message = "Thanks for sharing your ideas! Try mentioning specific components like 'frame', 'propeller', 'motor', 'battery', or 'camera' and I'll generate them for the Assembly Lab. You can also describe the drone's purpose and flight characteristics.";
+    // General input — be encouraging, suggest directions, don't just wait for keywords
+    const fallbacks = [
+      "Interesting idea! I can work with that. To get the ball rolling, would you say this is more of a speed build, a camera platform, or something else? I'll suggest a starting config and we can tweak from there.",
+      "Love it! Let me suggest a starting point — how about a classic quad setup? 4 motors, a clean frame, and a solid battery. I can spin that up and we can customize from there. Sound good?",
+      "Cool! Here's what I'm thinking — let me throw together a versatile all-rounder quad (4 motors, 10\" props, 6S battery) and you can tell me what to change. Sometimes it's easier to react to something than start from scratch. Want me to go ahead?",
+    ];
+    message = fallbacks[State.chatHistory.length % fallbacks.length];
   }
 
   return { message, components };
+}
+
+/** Suggest components the user hasn't added yet. */
+function suggestMissing(components) {
+  const types = new Set(components.map(c => c.type));
+  const missing = [];
+  if (!types.has("structure")) missing.push("a frame");
+  if (!types.has("actuator")) missing.push("motors");
+  if (!types.has("rotor"))    missing.push("propellers");
+  if (!types.has("power"))    missing.push("a battery");
+  if (!types.has("sensor"))   missing.push("a camera or sensors");
+  return missing.length ? missing.join(", ") : "looks like you've got the essentials covered!";
 }
 
 function appendChat(role, text) {
@@ -321,8 +407,14 @@ function appendChat(role, text) {
   labelDiv.className = "msg-label";
   labelDiv.textContent = label;
   div.appendChild(labelDiv);
-  const textNode = document.createTextNode(text);
-  div.appendChild(textNode);
+  const body = document.createElement("div");
+  body.className = "msg-body";
+  // Light markdown: **bold** and newlines
+  const html = escHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n/g, "<br>");
+  body.innerHTML = html;
+  div.appendChild(body);
   el.appendChild(div);
   el.scrollTop = el.scrollHeight;
   State.chatHistory.push({ role, text });

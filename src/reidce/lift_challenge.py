@@ -19,6 +19,8 @@ import math
 from dataclasses import dataclass, field
 from typing import List
 
+from reidce.ratio import RatioResult, parse_ratio
+
 # ---------------------------------------------------------------------------
 # Physical constants
 # ---------------------------------------------------------------------------
@@ -260,7 +262,9 @@ def mission_closure(
 # DARPA LIFT constraints
 DARPA_MAX_AIRCRAFT_MASS_KG: float = 24.95  # 55 lb
 DARPA_MIN_PAYLOAD_KG: float = 49.9  # 110 lb
-DARPA_FULL_PRIZE_RATIO: float = 4.0  # 220 lb payload
+DARPA_FULL_PRIZE_PARSED: RatioResult = parse_ratio("4:1")
+"""Full-prize payload-to-aircraft-mass ratio, parsed from canonical ``4:1``."""
+DARPA_FULL_PRIZE_RATIO: float = DARPA_FULL_PRIZE_PARSED.ratio_value  # 220 lb payload
 
 DARPA_COURSE_NM: float = 5.0
 DARPA_ALTITUDE_FT: float = 350.0

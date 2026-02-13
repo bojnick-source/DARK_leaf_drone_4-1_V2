@@ -141,6 +141,7 @@ from reidce.lift_challenge import (
     ALADDIN_3B,
     ALADDIN_3B_MISSION,
     ALADDIN_3B_ROTORS,
+    DARPA_FULL_PRIZE_PARSED,
     DARPA_FULL_PRIZE_RATIO,
     DARPA_MAX_AIRCRAFT_MASS_KG,
     DARPA_MIN_PAYLOAD_KG,
@@ -191,6 +192,7 @@ from reidce.pipeline import (
     sensitivity,
 )
 from reidce.protocols import AcceptanceEvaluator, DesignValidator, Simulator
+from reidce.ratio import RatioResult, parse_ratio
 from reidce.sales_shipping import (
     SalesInputs,
     SalesSummary,
@@ -436,6 +438,7 @@ __all__ = [
     "ALADDIN_3B",
     "ALADDIN_3B_MISSION",
     "ALADDIN_3B_ROTORS",
+    "DARPA_FULL_PRIZE_PARSED",
     "DARPA_FULL_PRIZE_RATIO",
     "DARPA_MAX_AIRCRAFT_MASS_KG",
     "DARPA_MIN_PAYLOAD_KG",
@@ -452,4 +455,7 @@ __all__ = [
     "ideal_induced_power",
     "mission_closure",
     "shaft_power",
+    # ratio parsing
+    "RatioResult",
+    "parse_ratio",
 ]
