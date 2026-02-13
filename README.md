@@ -43,7 +43,7 @@ cd ui && python -m http.server
 # Creates "DARK leaf Drone" shortcut on your desktop
 ```
 
-## Scope (this PR)
+## Scope
 Included:
 - v2 deterministic core IO (run_id, artifact layout, canonicalization, JSON emission, error handling)
 - v2 CLI entrypoint (`v2_cli`)
@@ -51,13 +51,11 @@ Included:
 - python orchestration tools (`run_batch.py`, `parse_results.py`)
 - minimal deterministic C++ tests and golden fixtures
 - spec/manifest docs as documentation only (spec-only / not implemented here)
-
-Not included (future work):
-- Monte Carlo / uncertainty wrapper
-- sampling proposals
-- probabilistic safety gate
-- calibration boundary layer
-- validity/governance report layer
+- Monte Carlo / uncertainty wrapper (`v2/engine/src/uncertainty/`)
+- sampling proposals (`v2/engine/src/sampling/`)
+- probabilistic safety gate (`v2/engine/src/safety/`)
+- calibration boundary layer (`v2/engine/src/calibration/`)
+- validity/governance report layer (`v2/engine/src/validity/`)
 
 Build isolation:
 - v2 targets are opt-in via `-DENABLE_V2_ENGINE=ON` (default OFF to preserve baseline builds).
