@@ -84,6 +84,16 @@ from reidce.code_gen import (
     generate_drone_config,
     generate_simulation_script,
 )
+from reidce.design_catalog import (
+    DESIGN_CATALOG,
+    CatalogValidation,
+    DesignEntry,
+    catalog_summary,
+    get_design,
+    get_designs_by_category,
+    validate_catalog,
+    validate_design,
+)
 from reidce.drivetrain import (
     Backlash,
     BeltDrive,
@@ -524,6 +534,15 @@ __all__ = [
     "TitleBlock",
     "ViewPort",
     "generate_drone_blueprint",
+    # design catalog
+    "CatalogValidation",
+    "DesignEntry",
+    "DESIGN_CATALOG",
+    "catalog_summary",
+    "get_design",
+    "get_designs_by_category",
+    "validate_catalog",
+    "validate_design",
     # code generation
     "CodeGenEngine",
     "CodeTemplate",
