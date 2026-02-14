@@ -31,6 +31,23 @@
   --toolbar-h: 44px;
   --toolbar-radius: 12px;
   --toolbar-blur: 18px;
+
+  /* Glass System 100/100 — GPU-backed glass design tokens.
+     These map to the WebGPU glass composite shader parameters
+     for Beer–Lambert absorption + OIT panel rendering. */
+  --glass-blur: 22px;
+  --glass-alpha: 0.14;
+  --glass-tint: rgba(20, 26, 38, 0.65);
+  --glass-specular: rgba(255, 255, 255, 0.25);
+  --glass-absorption-r: 0.92;
+  --glass-absorption-g: 0.90;
+  --glass-absorption-b: 0.95;
+  --glass-absorption-density: 2.4;
+  --glass-thickness: 0.012;
+  --glass-fresnel-power: 4.0;
+  --glass-fresnel-intensity: 0.15;
+  --glass-bilateral-depth-sigma: 0.05;
+  --glass-bilateral-spatial-sigma: 4.0;
 }
 
 /* ===================================================================
@@ -347,7 +364,7 @@
   font-size: 10px;
   font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
   color: rgba(255, 255, 255, 0.60);
-  min-width: 160px;
+  min-width: 180px;
 }
 
 .debug-overlay.visible {
@@ -392,4 +409,56 @@
   .toolbar-sep.hide-mobile {
     display: none;
   }
+}
+
+/* ===================================================================
+   Glass Bento Panels — GPU-backed noir glass over starfield
+   Uses CSS custom properties mapped to WebGPU shader uniforms.
+   backdrop-filter provides the visual fallback; the real blur +
+   absorption is computed by the Glass System 100/100 pipeline
+   (downsample → bilateral blur → Beer–Lambert → OIT composite).
+   =================================================================== */
+
+.glass-panel {
+  background: var(--glass-tint);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+  border: 1px solid var(--noir-stroke);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 var(--glass-specular),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.20);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Metallic sheen gradient overlay (top edge highlight) */
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--metal-sheen);
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.5;
+}
+
+/* OIT-aware stacking — overlapping glass panels use Weighted Blended
+   Order-Independent Transparency in the GPU pipeline.  The CSS z-index
+   only controls DOM paint order; the GPU composite handles alpha. */
+
+.glass-panel--frosted {
+  --glass-blur: 28px;
+  --glass-alpha: 0.18;
+}
+
+.glass-panel--clear {
+  --glass-blur: 6px;
+  --glass-alpha: 0.08;
+}
+
+.glass-panel--noir {
+  --glass-tint: rgba(10, 11, 14, 0.78);
+  --glass-absorption-density: 3.6;
 }
