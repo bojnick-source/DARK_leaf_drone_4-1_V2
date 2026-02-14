@@ -377,3 +377,156 @@ class EngineeringQueryEngine:
             "domains": self.list_domains(),
             "has_memory": self.memory_store is not None,
         }
+
+
+# ── Conversational context engine ────────────────────────────────────
+
+# Tuning constants for intent classification
+_INTENT_KEYWORD_THRESHOLD = 0.4
+"""Fraction of keywords required for full confidence."""
+
+_INTENT_DECAY_FACTOR = 0.7
+"""Decay applied to older intent scores each turn."""
+
+
+# Competition-specific intent patterns with weighted keyword matching
+_COMPETITION_INTENTS: Dict[str, List[str]] = {
+    "design_review": [
+        "design", "review", "evaluate", "assess", "check", "validate",
+        "constraint", "requirement", "spec",
+    ],
+    "topology_optimize": [
+        "topology", "optimize", "optimise", "stiffness", "weight",
+        "lightweight", "structural", "strength", "deflection",
+    ],
+    "cad_generate": [
+        "cad", "mesh", "3d", "model", "generate", "render", "stl",
+        "geometry", "shape", "autocad", "shapr",
+    ],
+    "competition_rules": [
+        "competition", "darpa", "lift", "rules", "constraint", "payload",
+        "ratio", "4:1", "course", "prize", "challenge",
+    ],
+    "flight_performance": [
+        "flight", "fly", "performance", "speed", "endurance", "climb",
+        "turn", "hover", "power", "thrust", "energy",
+    ],
+    "manufacturing": [
+        "manufacturing", "build", "fabricate", "material", "process",
+        "composite", "carbon", "assembly", "production",
+    ],
+}
+
+
+def classify_intent(text: str) -> List[tuple[str, float]]:
+    """Classify user intent from free-form text.
+
+    Returns a ranked list of ``(intent_name, confidence)`` pairs where
+    confidence is the fraction of intent keywords found in the text.
+    Competition-centric intents are prioritised over general ones.
+    """
+    lower = text.lower()
+    tokens = set(_tokenize(lower))
+    scores: List[tuple[str, float]] = []
+    for intent, keywords in _COMPETITION_INTENTS.items():
+        matches = sum(1 for kw in keywords if kw in tokens or kw in lower)
+        if matches > 0:
+            confidence = min(matches / max(len(keywords) * _INTENT_KEYWORD_THRESHOLD, 1.0), 1.0)
+            scores.append((intent, round(confidence, 3)))
+    scores.sort(key=lambda x: x[1], reverse=True)
+    return scores
+
+
+@dataclass
+class ConversationTurn:
+    """A single turn in a multi-turn conversation."""
+
+    role: str
+    text: str
+    intent: str = ""
+    confidence: float = 0.0
+
+
+@dataclass
+class ConversationContext:
+    """Multi-turn conversational context tracker.
+
+    Maintains conversation history and extracts cumulative intent across
+    turns, enabling Claude-like contextual understanding where later
+    messages can refine or build on earlier ones.
+    """
+
+    turns: List[ConversationTurn] = field(default_factory=list)
+    active_intents: Dict[str, float] = field(default_factory=dict)
+    design_parameters: Dict[str, Any] = field(default_factory=dict)
+
+    def add_turn(self, role: str, text: str) -> ConversationTurn:
+        """Add a conversation turn and update cumulative intent."""
+        intents = classify_intent(text) if role == "user" else []
+        top_intent = intents[0][0] if intents else ""
+        top_confidence = intents[0][1] if intents else 0.0
+
+        turn = ConversationTurn(
+            role=role, text=text, intent=top_intent, confidence=top_confidence,
+        )
+        self.turns.append(turn)
+
+        # Update cumulative intent scores with decay for older turns
+        for intent, conf in intents:
+            existing = self.active_intents.get(intent, 0.0)
+            self.active_intents[intent] = min(existing * _INTENT_DECAY_FACTOR + conf, 1.0)
+
+        # Extract design parameters from user text
+        if role == "user":
+            self._extract_parameters(text)
+
+        return turn
+
+    def _extract_parameters(self, text: str) -> None:
+        """Extract numeric design parameters from user input."""
+        lower = text.lower()
+        import re as _re
+
+        # Arm count
+        m = _re.search(r"(\d+)\s*(?:arm|motor|rotor|prop)", lower)
+        if m:
+            self.design_parameters["arm_count"] = int(m.group(1))
+
+        # Mass/weight targets
+        m = _re.search(r"(\d+(?:\.\d+)?)\s*(?:kg|kilogram)", lower)
+        if m:
+            self.design_parameters["target_mass_kg"] = float(m.group(1))
+
+        # Payload
+        m = _re.search(r"payload\s*(?:of\s*)?(\d+(?:\.\d+)?)\s*(?:kg)?", lower)
+        if m:
+            self.design_parameters["payload_kg"] = float(m.group(1))
+
+    def get_dominant_intent(self) -> tuple[str, float]:
+        """Return the highest-confidence cumulative intent."""
+        if not self.active_intents:
+            return ("", 0.0)
+        best = max(self.active_intents.items(), key=lambda x: x[1])
+        return best
+
+    def get_context_summary(self) -> str:
+        """Build a summary of conversation context for response generation."""
+        parts: List[str] = []
+        if self.active_intents:
+            top = sorted(self.active_intents.items(), key=lambda x: x[1], reverse=True)[:3]
+            parts.append("Active intents: " + ", ".join(f"{k}({v:.2f})" for k, v in top))
+        if self.design_parameters:
+            params = ", ".join(f"{k}={v}" for k, v in self.design_parameters.items())
+            parts.append("Design parameters: " + params)
+        parts.append(f"Turns: {len(self.turns)}")
+        return "; ".join(parts)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialise context state."""
+        return {
+            "schema": "dark/conversation_context/1.0",
+            "turn_count": len(self.turns),
+            "active_intents": dict(self.active_intents),
+            "design_parameters": dict(self.design_parameters),
+            "dominant_intent": self.get_dominant_intent()[0],
+        }

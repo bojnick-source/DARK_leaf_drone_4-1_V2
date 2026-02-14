@@ -146,28 +146,29 @@
     <section class="view-panel" id="view-vibe">
       <div class="view-header">
         <h2>Vibe Engineer</h2>
-        <p>Describe your drone ideas — the AI will help generate components.</p>
+        <p>Competition-focused AI assistant — describe your design ideas and I'll orchestrate the full computational pipeline.</p>
       </div>
 
       <div class="prompt-container">
         <div class="chat-messages" id="chatMessages">
           <div class="chat-msg assistant">
             <div class="msg-label">DARK leaf AI</div>
-            Hey! 👋 I'm your vibe-engineering partner. Let's build something cool together.
+Hey! 👋 I'm your competition-focused vibe-engineering partner. Let's build your <strong>4:1 DARPA LIFT drone</strong>.
 
-You can jump right in — here are a few ways to start:
+I understand context across our conversation — just tell me what you need and I'll use the full computational pipeline (topology optimization, validation, flight testing, and CAD generation) to deliver results.
 
-🏁 <strong>"I want to build a racing drone"</strong> — I'll set you up with a lightweight speed build
-📷 <strong>"Photography drone for landscapes"</strong> — I'll suggest a stable platform with a camera gimbal
-📦 <strong>"Delivery drone that can carry 2 kg"</strong> — I'll design around payload capacity
-🔬 <strong>"Just exploring, show me options"</strong> — I'll walk you through some popular configs
+🏁 <strong>"Build the competition drone"</strong> — I'll configure the DARPA LIFT quad (24.95 kg, 4:1 ratio)
+🏗️ <strong>"Generate CAD mesh"</strong> — I'll run topology → validation → high-fidelity mesh pipeline
+🔧 <strong>"Optimize the topology"</strong> — I'll evaluate structural variants
+✈️ <strong>"Run flight tests"</strong> — I'll start the AI design loop (build-fly-learn)
+📐 <strong>"Show me the rules"</strong> — I'll review DARPA LIFT competition constraints
 
-Or just describe your idea in your own words — even a rough sketch is enough to get started!
+Or describe your idea in your own words — I'll track context across turns and refine as we go!
           </div>
         </div>
 
         <div class="prompt-input-row">
-          <textarea id="promptInput" rows="2" placeholder="Describe your drone idea, ask questions, or paste specs..."></textarea>
+          <textarea id="promptInput" rows="2" placeholder="Describe your competition drone design, ask about DARPA LIFT rules, or request CAD generation..."></textarea>
           <button class="btn btn-primary btn-icon" id="btnSend" title="Send">▶</button>
           <button class="btn btn-icon" id="btnAttach" title="Attach file">📎</button>
           <input type="file" id="chatFileInput" multiple hidden>
