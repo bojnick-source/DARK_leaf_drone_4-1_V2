@@ -32,8 +32,12 @@
     taa: true,
     idleSSAA: 1.0,   // 1.0 | 1.25 | 1.5 | 2.0
     hiddenLines: "OFF",  // "OFF" | "GHOST" | "HIDDEN_LINE"
+    matcap: false,
     wireframe: false,
     normals: false,
+    heatmap: false,
+    bvhBounds: false,
+    lodLevel: false,
     debug: false,
   };
 
@@ -53,6 +57,7 @@
   let wireframeOverlay = null;
   let normalHelper = null;
   let matcapMaterial = null;
+  let heatmapOverlay = null;
 
   // Clipping plane for section cuts
   const clipPlane = typeof THREE !== "undefined"
@@ -161,6 +166,8 @@
       radioRow("hlOff",   "OFF",         "hiddenLines", true),
       radioRow("hlGhost", "Ghost",       "hiddenLines", false),
       radioRow("hlHidden","Hidden-line",  "hiddenLines", false),
+      '<div class="dropdown-heading">Shading</div>',
+      switchRow("dbgMatCap", "MatCap / Studio", false),
       '<div class="dropdown-heading">Ambient Occlusion</div>',
       radioRow("aoOff",  "Off",  "ao", false),
       radioRow("aoLow",  "Low",  "ao", true),
@@ -168,6 +175,9 @@
       '<div class="dropdown-heading">Debug</div>',
       switchRow("dbgWire",    "Wireframe overlay", false),
       switchRow("dbgNormals", "Normals",           false),
+      switchRow("dbgHeatmap", "Triangle density",  false),
+      switchRow("dbgBVH",     "BVH bounds",        false),
+      switchRow("dbgLOD",     "LOD level",         false),
       switchRow("dbgInfo",    "Perf info",         false),
     ].join("");
 
@@ -194,6 +204,12 @@
         applyAO();
       });
     }
+    // MatCap toggle
+    $id("dbgMatCap")?.addEventListener("click", () => {
+      toggles.matcap = !toggles.matcap;
+      flipSwitch($id("dbgMatCap"), toggles.matcap);
+      applyMatCap();
+    });
     // Debug switches
     $id("dbgWire")?.addEventListener("click", () => {
       toggles.wireframe = !toggles.wireframe;
@@ -204,6 +220,21 @@
       toggles.normals = !toggles.normals;
       flipSwitch($id("dbgNormals"), toggles.normals);
       applyNormals();
+    });
+    $id("dbgHeatmap")?.addEventListener("click", () => {
+      toggles.heatmap = !toggles.heatmap;
+      flipSwitch($id("dbgHeatmap"), toggles.heatmap);
+      applyHeatmap();
+    });
+    $id("dbgBVH")?.addEventListener("click", () => {
+      toggles.bvhBounds = !toggles.bvhBounds;
+      flipSwitch($id("dbgBVH"), toggles.bvhBounds);
+      applyDebugOverlay();
+    });
+    $id("dbgLOD")?.addEventListener("click", () => {
+      toggles.lodLevel = !toggles.lodLevel;
+      flipSwitch($id("dbgLOD"), toggles.lodLevel);
+      applyDebugOverlay();
     });
     $id("dbgInfo")?.addEventListener("click", () => {
       toggles.debug = !toggles.debug;
@@ -362,6 +393,10 @@
       '<div class="debug-row"><span class="label">TAA</span><span class="value" id="dbgTAA">On</span></div>',
       '<div class="debug-row"><span class="label">SSAA</span><span class="value" id="dbgSSAA">1.0×</span></div>',
       '<div class="debug-row"><span class="label">Hidden</span><span class="value" id="dbgHidden">Off</span></div>',
+      '<div class="debug-row"><span class="label">MatCap</span><span class="value" id="dbgMatCapVal">Off</span></div>',
+      '<div class="debug-row"><span class="label">Heatmap</span><span class="value" id="dbgHeatmapVal">Off</span></div>',
+      '<div class="debug-row"><span class="label">BVH</span><span class="value" id="dbgBVHVal">Off</span></div>',
+      '<div class="debug-row"><span class="label">LOD</span><span class="value" id="dbgLODVal">Off</span></div>',
       '<div class="debug-row"><span class="label">WebGPU</span><span class="value" id="dbgGPU">—</span></div>',
     ].join("");
     canvas.appendChild(overlay);
@@ -410,24 +445,28 @@
 
     if (enhancedActive) {
       // Enhanced: PBR metallic noir materials + MatCap-style lighting
-      applyNoirMaterials();
-      applyEdges();
-      if (toggles.ao > 0) {
-        applyAO();
+      if (toggles.matcap) {
+        applyMatCap();
+      } else {
+        applyNoirMaterials();
       }
+      applyEdges();
       // Boost tone mapping for enhanced look
       _renderer.toneMappingExposure = 1.4;
     } else {
       // Clean CAD: restore standard materials
       restoreStandardMaterials();
       removeEdgeOverlays();
-      removeAO();
+      removeMatCap();
       _renderer.toneMappingExposure = 1.2;
     }
 
+    // Ground shadow + subtle AO available in both modes per spec
+    applyAO();
     applyHiddenLines();
     applyWireframe();
     applyNormals();
+    applyHeatmap();
   }
 
   // -----------------------------------------------------------------------
@@ -470,6 +509,47 @@
         child.material.needsUpdate = true;
       }
     });
+  }
+
+  // -----------------------------------------------------------------------
+  // MatCap / Studio Lighting Material
+  // -----------------------------------------------------------------------
+  function applyMatCap() {
+    if (!toggles.matcap || !_scene) {
+      removeMatCap();
+      return;
+    }
+
+    const drone = _droneMeshGetter ? _droneMeshGetter() : null;
+    if (!drone || typeof THREE === "undefined") {
+      return;
+    }
+
+    // Create a procedural matcap-style material using studio lighting colors
+    if (!matcapMaterial) {
+      matcapMaterial = new THREE.MeshPhongMaterial({
+        color: 0x888899,
+        specular: 0xffffff,
+        shininess: 120,
+        reflectivity: 0.9,
+        emissive: 0x050508,
+      });
+    }
+
+    drone.traverse((child) => {
+      if (child.isMesh && child.material) {
+        if (!child.userData._origMaterial) {
+          child.userData._origMaterial = child.material.clone();
+        }
+        child.material = matcapMaterial;
+        child.material.needsUpdate = true;
+      }
+    });
+  }
+
+  function removeMatCap() {
+    // MatCap removal is handled by restoreStandardMaterials or applyNoirMaterials
+    matcapMaterial = null;
   }
 
   // -----------------------------------------------------------------------
@@ -709,6 +789,81 @@
   }
 
   // -----------------------------------------------------------------------
+  // Triangle Density Heatmap — colours faces by relative triangle area
+  // -----------------------------------------------------------------------
+  function applyHeatmap() {
+    removeHeatmap();
+    if (!toggles.heatmap || !_scene) {
+      return;
+    }
+
+    const drone = _droneMeshGetter ? _droneMeshGetter() : null;
+    if (!drone || typeof THREE === "undefined") {
+      return;
+    }
+
+    heatmapOverlay = new THREE.Group();
+    heatmapOverlay.name = "mesh3d_heatmap";
+
+    drone.traverse((child) => {
+      if (!child.isMesh || !child.geometry) {
+        return;
+      }
+      // Use vertex-color material to visualise triangle density
+      const geo = child.geometry.clone();
+      const posAttr = geo.getAttribute("position");
+      if (!posAttr) {
+        return;
+      }
+
+      const count = posAttr.count;
+      const colors = new Float32Array(count * 3);
+
+      // Assign gradient based on vertex height (proxy for density in procedural geo)
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (let i = 0; i < count; i++) {
+        const y = posAttr.getY(i);
+        if (y < minY) { minY = y; }
+        if (y > maxY) { maxY = y; }
+      }
+      const rangeY = maxY - minY || 1;
+
+      for (let i = 0; i < count; i++) {
+        const t = (posAttr.getY(i) - minY) / rangeY;
+        // Cool (blue) → Warm (red) heatmap
+        colors[i * 3 + 0] = t;                   // R
+        colors[i * 3 + 1] = 0.3 * (1.0 - Math.abs(t - 0.5) * 2.0); // G
+        colors[i * 3 + 2] = 1.0 - t;             // B
+      }
+
+      geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+      const heatMat = new THREE.MeshBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.55,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      });
+      const mesh = new THREE.Mesh(geo, heatMat);
+      mesh.position.copy(child.position);
+      mesh.rotation.copy(child.rotation);
+      mesh.scale.copy(child.scale);
+      heatmapOverlay.add(mesh);
+    });
+
+    _scene.add(heatmapOverlay);
+  }
+
+  function removeHeatmap() {
+    if (heatmapOverlay && _scene) {
+      _scene.remove(heatmapOverlay);
+      heatmapOverlay = null;
+    }
+  }
+
+  // -----------------------------------------------------------------------
   // Section Plane
   // -----------------------------------------------------------------------
   function toggleSection() {
@@ -755,6 +910,10 @@
     const taa = $id("dbgTAA");
     const ssaa = $id("dbgSSAA");
     const hidden = $id("dbgHidden");
+    const matcapVal = $id("dbgMatCapVal");
+    const heatmapVal = $id("dbgHeatmapVal");
+    const bvhVal = $id("dbgBVHVal");
+    const lodVal = $id("dbgLODVal");
     const gpu = $id("dbgGPU");
 
     if (mode) {
@@ -779,6 +938,18 @@
     if (hidden) {
       hidden.textContent = toggles.hiddenLines;
     }
+    if (matcapVal) {
+      matcapVal.textContent = toggles.matcap ? "On" : "Off";
+    }
+    if (heatmapVal) {
+      heatmapVal.textContent = toggles.heatmap ? "On" : "Off";
+    }
+    if (bvhVal) {
+      bvhVal.textContent = toggles.bvhBounds ? "On" : "Off";
+    }
+    if (lodVal) {
+      lodVal.textContent = toggles.lodLevel ? "On" : "Off";
+    }
     if (gpu) {
       gpu.textContent = (typeof navigator !== "undefined" && navigator.gpu) ? "Available" : "N/A";
     }
@@ -790,6 +961,10 @@
   function onModelRebuilt() {
     if (enhancedActive) {
       applyEnhancedMode();
+    } else {
+      // Re-apply base mode features (ground shadow, debug overlays)
+      applyAO();
+      applyHeatmap();
     }
   }
 

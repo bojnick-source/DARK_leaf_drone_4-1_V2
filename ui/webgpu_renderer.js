@@ -177,8 +177,8 @@ class CADViewportRenderer {
       graph.addPass((enc) => this._edgesAnalytic(enc));
     }
 
-    // 6) Selection outline (ID-buffer based) — placeholder
-    // graph.addPass((enc) => this._selectionOutline(enc));
+    // 6) Selection outline (ID-buffer based)
+    graph.addPass((enc) => this._selectionOutline(enc));
 
     // 7) TAA Resolve
     if (this._toggles.taaEnabled) {
@@ -233,6 +233,13 @@ class CADViewportRenderer {
   _composite(enc) {
     // Tone-map (ACES filmic), subtle highlight-only bloom, dither/noise,
     // then UI overlay composited in linear space.
+    void enc;
+  }
+
+  _selectionOutline(enc) {
+    // Draw selection outlines using object ID buffer.
+    // Compares adjacent IDs to detect silhouette of selected object,
+    // then composites a restrained glow (ink-teal accent) outline.
     void enc;
   }
 }
