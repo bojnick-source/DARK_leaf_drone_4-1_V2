@@ -279,10 +279,14 @@ def _richardson_extrapolation(
 
 
 def _sutherland_viscosity(temperature_k: float) -> float:
-    """Sutherland's law for air dynamic viscosity."""
-    t_ref = 291.15
-    mu_ref = 1.827e-5
-    c = 120.0
+    """Sutherland's law for air dynamic viscosity.
+
+    Uses the ISA-consistent reference point: T_ref = 288.15 K (sea level),
+    mu_ref = 1.789e-5 Pa·s, Sutherland constant S = 110.4 K.
+    """
+    t_ref = 288.15
+    mu_ref = 1.789e-5
+    c = 110.4
     return mu_ref * (temperature_k / t_ref) ** 1.5 * (t_ref + c) / (temperature_k + c)
 
 
@@ -325,6 +329,9 @@ def compute_aero(
     cl = _compressibility_correction(cl_3d, mach)
 
     # Richardson extrapolation for Cl (coarse uses relaxed lift-curve slope)
+    # The 0.98 factor simulates a coarser panel discretisation whose lift-curve
+    # slope is 2 % lower, providing the two-grid approximation pair needed for
+    # Richardson extrapolation without re-running the full panel method.
     cl_2d_coarse = 2.0 * math.pi * 0.98 * (
         condition.alpha_rad + 2.0 * geometry.camber_ratio
     )
@@ -355,6 +362,8 @@ def compute_aero(
     )
     cm = _compressibility_correction(cm, mach)
 
+    # Coarse Cm uses a 2 % reduced camber to emulate the lower-order
+    # discretisation for Richardson extrapolation error estimation.
     cm_coarse = _compressibility_correction(
         _pitching_moment_cm(
             condition.alpha_rad, geometry.camber_ratio * 0.98,

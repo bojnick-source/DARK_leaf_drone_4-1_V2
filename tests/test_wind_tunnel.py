@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+import pytest
 from reidce.wind_tunnel import (
     AirfoilGeometry,
     ConvergenceMetrics,
@@ -317,11 +318,8 @@ def test_simulate_flight_wind_tunnel_invalid_duration() -> None:
     wt = run_wind_tunnel(geom, velocities_m_s=[20.0], alphas_deg=[5.0])
     state = VehicleState()
     target = GuidanceTarget(altitude_m=50.0, speed_m_s=10.0, heading_rad=0.0)
-    try:
+    with pytest.raises(ValueError):
         simulate_flight_wind_tunnel(state, target, -1.0, 0.1, wt)
-        raise AssertionError("Should raise ValueError")
-    except ValueError:
-        pass
 
 
 def test_simulate_flight_wind_tunnel_invalid_tunnel_result() -> None:
@@ -333,11 +331,8 @@ def test_simulate_flight_wind_tunnel_invalid_tunnel_result() -> None:
 
     state = VehicleState()
     target = GuidanceTarget(altitude_m=50.0, speed_m_s=10.0, heading_rad=0.0)
-    try:
+    with pytest.raises(TypeError):
         simulate_flight_wind_tunnel(state, target, 1.0, 0.1, "not_a_result")
-        raise AssertionError("Should raise TypeError")
-    except TypeError:
-        pass
 
 
 def test_simulate_flight_wind_tunnel_battery_depletes() -> None:
