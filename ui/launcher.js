@@ -11,6 +11,9 @@
 
 // ── State ────────────────────────────────────────────────────────────
 const MAX_SIM_DURATION = 120; // seconds — auto-stop after this time
+const INTENT_KEYWORD_THRESHOLD = 0.4;  // fraction of keywords for full confidence
+const INTENT_DECAY_FACTOR = 0.7;       // decay for older intent scores each turn
+const DEFAULT_ARM_COUNT = 4;           // competition drone default arm count
 
 const State = {
   currentView:   "home",
@@ -292,7 +295,7 @@ function vibeEngineerResponse(prompt) {
   ctx.turns.push({ role: "user", text: prompt, intents: intentScores });
   // Decay older intents, accumulate new ones
   for (const [intent, conf] of intentScores) {
-    ctx.activeIntents[intent] = Math.min((ctx.activeIntents[intent] || 0) * 0.7 + conf, 1.0);
+    ctx.activeIntents[intent] = Math.min((ctx.activeIntents[intent] || 0) * INTENT_DECAY_FACTOR + conf, 1.0);
   }
   extractDesignParameters(lower, ctx);
   const dominant = getDominantIntent(ctx);
@@ -341,7 +344,7 @@ function vibeEngineerResponse(prompt) {
       "1. **Topology optimization** — evaluating structural variants for the 4:1 competition frame\n" +
       "2. **Mesh validation** — checking watertight, manifold, and degenerate faces\n" +
       "3. **High-fidelity mesh generation** — multi-component drone geometry\n\n" +
-      "The CAD output is competition-focused: central hub, " + (ctx.designParameters.arm_count || 4) + " arms, motor mounts, propeller disks, and battery tray. " +
+      "The CAD output is competition-focused: central hub, " + (ctx.designParameters.arm_count || DEFAULT_ARM_COUNT) + " arms, motor mounts, propeller disks, and battery tray. " +
       "No camera or gimbal — strictly what the competition rules dictate.\n\n" +
       "Head to the **CAD Mesh Viewer** tab to inspect the generated geometry. Want me to adjust arm length, prop size, or tessellation quality?";
     ctx.cadAgentRunning = true;
@@ -483,7 +486,7 @@ function classifyIntent(text) {
   for (const [intent, keywords] of Object.entries(COMPETITION_INTENTS)) {
     const matches = keywords.filter(kw => tokens.has(kw) || lower.includes(kw)).length;
     if (matches > 0) {
-      const confidence = Math.min(matches / (keywords.length * 0.4), 1.0);
+      const confidence = Math.min(matches / (keywords.length * INTENT_KEYWORD_THRESHOLD), 1.0);
       scores.push([intent, Math.round(confidence * 1000) / 1000]);
     }
   }

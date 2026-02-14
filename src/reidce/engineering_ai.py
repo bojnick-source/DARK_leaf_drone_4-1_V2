@@ -381,6 +381,13 @@ class EngineeringQueryEngine:
 
 # ── Conversational context engine ────────────────────────────────────
 
+# Tuning constants for intent classification
+_INTENT_KEYWORD_THRESHOLD = 0.4
+"""Fraction of keywords required for full confidence."""
+
+_INTENT_DECAY_FACTOR = 0.7
+"""Decay applied to older intent scores each turn."""
+
 
 # Competition-specific intent patterns with weighted keyword matching
 _COMPETITION_INTENTS: Dict[str, List[str]] = {
@@ -424,7 +431,7 @@ def classify_intent(text: str) -> List[tuple[str, float]]:
     for intent, keywords in _COMPETITION_INTENTS.items():
         matches = sum(1 for kw in keywords if kw in tokens or kw in lower)
         if matches > 0:
-            confidence = min(matches / max(len(keywords) * 0.4, 1.0), 1.0)
+            confidence = min(matches / max(len(keywords) * _INTENT_KEYWORD_THRESHOLD, 1.0), 1.0)
             scores.append((intent, round(confidence, 3)))
     scores.sort(key=lambda x: x[1], reverse=True)
     return scores
@@ -467,7 +474,7 @@ class ConversationContext:
         # Update cumulative intent scores with decay for older turns
         for intent, conf in intents:
             existing = self.active_intents.get(intent, 0.0)
-            self.active_intents[intent] = min(existing * 0.7 + conf, 1.0)
+            self.active_intents[intent] = min(existing * _INTENT_DECAY_FACTOR + conf, 1.0)
 
         # Extract design parameters from user text
         if role == "user":
