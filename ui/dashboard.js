@@ -16,6 +16,7 @@ let payloadPill;
 let tripwireBanner;
 let jsonFileInput;
 const SAMPLE_FETCH_TIMEOUT_MS = 5000;
+const RAD_TO_DEG = 57.2958;
 const STATUS_COLORS = {
   ready: "#1f2937",
   info: "#1e3a8a",
@@ -789,8 +790,8 @@ function _simDesignLoop(iterations) {
 
     const climbPass = maxThrust > mass * 9.80665 * 1.2;
     const speedPass = maxSpeed <= 60;
-    const turnPass = Math.degrees ? false : omega * 57.2958 > 5;
-    const turnDegS = omega * 57.2958;
+    const turnDegS = omega * RAD_TO_DEG;
+    const turnPass = turnDegS > 5;
     const endurancePass = mass < 5.0;
     const passCount = [climbPass, speedPass, turnDegS > 5, endurancePass].filter(Boolean).length;
     const score = (passCount / 4) * 50 + Math.min(ps / 5, 1) * 25 + Math.min(turnDegS / 60, 1) * 25;
