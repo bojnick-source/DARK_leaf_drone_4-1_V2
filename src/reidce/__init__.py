@@ -245,6 +245,16 @@ from reidce.ml_models import (
     TrainingHistory,
     build_design_surrogate,
 )
+from reidce.open_claw_agent import (
+    ClawSpec,
+    OpenClawResult,
+    SafetyCheck,
+    TrajectoryPoint,
+    compute_opening_trajectory,
+    estimate_energy_j,
+    run_open_claw_agent,
+    run_safety_checks,
+)
 from reidce.pico_gk import PicoGKResult, apply_pico_gk, generate_cad_ref
 from reidce.pipeline import (
     compile_inputs,
@@ -551,6 +561,15 @@ __all__ = [
     "export_stl_text",
     "generate_competition_drone_mesh",
     "run_cad_agent",
+    # open claw agent
+    "ClawSpec",
+    "OpenClawResult",
+    "SafetyCheck",
+    "TrajectoryPoint",
+    "compute_opening_trajectory",
+    "estimate_energy_j",
+    "run_open_claw_agent",
+    "run_safety_checks",
     # protocols
     "AcceptanceEvaluator",
     "DesignValidator",
