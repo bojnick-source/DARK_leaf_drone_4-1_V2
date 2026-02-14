@@ -9,6 +9,17 @@ from reidce.aerospace import (
     thrust_to_weight,
     wing_loading,
 )
+from reidce.blueprint_engine import (
+    Annotation,
+    BlueprintResult,
+    BlueprintSpec,
+    BOMEntry,
+    DimensionLine,
+    Point2D,
+    TitleBlock,
+    ViewPort,
+    generate_drone_blueprint,
+)
 from reidce.cad_agent import (
     CadAgentResult,
     CompetitionDroneSpec,
@@ -64,6 +75,14 @@ from reidce.circuitry import (
     simulate_photonic_burst,
     simulate_thermal_steady_state,
     simulate_transient,
+)
+from reidce.code_gen import (
+    CodeGenEngine,
+    CodeTemplate,
+    GeneratedCode,
+    generate_analysis_script,
+    generate_drone_config,
+    generate_simulation_script,
 )
 from reidce.drivetrain import (
     Backlash,
@@ -234,6 +253,25 @@ from reidce.topology import (
     generate_topology_candidates,
     rank_topology_candidates,
     recommend_topology,
+)
+from reidce.unified_learning import (
+    DataSource,
+    LearningRecord,
+    LearningRuntime,
+    LinearModel,
+    OnlineModel,
+    RuntimeMetrics,
+    build_runtime_from_design_loop,
+)
+from reidce.voice_interface import (
+    Phoneme,
+    VoiceCodec,
+    VoiceStream,
+    VoiceToken,
+    VoiceTranscript,
+    encode_flight_metrics,
+    encode_vehicle_params,
+    roundtrip_verify,
 )
 from reidce.wind_ship import (
     WindCondition,
@@ -476,4 +514,38 @@ __all__ = [
     # ratio parsing
     "RatioResult",
     "parse_ratio",
+    # blueprint engine
+    "Annotation",
+    "BlueprintResult",
+    "BlueprintSpec",
+    "BOMEntry",
+    "DimensionLine",
+    "Point2D",
+    "TitleBlock",
+    "ViewPort",
+    "generate_drone_blueprint",
+    # code generation
+    "CodeGenEngine",
+    "CodeTemplate",
+    "GeneratedCode",
+    "generate_analysis_script",
+    "generate_drone_config",
+    "generate_simulation_script",
+    # unified learning
+    "DataSource",
+    "LearningRecord",
+    "LearningRuntime",
+    "LinearModel",
+    "OnlineModel",
+    "RuntimeMetrics",
+    "build_runtime_from_design_loop",
+    # voice interface
+    "Phoneme",
+    "VoiceCodec",
+    "VoiceStream",
+    "VoiceToken",
+    "VoiceTranscript",
+    "encode_flight_metrics",
+    "encode_vehicle_params",
+    "roundtrip_verify",
 ]
