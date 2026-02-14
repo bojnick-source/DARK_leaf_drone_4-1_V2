@@ -94,6 +94,11 @@ def build_report(
     temperature = _downsample(result.temperature_c, max_points)
     x_pos = _downsample([s.x_m for s in result.state], max_points)
     y_pos = _downsample([s.y_m for s in result.state], max_points)
+    wind_speed = (
+        _downsample(result.wind_speed_m_s, max_points)
+        if result.wind_speed_m_s
+        else []
+    )
 
     final = result.state[-1]
     final_speed = math.sqrt(final.vx_m_s**2 + final.vy_m_s**2 + final.vz_m_s**2)
@@ -108,41 +113,52 @@ def build_report(
         max(final_speed, 5.0), max(final.z_m, 1.0), 0.9, params, atm,
     )
 
+    summary: Dict[str, Any] = {
+        "duration_s": result.time_s[-1],
+        "final_altitude_m": round(final.z_m, 2),
+        "final_speed_m_s": round(final_speed, 2),
+        "max_altitude_m": round(max(s.z_m for s in result.state), 2),
+        "max_speed_m_s": round(
+            max(
+                math.sqrt(s.vx_m_s**2 + s.vy_m_s**2 + s.vz_m_s**2)
+                for s in result.state
+            ),
+            2,
+        ),
+        "energy_used_j": round(result.energy_used_j[-1], 1),
+        "battery_remaining_pct": round(result.battery_pct[-1], 1),
+        "max_temperature_c": round(max(result.temperature_c), 1),
+        "ps_m_s": em.ps_m_s,
+        "sustained_turn_rate_deg_s": round(str_turn, 2),
+        "specific_energy_j_per_kg": em.specific_energy_j_per_kg,
+    }
+    if result.wind_speed_m_s:
+        summary["max_wind_speed_m_s"] = round(max(result.wind_speed_m_s), 2)
+        summary["avg_wind_speed_m_s"] = round(
+            sum(result.wind_speed_m_s) / len(result.wind_speed_m_s), 2,
+        )
+
+    telemetry: Dict[str, Any] = {
+        "time_s": [round(v, 3) for v in time],
+        "altitude_m": [round(v, 2) for v in altitude],
+        "speed_m_s": [round(v, 2) for v in speed],
+        "throttle_pct": [round(v, 1) for v in throttle],
+        "roll_deg": [round(v, 2) for v in roll],
+        "pitch_deg": [round(v, 2) for v in pitch],
+        "heading_deg": [round(v, 2) for v in heading],
+        "energy_used_j": [round(v, 1) for v in energy_used],
+        "battery_pct": [round(v, 1) for v in battery],
+        "temperature_c": [round(v, 1) for v in temperature],
+        "x_m": [round(v, 2) for v in x_pos],
+        "y_m": [round(v, 2) for v in y_pos],
+    }
+    if wind_speed:
+        telemetry["wind_speed_m_s"] = [round(v, 2) for v in wind_speed]
+
     return {
         "schema": "dark/flight_sim/report/1.0",
-        "summary": {
-            "duration_s": result.time_s[-1],
-            "final_altitude_m": round(final.z_m, 2),
-            "final_speed_m_s": round(final_speed, 2),
-            "max_altitude_m": round(max(s.z_m for s in result.state), 2),
-            "max_speed_m_s": round(
-                max(
-                    math.sqrt(s.vx_m_s**2 + s.vy_m_s**2 + s.vz_m_s**2)
-                    for s in result.state
-                ),
-                2,
-            ),
-            "energy_used_j": round(result.energy_used_j[-1], 1),
-            "battery_remaining_pct": round(result.battery_pct[-1], 1),
-            "max_temperature_c": round(max(result.temperature_c), 1),
-            "ps_m_s": em.ps_m_s,
-            "sustained_turn_rate_deg_s": round(str_turn, 2),
-            "specific_energy_j_per_kg": em.specific_energy_j_per_kg,
-        },
-        "telemetry": {
-            "time_s": [round(v, 3) for v in time],
-            "altitude_m": [round(v, 2) for v in altitude],
-            "speed_m_s": [round(v, 2) for v in speed],
-            "throttle_pct": [round(v, 1) for v in throttle],
-            "roll_deg": [round(v, 2) for v in roll],
-            "pitch_deg": [round(v, 2) for v in pitch],
-            "heading_deg": [round(v, 2) for v in heading],
-            "energy_used_j": [round(v, 1) for v in energy_used],
-            "battery_pct": [round(v, 1) for v in battery],
-            "temperature_c": [round(v, 1) for v in temperature],
-            "x_m": [round(v, 2) for v in x_pos],
-            "y_m": [round(v, 2) for v in y_pos],
-        },
+        "summary": summary,
+        "telemetry": telemetry,
     }
 
 
