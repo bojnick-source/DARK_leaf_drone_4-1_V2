@@ -151,10 +151,21 @@ class FeedForwardNetwork:
     """Multi-layer feedforward neural network (deep learning).
 
     Supports arbitrary depth and width.  Training uses mini-batch
-    stochastic gradient descent with backpropagation.
+    stochastic gradient descent with backpropagation.  Optional dropout
+    regularization can be applied to hidden layers during training.
     """
 
     layers: List[DenseLayer] = field(default_factory=list)
+    dropout_rate: float = 0.0
+    _training: bool = True
+
+    def train_mode(self) -> None:
+        """Enable dropout (for training)."""
+        self._training = True
+
+    def eval_mode(self) -> None:
+        """Disable dropout (for inference)."""
+        self._training = False
 
     @classmethod
     def create(
@@ -162,6 +173,7 @@ class FeedForwardNetwork:
         layer_sizes: Sequence[int],
         *,
         seed: int = 42,
+        dropout_rate: float = 0.0,
     ) -> FeedForwardNetwork:
         """Build a network from a list of layer sizes.
 
@@ -179,24 +191,47 @@ class FeedForwardNetwork:
                     seed=seed + idx,
                 )
             )
-        return cls(layers=layers)
+        return cls(layers=layers, dropout_rate=dropout_rate)
 
     def forward(
-        self, x: List[float]
+        self, x: List[float], rng: Optional[random.Random] = None,
     ) -> Tuple[List[float], List[List[float]], List[List[float]]]:
-        """Full forward pass returning (output, activations, pre_activations)."""
+        """Full forward pass returning (output, activations, pre_activations).
+
+        When ``self._training`` is True and ``dropout_rate > 0``, hidden
+        layer activations are randomly zeroed with probability
+        ``dropout_rate`` and remaining values are scaled up by
+        ``1 / (1 - dropout_rate)`` (inverted dropout).
+        """
         activations: List[List[float]] = [x]
         pre_activations: List[List[float]] = []
         current = x
-        for layer in self.layers:
+        for layer_idx, layer in enumerate(self.layers):
             activated, pre = layer.forward(current)
+            # Apply inverted dropout to hidden layers during training
+            is_hidden = layer_idx < len(self.layers) - 1
+            if (
+                self._training
+                and self.dropout_rate > 0.0
+                and is_hidden
+            ):
+                drop_rng = rng or random.Random(42 + layer_idx)
+                scale = 1.0 / (1.0 - self.dropout_rate)
+                activated = [
+                    a * scale if drop_rng.random() >= self.dropout_rate
+                    else 0.0
+                    for a in activated
+                ]
             activations.append(activated)
             pre_activations.append(pre)
             current = activated
         return current, activations, pre_activations
 
     def predict(self, x: List[float]) -> List[float]:
+        was_training = self._training
+        self._training = False
         output, _, _ = self.forward(x)
+        self._training = was_training
         return output
 
     def _backprop(

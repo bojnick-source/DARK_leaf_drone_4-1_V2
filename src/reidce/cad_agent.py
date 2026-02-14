@@ -332,3 +332,45 @@ def run_cad_agent(
         component_count=1 + spec.arm_count * 3 + 1,
         competition_focused=True,
     )
+
+
+# ── STL export ───────────────────────────────────────────────────────
+
+def export_stl_binary(mesh: CadMesh, path: str) -> int:
+    """Export a CadMesh to a binary STL file.
+
+    Returns the number of triangles written.  Binary STL is the
+    industry-standard interchange format supported by all major CAD
+    packages (AutoCAD, SolidWorks, Fusion 360, FreeCAD, etc.).
+    """
+    import struct
+
+    triangles = mesh.triangles
+    n_tris = len(triangles)
+
+    with open(path, "wb") as fh:
+        # 80-byte header
+        header = b"DARK_leaf_4-1_V2 STL Export"
+        fh.write(header.ljust(80, b"\0"))
+        # triangle count
+        fh.write(struct.pack("<I", n_tris))
+        for tri in triangles:
+            fh.write(struct.pack(
+                "<12fH",
+                tri.normal.x, tri.normal.y, tri.normal.z,
+                tri.v0.x, tri.v0.y, tri.v0.z,
+                tri.v1.x, tri.v1.y, tri.v1.z,
+                tri.v2.x, tri.v2.y, tri.v2.z,
+                0,
+            ))
+    return n_tris
+
+
+def export_stl_text(mesh: CadMesh) -> str:
+    """Return the mesh as an ASCII STL string.
+
+    Delegates to the existing ``mesh_to_stl_text`` in cad_rendering
+    but provides a convenient wrapper from the CAD agent.
+    """
+    from reidce.cad_rendering import mesh_to_stl_text
+    return mesh_to_stl_text(mesh)
