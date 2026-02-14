@@ -16,6 +16,7 @@ let payloadPill;
 let tripwireBanner;
 let jsonFileInput;
 const SAMPLE_FETCH_TIMEOUT_MS = 5000;
+const RAD_TO_DEG = 57.2958;
 const STATUS_COLORS = {
   ready: "#1f2937",
   info: "#1e3a8a",
@@ -27,11 +28,12 @@ const STATUS_COLORS = {
 const CAD_TILT_MAX_DEG = 12;
 let currentPayload = null;
 const TAB_STORAGE_KEY = "daily-dashboard-tab";
-const TAB_OPTIONS = ["cad", "sim", "insights"];
+const TAB_OPTIONS = ["cad", "sim", "insights", "compute"];
 const TAB_MODE_LABELS = {
   cad: "CAD",
   sim: "SIM",
-  insights: "INSIGHTS"
+  insights: "INSIGHTS",
+  compute: "COMPUTE"
 };
 const WORKSPACE_STORAGE_KEY = "darkleaf.workspaces.v1";
 let activeWorkspaceId = "ws-1";
@@ -465,6 +467,12 @@ function handleMenuAction(action) {
       showNotice("Layout reset", "Layout reset stub executed.");
       setStatus("RESET", STATUS_COLORS.info, "info");
       break;
+    case "compute-generate":
+      runComputeGenerate();
+      break;
+    case "compute-clear":
+      clearComputeResults();
+      break;
     default:
       break;
   }
@@ -720,6 +728,318 @@ function hideTripwireBanner() {
   if (tripwireBanner) {
     tripwireBanner.hidden = true;
   }
+}
+
+// ── Computational AI drone generation ────────────────────────────────────
+
+const DRONE_COMPONENTS = [
+  { id: "fuselage", name: "Fuselage / Airframe", desc: "Central carbon-fiber monocoque body", color: "#3a4a72" },
+  { id: "top_shell", name: "Top Shell Cover", desc: "Aerodynamic fairing with cooling vents", color: "#4a5a82" },
+  { id: "bottom_plate", name: "Bottom Mounting Plate", desc: "Structural base with vibration dampeners", color: "#2a3a62" },
+  { id: "arm_front_l", name: "Arm — Front Left", desc: "Carbon-fiber motor arm with wire routing", color: "#3a5a6a" },
+  { id: "arm_front_r", name: "Arm — Front Right", desc: "Carbon-fiber motor arm with wire routing", color: "#3a5a6a" },
+  { id: "arm_rear_l", name: "Arm — Rear Left", desc: "Carbon-fiber motor arm with wire routing", color: "#3a5a6a" },
+  { id: "arm_rear_r", name: "Arm — Rear Right", desc: "Carbon-fiber motor arm with wire routing", color: "#3a5a6a" },
+  { id: "motor_fl", name: "Motor — Front Left", desc: "Brushless DC axial-flux motor (from EM module)", color: "#5a6a9a" },
+  { id: "motor_fr", name: "Motor — Front Right", desc: "Brushless DC axial-flux motor (from EM module)", color: "#5a6a9a" },
+  { id: "motor_rl", name: "Motor — Rear Left", desc: "Brushless DC axial-flux motor (from EM module)", color: "#5a6a9a" },
+  { id: "motor_rr", name: "Motor — Rear Right", desc: "Brushless DC axial-flux motor (from EM module)", color: "#5a6a9a" },
+  { id: "propeller_fl", name: "Propeller — Front Left", desc: "Variable-pitch rotor blade (thrust from E-M)", color: "#38f3ff" },
+  { id: "propeller_fr", name: "Propeller — Front Right", desc: "Variable-pitch rotor blade (thrust from E-M)", color: "#38f3ff" },
+  { id: "propeller_rl", name: "Propeller — Rear Left", desc: "Variable-pitch rotor blade (thrust from E-M)", color: "#38f3ff" },
+  { id: "propeller_rr", name: "Propeller — Rear Right", desc: "Variable-pitch rotor blade (thrust from E-M)", color: "#38f3ff" },
+  { id: "battery", name: "Battery Pack", desc: "4S LiPo pack sized by endurance test", color: "#4a7a3a" },
+  { id: "esc_board", name: "ESC / Power Distribution", desc: "4-in-1 ESC with current sensing", color: "#7a5a2a" },
+  { id: "flight_controller", name: "Flight Controller", desc: "IMU + barometer + GPS — PID autopilot", color: "#8a4a8a" },
+  { id: "gps_module", name: "GPS / Navigation Module", desc: "Multi-constellation GNSS receiver", color: "#4a6a4a" },
+  { id: "camera_gimbal", name: "Camera Gimbal Assembly", desc: "2-axis stabilized gimbal mount", color: "#6a5a3a" },
+  { id: "landing_gear", name: "Landing Gear", desc: "Shock-absorbing skid landing struts", color: "#5a5a5a" },
+  { id: "receiver", name: "RC Receiver / Telemetry", desc: "Long-range control link with failsafe", color: "#5a4a6a" },
+  { id: "led_array", name: "LED Navigation Lights", desc: "Forward white, rear red, arm-tip strobes", color: "#aa3a3a" },
+  { id: "canopy", name: "Canopy / Radome", desc: "Transparent RF-permeable top cover", color: "#6a7aaa" },
+  { id: "payload_bay", name: "Payload Bay", desc: "Modular quick-release cargo mount", color: "#c77dff" },
+];
+
+function _simDesignLoop(iterations) {
+  let mass = 2.4;
+  let wingArea = 0.35;
+  let maxThrust = 45.0;
+  let cd0 = 0.04;
+  let maxTilt = 0.5236;
+  let maxSpeed = 60.0;
+  let bestScore = 0;
+  let bestIter = 0;
+  const records = [];
+
+  for (let i = 0; i < iterations; i++) {
+    const weight = mass * 9.80665;
+    const cruiseSpeed = Math.min(12.0, maxSpeed * 0.6);
+    const q = 0.5 * 1.225 * cruiseSpeed * cruiseSpeed;
+    const clRequired = weight / Math.max(q * wingArea, 1e-6);
+    const cdInduced = 0.6 * (clRequired / 4.8) * (clRequired / 4.8);
+    const drag = q * wingArea * (cd0 + cdInduced);
+    const thrust = 0.8 * maxThrust;
+    const ps = cruiseSpeed * (thrust - drag) / weight;
+
+    const maxBank = Math.min(maxTilt, 1.047);
+    const cosBank = Math.cos(maxBank);
+    const loadFactor = 1.0 / Math.max(cosBank, 1e-6);
+    const omega = 9.80665 * Math.sqrt(Math.max(loadFactor * loadFactor - 1, 0)) / cruiseSpeed;
+    const turnRadius = cruiseSpeed / Math.max(omega, 1e-9);
+    const specificEnergy = 30 + cruiseSpeed * cruiseSpeed / (2 * 9.80665);
+
+    const climbPass = maxThrust > mass * 9.80665 * 1.2;
+    const speedPass = maxSpeed <= 60;
+    const turnDegS = omega * RAD_TO_DEG;
+    const turnPass = turnDegS > 5;
+    const endurancePass = mass < 5.0;
+    const passCount = [climbPass, speedPass, turnDegS > 5, endurancePass].filter(Boolean).length;
+    const score = (passCount / 4) * 50 + Math.min(ps / 5, 1) * 25 + Math.min(turnDegS / 60, 1) * 25;
+
+    records.push({
+      iteration: i, mass, wingArea, maxThrust, cd0, maxTilt, maxSpeed,
+      ps: Math.round(ps * 1000) / 1000,
+      loadFactor: Math.round(loadFactor * 1000) / 1000,
+      turnRateDegS: Math.round(turnDegS * 100) / 100,
+      turnRadius: Math.round(turnRadius * 100) / 100,
+      specificEnergy: Math.round(specificEnergy * 100) / 100,
+      drag: Math.round(drag * 1000) / 1000,
+      thrustAvailable: Math.round(thrust * 100) / 100,
+      score: Math.round(score * 10) / 10,
+      climbPass, speedPass, turnPass: turnDegS > 5, endurancePass,
+    });
+
+    if (score > bestScore) { bestScore = score; bestIter = i; }
+    if (score >= 85) { break; }
+
+    if (!climbPass) { maxThrust = Math.min(maxThrust * 1.15, 120); }
+    if (!endurancePass) { mass = Math.max(mass * 0.95, 0.5); }
+    if (turnDegS <= 5) { wingArea = Math.min(wingArea * 1.1, 1.0); }
+  }
+
+  const best = records[bestIter];
+  const g = 9.80665;
+  const twRatio = maxThrust / (mass * g);
+  const wingLoading = (mass * g) / wingArea;
+  const ldRatio = best ? (4.8 * 0.2) / Math.max(cd0, 0.001) : 0;
+
+  return {
+    records, bestIter, bestScore: Math.round(bestScore * 10) / 10,
+    converged: bestScore >= 85,
+    best, twRatio: Math.round(twRatio * 100) / 100,
+    wingLoading: Math.round(wingLoading * 100) / 100,
+    ldRatio: Math.round(ldRatio * 10) / 10,
+  };
+}
+
+function _renderDroneModel(data) {
+  const svg = getElementById("computeModelSvg");
+  const group = getElementById("computeModelGroup");
+  if (!svg || !group) { return; }
+
+  const scale = data.best ? Math.min(data.best.wingArea * 2, 1.5) : 1.0;
+  const armLen = 140 * scale;
+  const bodyRx = 60 * scale;
+  const bodyRy = 32 * scale;
+  const rotorR = 36 * scale;
+
+  const cx = 400;
+  const cy = 210;
+
+  const armPositions = [
+    { x: cx - armLen, y: cy - armLen * 0.5, label: "FL" },
+    { x: cx + armLen, y: cy - armLen * 0.5, label: "FR" },
+    { x: cx - armLen, y: cy + armLen * 0.5, label: "RL" },
+    { x: cx + armLen, y: cy + armLen * 0.5, label: "RR" },
+  ];
+
+  let svgContent = "";
+
+  svgContent += `<ellipse cx="${cx}" cy="${cy + 30}" rx="${bodyRx + 80}" ry="30" fill="rgba(8,12,18,0.5)"/>`;
+
+  armPositions.forEach((pos) => {
+    svgContent += `<line x1="${cx}" y1="${cy}" x2="${pos.x}" y2="${pos.y}" stroke="#3a5a6a" stroke-width="6" stroke-linecap="round"/>`;
+  });
+
+  svgContent += `<ellipse cx="${cx}" cy="${cy}" rx="${bodyRx}" ry="${bodyRy}" fill="url(#compFuseGrad)" stroke="rgba(255,255,255,0.18)" stroke-width="1.4"/>`;
+
+  svgContent += `<rect x="${cx - 20}" y="${cy - 12}" width="40" height="24" rx="4" fill="url(#compBattGrad)" stroke="rgba(74,122,58,0.6)" stroke-width="1" opacity="0.9"/>`;
+  svgContent += `<text x="${cx}" y="${cy + 3}" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="8" font-family="monospace">BAT</text>`;
+
+  svgContent += `<rect x="${cx - 14}" y="${cy + 14}" width="28" height="10" rx="2" fill="url(#compEscGrad)" stroke="rgba(122,90,42,0.6)" stroke-width="0.8" opacity="0.9"/>`;
+  svgContent += `<text x="${cx}" y="${cy + 22}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="6" font-family="monospace">ESC</text>`;
+
+  svgContent += `<rect x="${cx - 10}" y="${cy - bodyRy + 4}" width="20" height="12" rx="3" fill="#8a4a8a" stroke="rgba(138,74,138,0.6)" stroke-width="0.8" opacity="0.85"/>`;
+  svgContent += `<text x="${cx}" y="${cy - bodyRy + 13}" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="5" font-family="monospace">FC</text>`;
+
+  svgContent += `<circle cx="${cx}" cy="${cy - bodyRy - 4}" r="5" fill="#4a6a4a" stroke="rgba(74,106,74,0.8)" stroke-width="0.8"/>`;
+  svgContent += `<text x="${cx}" y="${cy - bodyRy - 10}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="5" font-family="monospace">GPS</text>`;
+
+  armPositions.forEach((pos) => {
+    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="${rotorR}" fill="url(#compRotorGlow)" stroke="rgba(56,243,255,0.3)" stroke-width="1" opacity="0.6"/>`;
+    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="${rotorR * 0.35}" fill="url(#compMotorGrad)" stroke="rgba(90,106,154,0.6)" stroke-width="1"/>`;
+    svgContent += `<text x="${pos.x}" y="${pos.y + 3}" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="7" font-family="monospace">${pos.label}</text>`;
+  });
+
+  svgContent += `<rect x="${cx - 16}" y="${cy + bodyRy + 2}" width="32" height="14" rx="4" fill="#6a5a3a" stroke="rgba(106,90,58,0.6)" stroke-width="0.8" opacity="0.85"/>`;
+  svgContent += `<text x="${cx}" y="${cy + bodyRy + 12}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="6" font-family="monospace">CAM</text>`;
+
+  const lgY = cy + bodyRy + 20;
+  svgContent += `<line x1="${cx - 30}" y1="${lgY}" x2="${cx - 30}" y2="${lgY + 16}" stroke="#5a5a5a" stroke-width="3" stroke-linecap="round"/>`;
+  svgContent += `<line x1="${cx + 30}" y1="${lgY}" x2="${cx + 30}" y2="${lgY + 16}" stroke="#5a5a5a" stroke-width="3" stroke-linecap="round"/>`;
+
+  svgContent += `<circle cx="${armPositions[0].x}" cy="${armPositions[0].y - rotorR - 4}" r="3" fill="#ffffff" opacity="0.8"/>`;
+  svgContent += `<circle cx="${armPositions[1].x}" cy="${armPositions[1].y - rotorR - 4}" r="3" fill="#ffffff" opacity="0.8"/>`;
+  svgContent += `<circle cx="${armPositions[2].x}" cy="${armPositions[2].y + rotorR + 4}" r="3" fill="#aa3a3a" opacity="0.8"/>`;
+  svgContent += `<circle cx="${armPositions[3].x}" cy="${armPositions[3].y + rotorR + 4}" r="3" fill="#aa3a3a" opacity="0.8"/>`;
+
+  svgContent += `<path d="${`M${cx - bodyRx - 10} ${cy - bodyRy - 6} Q${cx} ${cy - bodyRy - 20} ${cx + bodyRx + 10} ${cy - bodyRy - 6}`}" fill="none" stroke="#6a7aaa" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>`;
+
+  svgContent += `<ellipse cx="${cx}" cy="${cy + bodyRy + 24}" rx="16" ry="6" fill="none" stroke="#c77dff" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>`;
+  svgContent += `<text x="${cx}" y="${cy + bodyRy + 36}" text-anchor="middle" fill="rgba(199,125,255,0.6)" font-size="6" font-family="monospace">PAYLOAD</text>`;
+
+  svgContent += `<g class="model-outline" opacity="0.3">`;
+  svgContent += `<ellipse cx="${cx}" cy="${cy}" rx="${bodyRx + 4}" ry="${bodyRy + 4}" fill="none" stroke="rgba(56,243,255,0.4)" stroke-width="1"/>`;
+  armPositions.forEach((pos) => {
+    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="${rotorR + 4}" fill="none" stroke="rgba(56,243,255,0.3)" stroke-width="0.8"/>`;
+  });
+  svgContent += `</g>`;
+
+  group.innerHTML = svgContent;
+  svg.hidden = false;
+}
+
+function _updateComputeResults(data) {
+  const best = data.best;
+  if (!best) { return; }
+
+  safeText(getElementById("compScore"), `${data.bestScore} / 100`);
+  safeText(getElementById("compBestIter"), `#${data.bestIter + 1} of ${data.records.length}`);
+  safeText(getElementById("compPs"), `${best.ps} m/s`);
+  safeText(getElementById("compLoadFactor"), `${best.loadFactor} g`);
+  safeText(getElementById("compTurnRate"), `${best.turnRateDegS} °/s`);
+  safeText(getElementById("compSpecEnergy"), `${best.specificEnergy} J/kg`);
+  safeText(getElementById("compMass"), `${best.mass} kg`);
+  safeText(getElementById("compWingArea"), `${best.wingArea} m²`);
+  safeText(getElementById("compThrust"), `${best.maxThrust} N`);
+  safeText(getElementById("compMaxSpeed"), `${best.maxSpeed} m/s`);
+  safeText(getElementById("compTWRatio"), `${data.twRatio}`);
+  safeText(getElementById("compWingLoad"), `${data.wingLoading} N/m²`);
+  safeText(getElementById("compLDRatio"), `${data.ldRatio}`);
+  safeText(getElementById("compTestClimb"), best.climbPass ? "✓ Pass" : "✗ Fail");
+  safeText(getElementById("compTestSpeed"), best.speedPass ? "✓ Pass" : "✗ Fail");
+  safeText(getElementById("compTestTurn"), best.turnPass ? "✓ Pass" : "✗ Fail");
+  safeText(getElementById("compTestEndurance"), best.endurancePass ? "✓ Pass" : "✗ Fail");
+  safeText(getElementById("computePipeline"), "Complete");
+  safeText(getElementById("computeIterations"), String(data.records.length));
+  safeText(getElementById("computeConverged"), data.converged ? "Yes" : "No");
+  safeText(getElementById("compComponentCount"), String(DRONE_COMPONENTS.length));
+
+  const list = getElementById("computeComponentList");
+  if (list) {
+    list.innerHTML = "";
+    DRONE_COMPONENTS.forEach((comp) => {
+      const row = document.createElement("div");
+      row.className = "param-row";
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = comp.name;
+      nameSpan.title = comp.desc;
+      const descSpan = document.createElement("span");
+      descSpan.textContent = comp.desc.length > 28 ? comp.desc.slice(0, 26) + "…" : comp.desc;
+      descSpan.style.color = "var(--text-soft)";
+      descSpan.style.fontSize = "11px";
+      row.appendChild(nameSpan);
+      row.appendChild(descSpan);
+      list.appendChild(row);
+    });
+  }
+}
+
+let computeRunning = false;
+
+function runComputeGenerate() {
+  if (computeRunning) {
+    showNotice("Compute busy", "Generation is already running. Please wait.");
+    return;
+  }
+  computeRunning = true;
+  setStatus("COMPUTING", STATUS_COLORS.loading, "warn");
+  showNotice("Generating drone…", "Running Design Loop AI + Energy Maneuverability + Aerospace pipeline.");
+
+  const placeholder = getElementById("computePlaceholder");
+  const progress = getElementById("computeProgress");
+  const progressFill = getElementById("computeProgressFill");
+  const progressLabel = getElementById("computeProgressLabel");
+  const modelSvg = getElementById("computeModelSvg");
+
+  if (placeholder) { placeholder.hidden = true; }
+  if (modelSvg) { modelSvg.hidden = true; }
+  if (progress) { progress.hidden = false; }
+
+  const steps = [
+    { pct: 10, label: "Initializing vehicle parameters…" },
+    { pct: 25, label: "Running Design Loop AI (build → fly → learn)…" },
+    { pct: 40, label: "Computing Energy Maneuverability envelope…" },
+    { pct: 55, label: "Evaluating aerospace coefficients (lift, drag, T/W)…" },
+    { pct: 70, label: "Running flight simulation tests…" },
+    { pct: 85, label: "Generating high-fidelity CAD components…" },
+    { pct: 95, label: "Assembling drone model…" },
+    { pct: 100, label: "Complete" },
+  ];
+
+  let stepIdx = 0;
+
+  function advanceStep() {
+    if (stepIdx >= steps.length) {
+      const data = _simDesignLoop(5);
+      _renderDroneModel(data);
+      _updateComputeResults(data);
+      if (progress) { progress.hidden = true; }
+      computeRunning = false;
+      setStatus("GENERATED", STATUS_COLORS.ok, "ok");
+      showNotice(
+        "Drone generated",
+        `Design loop converged=${data.converged}, score=${data.bestScore}/100, ${DRONE_COMPONENTS.length} components assembled.`
+      );
+      return;
+    }
+    const step = steps[stepIdx];
+    if (progressFill) { progressFill.style.width = `${step.pct}%`; }
+    if (progressLabel) { progressLabel.textContent = step.label; }
+    stepIdx++;
+    setTimeout(advanceStep, 400 + Math.random() * 300);
+  }
+
+  setTimeout(advanceStep, 200);
+}
+
+function clearComputeResults() {
+  const placeholder = getElementById("computePlaceholder");
+  const progress = getElementById("computeProgress");
+  const modelSvg = getElementById("computeModelSvg");
+  const group = getElementById("computeModelGroup");
+  const list = getElementById("computeComponentList");
+
+  if (placeholder) { placeholder.hidden = false; }
+  if (progress) { progress.hidden = true; }
+  if (modelSvg) { modelSvg.hidden = true; }
+  if (group) { group.innerHTML = ""; }
+  if (list) { list.innerHTML = ""; }
+
+  const clearIds = [
+    "compScore", "compBestIter", "compPs", "compLoadFactor", "compTurnRate",
+    "compSpecEnergy", "compMass", "compWingArea", "compThrust", "compMaxSpeed",
+    "compTWRatio", "compWingLoad", "compLDRatio", "compTestClimb", "compTestSpeed",
+    "compTestTurn", "compTestEndurance", "computePipeline", "computeIterations",
+    "computeConverged", "compComponentCount",
+  ];
+  clearIds.forEach((id) => safeText(getElementById(id), "—"));
+  safeText(getElementById("computePipeline"), "Idle");
+  safeText(getElementById("compComponentCount"), "0");
+
+  computeRunning = false;
+  setStatus("READY", STATUS_COLORS.ready, "ok");
+  showNotice("Compute cleared", "Computation results have been reset.");
 }
 
 function init() {

@@ -54,22 +54,47 @@ REQUIRED (match exactly; keep in sync with meta tags below):
       </div>
     </header>
 
-    <!-- ── Chrome Tab Strip ───────────────────────────────────────── -->
-    <nav class="tab-strip" id="tabStrip" role="tablist">
-      <button class="tab active" role="tab" aria-selected="true"  data-tab="cad"      id="tab-cad">CAD Wireframe</button>
-      <button class="tab"        role="tab" aria-selected="false" data-tab="fea"      id="tab-fea">FEA Stress</button>
-      <button class="tab"        role="tab" aria-selected="false" data-tab="feadisp"  id="tab-feadisp">FEA Displacement</button>
-      <button class="tab"        role="tab" aria-selected="false" data-tab="flight"   id="tab-flight">Flight AI</button>
-      <button class="tab"        role="tab" aria-selected="false" data-tab="thermal"  id="tab-thermal">Electro-thermal</button>
-      <button class="tab"        role="tab" aria-selected="false" data-tab="wind"     id="tab-wind">Wind Power</button>
-      <button class="tab"        role="tab" aria-selected="false" data-tab="sales"    id="tab-sales">Sales + Shipping</button>
-      <button class="tab"        role="tab" aria-selected="false" data-tab="status"   id="tab-status">System Status</button>
-    </nav>
-
-    <!-- ── Context Toolbar (changes per-tab) ──────────────────────── -->
-    <div class="ctx-toolbar" id="ctxToolbar">
-      <div class="ctx-tools" id="ctxTools"><!-- populated by JS --></div>
-      <div class="ctx-meta" id="ctxMeta"><!-- populated by JS --></div>
+    <div id="modeToolbar" class="glass glass--thin">
+      <div class="mode-tabs">
+        <button id="tabCad" type="button" data-tab="cad" class="active">CAD</button>
+        <button id="tabSim" type="button" data-tab="sim">SIM</button>
+        <button id="tabInsights" type="button" data-tab="insights">INSIGHTS</button>
+        <button id="tabCompute" type="button" data-tab="compute">COMPUTE</button>
+      </div>
+      <div class="mode-tools active" data-mode-tools="cad">
+        <button class="tool-button" type="button">Select</button>
+        <button class="tool-button" type="button">Move</button>
+        <button class="tool-button" type="button">Rotate</button>
+        <button class="tool-button" type="button">Measure</button>
+        <button class="tool-button" type="button">Grid</button>
+        <button class="tool-button" type="button">Layers</button>
+      </div>
+      <div class="mode-tools" data-mode-tools="sim">
+        <button class="tool-button" type="button">Play</button>
+        <button class="tool-button" type="button">Pause</button>
+        <button class="tool-button" type="button">Step</button>
+        <button class="tool-button" type="button">Orbit</button>
+        <button class="tool-button" type="button" data-action="reset-layout">Reset Layout</button>
+      </div>
+      <div class="mode-tools" data-mode-tools="insights">
+        <button class="tool-button" type="button">Overview</button>
+        <button class="tool-button" type="button">Trends</button>
+        <button class="tool-button" type="button">Heat</button>
+        <button class="tool-button" type="button">Map</button>
+        <button class="tool-button" type="button">Export</button>
+        <button class="tool-button" type="button" data-action="reset-layout">Reset Layout</button>
+      </div>
+      <div class="mode-tools" data-mode-tools="compute">
+        <button class="tool-button" type="button" data-action="compute-generate" id="btnComputeGenerate">⚡ Generate Drone</button>
+        <button class="tool-button" type="button" data-action="compute-clear">Clear</button>
+        <button class="tool-button" type="button" data-action="reset-layout">Reset Layout</button>
+      </div>
+      <div class="mode-actions">
+        <button id="btnExport" type="button">Export Image</button>
+        <button id="btnLoadSample" type="button">Load Sample</button>
+        <button id="btnValidate" type="button">Validate</button>
+        <button id="btnHelp" type="button">Help</button>
+      </div>
     </div>
 
     <main class="layout">
@@ -184,54 +209,149 @@ REQUIRED (match exactly; keep in sync with meta tags below):
           <span>Processor</span>
           <span id="processorLabel">Photonic Core</span>
         </div>
-        <div class="kv">
-          <span>Bus Voltage</span>
-          <span id="busVoltage">12 V</span>
+
+        <div id="computeGrid" data-tab-panel="compute" class="tab-panel">
+          <aside class="panel glass glass--thick" id="panelComputeModules">
+            <div class="panel-header">
+              <span>Computation Modules</span>
+              <span class="panel-tag">AI</span>
+            </div>
+            <ul class="tree" id="computeModuleTree">
+              <li class="tree-item active">
+                <span class="caret">▾</span>
+                <span>Design Loop AI</span>
+              </li>
+              <li class="tree-item">
+                <span class="caret">▸</span>
+                <span>Energy Maneuverability</span>
+              </li>
+              <li class="tree-item">
+                <span class="caret">▸</span>
+                <span>Aerospace / Aero</span>
+              </li>
+              <li class="tree-item">
+                <span class="caret">▸</span>
+                <span>Flight Simulation</span>
+              </li>
+              <li class="tree-item">
+                <span class="caret">▸</span>
+                <span>Drivetrain / Motors</span>
+              </li>
+              <li class="tree-item">
+                <span class="caret">▸</span>
+                <span>FEA / Structures</span>
+              </li>
+              <li class="tree-item">
+                <span class="caret">▸</span>
+                <span>CAD Mesh Rendering</span>
+              </li>
+            </ul>
+            <div class="panel-section">
+              <div class="section-title">Status</div>
+              <div class="param-row"><span>Pipeline</span><span id="computePipeline">Idle</span></div>
+              <div class="param-row"><span>Iterations</span><span id="computeIterations">—</span></div>
+              <div class="param-row"><span>Converged</span><span id="computeConverged">—</span></div>
+            </div>
+          </aside>
+
+          <section class="panel glass glass--thin" id="panelComputeViewport">
+            <div class="panel-header">
+              <span>Generated Drone</span>
+              <span class="panel-tag accent">COMPUTE</span>
+            </div>
+            <div class="viewport-canvas cad-viewport" id="computeViewport">
+              <div class="compute-placeholder" id="computePlaceholder">
+                <div class="compute-icon">⚡</div>
+                <div class="compute-title">Computational AI Engine</div>
+                <div class="compute-hint">Press <strong>⚡ Generate Drone</strong> to run the full design pipeline.<br>
+                  Integrates: Design Loop AI · Energy Maneuverability · Aerospace ·
+                  Flight Sim · Drivetrain · FEA · CAD Rendering</div>
+              </div>
+              <div class="compute-progress" id="computeProgress" hidden>
+                <div class="progress-bar"><div class="progress-fill" id="computeProgressFill"></div></div>
+                <div class="progress-label" id="computeProgressLabel">Initializing…</div>
+              </div>
+              <svg class="cad-grid" viewBox="0 0 800 420" aria-hidden="true">
+                <defs>
+                  <pattern id="computeGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(124, 92, 255, 0.35)" stroke-width="1" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#computeGrid)" />
+              </svg>
+              <svg class="cad-model" id="computeModelSvg" viewBox="0 0 800 420" role="img" aria-label="Generated drone model" hidden>
+                <defs>
+                  <linearGradient id="compFuseGrad" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0" stop-color="#3a4a72" />
+                    <stop offset="1" stop-color="#1d2433" />
+                  </linearGradient>
+                  <radialGradient id="compRotorGlow" cx="0.5" cy="0.5" r="0.65">
+                    <stop offset="0" stop-color="rgba(56, 243, 255, 0.7)" />
+                    <stop offset="1" stop-color="rgba(56, 243, 255, 0.05)" />
+                  </radialGradient>
+                  <linearGradient id="compMotorGrad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="#5a6a9a" />
+                    <stop offset="1" stop-color="#2a3452" />
+                  </linearGradient>
+                  <linearGradient id="compBattGrad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="#4a7a3a" />
+                    <stop offset="1" stop-color="#1d3414" />
+                  </linearGradient>
+                  <linearGradient id="compEscGrad" x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0" stop-color="#7a5a2a" />
+                    <stop offset="1" stop-color="#3a2d14" />
+                  </linearGradient>
+                </defs>
+                <g id="computeModelGroup" class="model-core"></g>
+              </svg>
+            </div>
+          </section>
+
+          <aside class="panel glass glass--thick" id="panelComputeResults">
+            <div class="panel-header">
+              <span>Computation Results</span>
+              <span class="panel-tag accent">AI</span>
+            </div>
+            <div class="panel-section">
+              <div class="section-title">Design Score</div>
+              <div class="param-row"><span>Overall</span><span id="compScore">—</span></div>
+              <div class="param-row"><span>Best Iteration</span><span id="compBestIter">—</span></div>
+            </div>
+            <div class="panel-section">
+              <div class="section-title">Energy-Maneuverability</div>
+              <div class="param-row"><span>Ps (m/s)</span><span id="compPs">—</span></div>
+              <div class="param-row"><span>Load Factor</span><span id="compLoadFactor">—</span></div>
+              <div class="param-row"><span>Turn Rate</span><span id="compTurnRate">—</span></div>
+              <div class="param-row"><span>Specific Energy</span><span id="compSpecEnergy">—</span></div>
+            </div>
+            <div class="panel-section">
+              <div class="section-title">Vehicle Parameters</div>
+              <div class="param-row"><span>Mass</span><span id="compMass">—</span></div>
+              <div class="param-row"><span>Wing Area</span><span id="compWingArea">—</span></div>
+              <div class="param-row"><span>Max Thrust</span><span id="compThrust">—</span></div>
+              <div class="param-row"><span>Max Speed</span><span id="compMaxSpeed">—</span></div>
+            </div>
+            <div class="panel-section">
+              <div class="section-title">Aerospace</div>
+              <div class="param-row"><span>T/W Ratio</span><span id="compTWRatio">—</span></div>
+              <div class="param-row"><span>Wing Loading</span><span id="compWingLoad">—</span></div>
+              <div class="param-row"><span>L/D Ratio</span><span id="compLDRatio">—</span></div>
+            </div>
+            <div class="panel-section">
+              <div class="section-title">Test Results</div>
+              <div class="param-row"><span>Climb</span><span id="compTestClimb">—</span></div>
+              <div class="param-row"><span>Speed</span><span id="compTestSpeed">—</span></div>
+              <div class="param-row"><span>Turn</span><span id="compTestTurn">—</span></div>
+              <div class="param-row"><span>Endurance</span><span id="compTestEndurance">—</span></div>
+            </div>
+            <div class="panel-header" style="margin-top:8px;">
+              <span>Components</span>
+              <span class="panel-tag accent" id="compComponentCount">0</span>
+            </div>
+            <div id="computeComponentList" class="panel-section"></div>
+          </aside>
         </div>
-        <div class="kv">
-          <span>Thermal Margin</span>
-          <span id="thermalMargin">+2.4 W</span>
-        </div>
-        <div class="kv">
-          <span>AI Recommendation</span>
-          <span id="aiRecommendation">Stiffened</span>
-        </div>
-        <div class="kv">
-          <span>Electro-thermal</span>
-          <span id="electroThermal">Stable</span>
-        </div>
-        <div class="panel-block">
-          <h3>CAD Rendering</h3>
-          <div class="kv"><span>Quality</span><span id="cadQuality">High Fidelity</span></div>
-          <div class="kv"><span>Triangles</span><span id="cadTriangles">192</span></div>
-          <div class="kv"><span>Vertices</span><span id="cadVertices">98</span></div>
-          <div class="kv"><span>Mesh Score</span><span id="cadMeshScore">0.94</span></div>
-          <div class="kv"><span>Surface Area</span><span id="cadSurfaceArea">0.0063 m²</span></div>
-        </div>
-        <div class="panel-block">
-          <h3>FEA Analysis</h3>
-          <div class="kv"><span>Max Disp.</span><span id="feaMaxDisp">0.12 mm</span></div>
-          <div class="kv"><span>Max Stress</span><span id="feaMaxStress">45.2 MPa</span></div>
-          <div class="kv"><span>Safety Factor</span><span id="feaSafetyFactor">5.53</span></div>
-          <div class="kv"><span>Converged</span><span id="feaConverged">Yes</span></div>
-        </div>
-        <div class="panel-block">
-          <h3>Flight AI</h3>
-          <div class="kv"><span>Target Alt</span><span id="flightAlt">120 m</span></div>
-          <div class="kv"><span>Target Speed</span><span id="flightSpeed">14 m/s</span></div>
-          <div class="kv"><span>AI Mode</span><span id="flightMode">Test Pilot</span></div>
-        </div>
-        <div class="panel-block">
-          <h3>Wind Power</h3>
-          <div class="kv"><span>Ship Eff.</span><span id="shipEfficiency">0.62</span></div>
-          <div class="kv"><span>Kite Power</span><span id="kitePower">48 kW</span></div>
-        </div>
-        <div class="panel-block">
-          <h3>Sales + Shipping</h3>
-          <div class="kv"><span>Gross Margin</span><span id="grossMargin">$1.2M</span></div>
-          <div class="kv"><span>Shipping</span><span id="shippingCost">$180k</span></div>
-        </div>
-      </aside>
+      </section>
     </main>
 
     <footer class="footer">

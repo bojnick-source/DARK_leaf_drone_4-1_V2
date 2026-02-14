@@ -498,7 +498,8 @@ body::before {
 
 #dashboardGrid,
 #simGrid,
-#insightsGrid {
+#insightsGrid,
+#computeGrid {
   grid-template-columns:
     minmax(var(--grid-col-min), var(--grid-fr-side))
     minmax(var(--grid-col-center), var(--grid-fr-center))
@@ -829,7 +830,8 @@ body::before {
 @media (max-width: 1200px) {
   #dashboardGrid,
   #simGrid,
-  #insightsGrid {
+  #insightsGrid,
+  #computeGrid {
     grid-template-columns:
       minmax(var(--grid-col-min), var(--grid-fr-side))
       minmax(var(--grid-col-center), var(--grid-fr-center));
@@ -843,7 +845,8 @@ body::before {
 @media (max-width: 820px) {
   #dashboardGrid,
   #simGrid,
-  #insightsGrid {
+  #insightsGrid,
+  #computeGrid {
     grid-template-columns: 1fr;
   }
 
@@ -852,4 +855,86 @@ body::before {
   #panelViewport {
     width: 100%;
   }
+}
+
+/* =========================================================
+   COMPUTE TAB — Computational AI
+   ========================================================= */
+
+.compute-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 2;
+  text-align: center;
+  padding: 24px;
+}
+
+.compute-icon {
+  font-size: 48px;
+  filter: drop-shadow(0 0 18px rgba(56, 243, 255, 0.4));
+}
+
+.compute-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.compute-hint {
+  font-size: 13px;
+  color: var(--text-soft);
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+.compute-progress {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 3;
+  padding: 24px;
+}
+
+.progress-bar {
+  width: 280px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(15, 20, 30, 0.8);
+  border: 1px solid rgba(56, 243, 255, 0.4);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(56, 243, 255, 0.8), rgba(124, 92, 255, 0.8));
+  border-radius: 999px;
+  transition: width 0.3s ease-out;
+}
+
+.progress-label {
+  font-size: 13px;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+#computeComponentList .param-row {
+  font-size: 12px;
+  gap: 4px;
+}
+
+#panelComputeResults {
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
