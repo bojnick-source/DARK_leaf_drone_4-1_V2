@@ -82,8 +82,9 @@ def quantify_uncertainty(
     noise_scale: float = 0.02,
     n_samples: int = 200,
     seed: int = 42,
+    sampling_method: str = "monte_carlo",
 ) -> List[UncertaintyEstimate]:
-    """Run Monte Carlo uncertainty propagation through *predict_fn*.
+    """Run uncertainty propagation through *predict_fn*.
 
     Parameters
     ----------
@@ -94,25 +95,46 @@ def quantify_uncertainty(
     noise_scale:
         Relative Gaussian noise on each input (σ = noise_scale × |x|).
     n_samples:
-        Number of Monte Carlo draws.
+        Number of sample draws.
     seed:
         Deterministic seed.
+    sampling_method:
+        ``"monte_carlo"`` for standard MC, ``"lhs"`` for Latin Hypercube
+        Sampling which gives better coverage with fewer samples.
 
     Returns
     -------
     List of ``UncertaintyEstimate``, one per output metric.
     """
-    rng = random.Random(seed)
     all_results: Dict[str, List[float]] = {}
 
-    for _ in range(n_samples):
-        perturbed = [
-            x + rng.gauss(0.0, max(abs(x) * noise_scale, 1e-9))
+    if sampling_method == "lhs":
+        from reidce.sampling import SamplingBounds, latin_hypercube_sample
+
+        lower = [
+            x - max(abs(x) * noise_scale * 3.0, 1e-9)
             for x in nominal_inputs
         ]
-        result = predict_fn(perturbed)
-        for key, val in result.items():
-            all_results.setdefault(key, []).append(val)
+        upper = [
+            x + max(abs(x) * noise_scale * 3.0, 1e-9)
+            for x in nominal_inputs
+        ]
+        bounds = SamplingBounds(lower=lower, upper=upper)
+        sample_set = latin_hypercube_sample(bounds, n_samples, seed=seed)
+        for pt in sample_set.samples:
+            result = predict_fn(pt)
+            for key, val in result.items():
+                all_results.setdefault(key, []).append(val)
+    else:
+        rng = random.Random(seed)
+        for _ in range(n_samples):
+            perturbed = [
+                x + rng.gauss(0.0, max(abs(x) * noise_scale, 1e-9))
+                for x in nominal_inputs
+            ]
+            result = predict_fn(perturbed)
+            for key, val in result.items():
+                all_results.setdefault(key, []).append(val)
 
     estimates: List[UncertaintyEstimate] = []
     for metric, samples in sorted(all_results.items()):

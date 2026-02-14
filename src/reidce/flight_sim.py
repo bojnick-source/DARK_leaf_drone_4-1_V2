@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Callable, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 
 @dataclass(frozen=True)
@@ -382,4 +382,174 @@ def _step_state(state: VehicleState, deriv: VehicleState, dt: float) -> VehicleS
         roll_rad=state.roll_rad + deriv.roll_rad * dt,
         pitch_rad=state.pitch_rad + deriv.pitch_rad * dt,
         yaw_rad=state.yaw_rad + deriv.yaw_rad * dt,
+    )
+
+
+# ── BEMT-enhanced rotor model ────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class RotorParams:
+    """Parameters for a BEMT-based rotor model.
+
+    Provides a higher-fidelity thrust and power model compared to
+    the simple ``max_thrust_n`` scaling in ``VehicleParams``.
+    """
+
+    n_rotors: int = 4
+    rotor_radius_m: float = 0.12
+    n_blades: int = 2
+    root_chord_m: float = 0.025
+    tip_chord_m: float = 0.015
+    root_twist_rad: float = 0.35
+    tip_twist_rad: float = 0.05
+    hub_radius_m: float = 0.015
+    base_rpm: float = 8000.0
+
+
+def bemt_rotor_thrust(
+    throttle: float,
+    v_climb_m_s: float,
+    rotor: RotorParams,
+    rho_kg_m3: float = 1.225,
+) -> Dict[str, float]:
+    """Compute rotor thrust and power using BEMT for the given throttle.
+
+    Throttle (0–1) scales the RPM linearly from idle (20 % base) to
+    full base_rpm.  Returns a dict with ``thrust_n``, ``power_w``,
+    ``torque_nm``, ``rpm``, and ``fm``.
+    """
+    from reidce.bemt import BEMTCondition, RotorGeometry, solve_bemt
+
+    clamped = max(0.0, min(1.0, throttle))
+    rpm = rotor.base_rpm * (0.20 + 0.80 * clamped)
+
+    geom = RotorGeometry(
+        n_blades=rotor.n_blades,
+        radius_m=rotor.rotor_radius_m,
+        hub_radius_m=rotor.hub_radius_m,
+        root_chord_m=rotor.root_chord_m,
+        tip_chord_m=rotor.tip_chord_m,
+        root_twist_rad=rotor.root_twist_rad,
+        tip_twist_rad=rotor.tip_twist_rad,
+    )
+    cond = BEMTCondition(rpm=rpm, v_climb_m_s=v_climb_m_s, rho_kg_m3=rho_kg_m3)
+    result = solve_bemt(geom, cond, n_elements=12)
+
+    n = rotor.n_rotors
+    return {
+        "thrust_n": result.thrust_n * n,
+        "power_w": result.power_w * n,
+        "torque_nm": result.torque_nm * n,
+        "rpm": rpm,
+        "fm": result.fm,
+    }
+
+
+def simulate_flight_bemt(
+    initial_state: VehicleState,
+    target: GuidanceTarget,
+    duration_s: float,
+    dt_s: float,
+    params: Optional[VehicleParams] = None,
+    atmosphere: Optional[Atmosphere] = None,
+    rotor: Optional[RotorParams] = None,
+    controller: Optional[TripleRedundantController] = None,
+    guidance_profile: Optional[
+        Callable[[float, GuidanceTarget], GuidanceTarget]
+    ] = None,
+    battery_capacity_j: float = 180000.0,
+    ambient_temp_c: float = 25.0,
+) -> SimulationResult:
+    """Flight simulation using BEMT rotor model for thrust and power.
+
+    Identical interface to ``simulate_flight`` but replaces the simple
+    ``throttle × max_thrust`` model with a BEMT-computed thrust at the
+    commanded RPM.  This provides physically realistic rotor loading
+    that varies with climb rate and air density.
+    """
+    if duration_s <= 0.0 or dt_s <= 0.0:
+        raise ValueError("duration_s and dt_s must be > 0")
+
+    params = params or VehicleParams()
+    atmosphere = atmosphere or Atmosphere()
+    rotor = rotor or RotorParams()
+    controller = controller or TripleRedundantController()
+    controller.reset()
+
+    steps = int(duration_s / dt_s)
+    state = _clone_state(initial_state)
+    time: List[float] = []
+    states: List[VehicleState] = []
+    commands: List[ControlCommand] = []
+    energy_used: List[float] = []
+    battery_pct: List[float] = []
+    temperature_c: List[float] = []
+
+    cumulative_energy_j = 0.0
+    motor_temp_c = ambient_temp_c
+
+    for step in range(steps + 1):
+        t = step * dt_s
+        active_target = (
+            guidance_profile(t, target) if guidance_profile else target
+        )
+        sensed = _sense(state)
+        cmd = controller.compute(active_target, sensed, dt_s)
+
+        # BEMT-based thrust and power
+        rotor_out = bemt_rotor_thrust(
+            cmd.throttle, state.vz_m_s, rotor, atmosphere.rho_kg_m3,
+        )
+        thrust = rotor_out["thrust_n"]
+        power_w = rotor_out["power_w"] + 15.0  # idle electronics draw
+
+        # Physics integration with BEMT thrust
+        lift = _lift_force(
+            sensed.speed_m_s + 1e-6, state.pitch_rad, params, atmosphere
+        )
+        drag = _drag_force(
+            sensed.speed_m_s + 1e-6, state.pitch_rad, params, atmosphere
+        )
+
+        ax = (
+            thrust * math.cos(state.pitch_rad) - drag
+        ) / params.mass_kg
+        az = (
+            lift + thrust * math.sin(state.pitch_rad)
+        ) / params.mass_kg - atmosphere.gravity_m_s2
+        ax = max(-params.max_accel_m_s2, min(params.max_accel_m_s2, ax))
+        az = max(-params.max_accel_m_s2, min(params.max_accel_m_s2, az))
+
+        state.vx_m_s += ax * dt_s
+        state.vz_m_s += az * dt_s
+        state.x_m += state.vx_m_s * dt_s
+        state.z_m += state.vz_m_s * dt_s
+        state.yaw_rad = _wrap_angle(
+            state.yaw_rad + cmd.yaw_rate_cmd_rad_s * dt_s
+        )
+        state = _limit_state(state, params)
+
+        cumulative_energy_j += power_w * dt_s
+        remaining_pct = max(
+            0.0, 100.0 * (1.0 - cumulative_energy_j / battery_capacity_j)
+        )
+        heating = cmd.throttle * 0.08 * dt_s
+        cooling = (motor_temp_c - ambient_temp_c) * 0.005 * dt_s
+        motor_temp_c += heating - cooling
+
+        time.append(t)
+        states.append(_clone_state(state))
+        commands.append(cmd)
+        energy_used.append(cumulative_energy_j)
+        battery_pct.append(remaining_pct)
+        temperature_c.append(motor_temp_c)
+
+    return SimulationResult(
+        time_s=time,
+        state=states,
+        commands=commands,
+        energy_used_j=energy_used,
+        battery_pct=battery_pct,
+        temperature_c=temperature_c,
     )

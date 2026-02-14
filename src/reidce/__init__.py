@@ -9,6 +9,17 @@ from reidce.aerospace import (
     thrust_to_weight,
     wing_loading,
 )
+from reidce.bemt import (
+    BEMTCondition,
+    BEMTResult,
+    BladeElement,
+    ElementResult,
+    RotorGeometry,
+    compute_rotor_efficiency,
+    discretize_rotor,
+    hover_thrust,
+    solve_bemt,
+)
 from reidce.blueprint_engine import (
     Annotation,
     BlueprintResult,
@@ -23,6 +34,8 @@ from reidce.blueprint_engine import (
 from reidce.cad_agent import (
     CadAgentResult,
     CompetitionDroneSpec,
+    export_stl_binary,
+    export_stl_text,
     generate_competition_drone_mesh,
     run_cad_agent,
 )
@@ -84,6 +97,16 @@ from reidce.code_gen import (
     generate_drone_config,
     generate_simulation_script,
 )
+from reidce.design_catalog import (
+    DESIGN_CATALOG,
+    CatalogValidation,
+    DesignEntry,
+    catalog_summary,
+    get_design,
+    get_designs_by_category,
+    validate_catalog,
+    validate_design,
+)
 from reidce.drivetrain import (
     Backlash,
     BeltDrive,
@@ -137,12 +160,15 @@ from reidce.flight_sim import (
     AutopilotConfig,
     ControlCommand,
     GuidanceTarget,
+    RotorParams,
     SensorSample,
     SimulationResult,
     TripleRedundantController,
     VehicleParams,
     VehicleState,
+    bemt_rotor_thrust,
     simulate_flight,
+    simulate_flight_bemt,
 )
 from reidce.gimbal import (
     EISConfig,
@@ -230,6 +256,16 @@ from reidce.sales_shipping import (
     compute_shipping,
     estimate_sales_and_shipping,
 )
+from reidce.sampling import (
+    SampleSet,
+    SamplingBounds,
+    adaptive_sample,
+    compute_discrepancy,
+    latin_hypercube_sample,
+    random_sample,
+    sample_to_dict,
+    sobol_like_sample,
+)
 from reidce.schemas import (
     BuildPacket,
     ConstraintReport,
@@ -247,10 +283,16 @@ from reidce.schemas import (
 )
 from reidce.topology import (
     TopologyCandidate,
+    TopologyField,
+    TopologyOptConfig,
+    TopologyOptResult,
     TopologyPreference,
     TopologyRecommendation,
     TopologyScorecard,
     generate_topology_candidates,
+    optimize_topology_divergent,
+    optimize_topology_freeform,
+    optimize_topology_gk,
     rank_topology_candidates,
     recommend_topology,
 )
@@ -308,12 +350,15 @@ __all__ = [
     "AutopilotConfig",
     "ControlCommand",
     "GuidanceTarget",
+    "RotorParams",
     "SensorSample",
     "SimulationResult",
     "TripleRedundantController",
     "VehicleParams",
     "VehicleState",
+    "bemt_rotor_thrust",
     "simulate_flight",
+    "simulate_flight_bemt",
     "AeroCoefficients",
     "ISAAtmosphere",
     "RangeEstimate",
@@ -379,6 +424,9 @@ __all__ = [
     "TransientResult",
     "ElectroThermalResult",
     "TopologyCandidate",
+    "TopologyField",
+    "TopologyOptConfig",
+    "TopologyOptResult",
     "TopologyPreference",
     "TopologyRecommendation",
     "TopologyScorecard",
@@ -390,6 +438,9 @@ __all__ = [
     "export_evidence_pack",
     "generate_cad_ref",
     "generate_topology_candidates",
+    "optimize_topology_divergent",
+    "optimize_topology_freeform",
+    "optimize_topology_gk",
     "rank_topology_candidates",
     "recommend_topology",
     "gate_build_ready",
@@ -484,6 +535,8 @@ __all__ = [
     # CAD agent
     "CadAgentResult",
     "CompetitionDroneSpec",
+    "export_stl_binary",
+    "export_stl_text",
     "generate_competition_drone_mesh",
     "run_cad_agent",
     # protocols
@@ -524,6 +577,15 @@ __all__ = [
     "TitleBlock",
     "ViewPort",
     "generate_drone_blueprint",
+    # design catalog
+    "CatalogValidation",
+    "DesignEntry",
+    "DESIGN_CATALOG",
+    "catalog_summary",
+    "get_design",
+    "get_designs_by_category",
+    "validate_catalog",
+    "validate_design",
     # code generation
     "CodeGenEngine",
     "CodeTemplate",
@@ -548,4 +610,23 @@ __all__ = [
     "encode_flight_metrics",
     "encode_vehicle_params",
     "roundtrip_verify",
+    # BEMT rotor analysis
+    "BEMTCondition",
+    "BEMTResult",
+    "BladeElement",
+    "ElementResult",
+    "RotorGeometry",
+    "compute_rotor_efficiency",
+    "discretize_rotor",
+    "hover_thrust",
+    "solve_bemt",
+    # sampling / Latin Hypercube
+    "SampleSet",
+    "SamplingBounds",
+    "adaptive_sample",
+    "compute_discrepancy",
+    "latin_hypercube_sample",
+    "random_sample",
+    "sample_to_dict",
+    "sobol_like_sample",
 ]
