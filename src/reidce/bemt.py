@@ -156,39 +156,50 @@ def solve_bemt(
             ))
             continue
 
-        sigma_r = geometry.n_blades * elem.chord_m / (2.0 * math.pi * r)
-
-        # initial guess for axial inflow factor
-        a = 0.01
+        # Iterate on induced velocity v_i directly (robust for hover)
+        v_i = 2.0  # initial guess for induced velocity [m/s]
         for _ in range(max_iter):
-            v_axial = condition.v_climb_m_s + a * u_t
+            v_axial = condition.v_climb_m_s + v_i
             phi = math.atan2(v_axial, u_t)
             alpha = elem.twist_rad - phi
 
             cl = elem.cl_alpha * alpha
             cd = elem.cd0
 
-            cn = cl * math.cos(phi) - cd * math.sin(phi)
+            w_sq = v_axial ** 2 + u_t ** 2
 
-            sin_phi = math.sin(phi)
-            denom = 4.0 * sin_phi * sin_phi
-            if abs(denom) < 1e-15:
+            # Thrust per unit span from blade element theory
+            dt_be = (
+                0.5
+                * condition.rho_kg_m3
+                * w_sq
+                * geometry.n_blades
+                * elem.chord_m
+                * (cl * math.cos(phi) - cd * math.sin(phi))
+            )
+            # Thrust per unit span from momentum theory
+            # dT = 4 pi r rho v_i (V_climb + v_i) dr
+            mom_coeff = (
+                4.0 * math.pi * r * condition.rho_kg_m3
+                * max(v_axial, 1e-9)
+            )
+            if mom_coeff > 0.0:
+                v_i_new = dt_be / mom_coeff
+            else:
+                v_i_new = v_i
+
+            v_i_new = max(v_i_new, 0.0)
+            v_i_new = min(v_i_new, u_t * 0.8)
+
+            # Under-relaxation for stability
+            v_i_next = 0.7 * v_i + 0.3 * v_i_new
+            if abs(v_i_next - v_i) < tol:
+                v_i = v_i_next
                 break
+            v_i = v_i_next
 
-            a_new = sigma_r * cn / denom
-
-            # Glauert correction for high inflow
-            a_new = max(a_new, 0.0)
-            if a_new > 0.5:
-                a_new = 0.5
-
-            if abs(a_new - a) < tol:
-                a = a_new
-                break
-            a = a_new
-
-        # final loads
-        v_axial = condition.v_climb_m_s + a * u_t
+        # Final loads with converged v_i
+        v_axial = condition.v_climb_m_s + v_i
         phi = math.atan2(v_axial, u_t)
         alpha = elem.twist_rad - phi
         cl = elem.cl_alpha * alpha
