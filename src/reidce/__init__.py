@@ -170,6 +170,14 @@ from reidce.flight_sim import (
     simulate_flight,
     simulate_flight_bemt,
 )
+from reidce.flight_sim_report import (
+    build_report,
+    generate_report,
+    load_report,
+    run_ai_flight,
+    summarize_telemetry,
+    write_report,
+)
 from reidce.gimbal import (
     EISConfig,
     EISFilter,
@@ -629,4 +637,11 @@ __all__ = [
     "random_sample",
     "sample_to_dict",
     "sobol_like_sample",
+    # flight sim report
+    "build_report",
+    "generate_report",
+    "load_report",
+    "run_ai_flight",
+    "summarize_telemetry",
+    "write_report",
 ]

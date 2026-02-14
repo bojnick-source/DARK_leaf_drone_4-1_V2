@@ -153,7 +153,13 @@ def generate_report(
     heading_rad: float = 0.0,
     duration_s: float = 30.0,
     dt_s: float = 0.05,
+    battery_capacity_j: float = 180000.0,
+    ambient_temp_c: float = 25.0,
+    initial_speed_m_s: float = 5.0,
+    params: Optional[VehicleParams] = None,
+    atmosphere: Optional[Atmosphere] = None,
     max_points: int = 600,
+    params_override: Optional[VehicleParams] = None,
 ) -> Dict[str, Any]:
     """Run the AI flight simulation and return a telemetry report."""
     result = run_ai_flight(
@@ -162,11 +168,52 @@ def generate_report(
         heading_rad=heading_rad,
         duration_s=duration_s,
         dt_s=dt_s,
+        battery_capacity_j=battery_capacity_j,
+        ambient_temp_c=ambient_temp_c,
+        initial_speed_m_s=initial_speed_m_s,
+        params=params,
+        atmosphere=atmosphere,
     )
-    return build_report(result, max_points=max_points)
+    return build_report(result, max_points=max_points, params_override=params_override)
 
 
 def write_report(report: Dict[str, Any], path: Path) -> None:
     """Write a telemetry report to a JSON file."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+
+def load_report(path: Path) -> Dict[str, Any]:
+    """Load a telemetry report from a JSON file."""
+    data: Dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    return data
+
+
+def summarize_telemetry(report: Dict[str, Any]) -> Dict[str, float]:
+    """Compute aggregate statistics from the telemetry section of a report.
+
+    Returns a dictionary with distance_traveled_m, average_speed_m_s,
+    and average_throttle_pct derived from the telemetry arrays.
+    """
+    telemetry = report["telemetry"]
+    speeds: List[float] = telemetry["speed_m_s"]
+    throttles: List[float] = telemetry["throttle_pct"]
+    x_vals: List[float] = telemetry["x_m"]
+    y_vals: List[float] = telemetry["y_m"]
+    alt_vals: List[float] = telemetry["altitude_m"]
+
+    distance = 0.0
+    for i in range(1, len(x_vals)):
+        dx = x_vals[i] - x_vals[i - 1]
+        dy = y_vals[i] - y_vals[i - 1]
+        dz = alt_vals[i] - alt_vals[i - 1]
+        distance += math.sqrt(dx * dx + dy * dy + dz * dz)
+
+    avg_speed = sum(speeds) / len(speeds) if speeds else 0.0
+    avg_throttle = sum(throttles) / len(throttles) if throttles else 0.0
+
+    return {
+        "distance_traveled_m": round(distance, 2),
+        "average_speed_m_s": round(avg_speed, 2),
+        "average_throttle_pct": round(avg_throttle, 1),
+    }
