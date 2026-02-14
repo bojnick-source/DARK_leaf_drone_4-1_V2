@@ -148,7 +148,7 @@ def compute_opening_trajectory(
     points: List[TrajectoryPoint] = []
     t = 0.0
     while t <= total_time:
-        # Normalised progress [0, 1] using sinusoidal ease-in-out
+        # Normalized progress [0, 1] using sinusoidal ease-in-out
         s = t / total_time
         angle_frac = 0.5 * (1.0 - math.cos(math.pi * s))
         angle_deg = spec.closed_angle_deg + travel_deg * angle_frac
@@ -242,7 +242,7 @@ def run_safety_checks(spec: ClawSpec) -> List[SafetyCheck]:
 
 
 def estimate_energy_j(spec: ClawSpec, total_time_s: float) -> float:
-    """Rough energy estimate for the claw opening manoeuvre.
+    """Rough energy estimate for the claw opening maneuver.
 
     Uses ``E ≈ τ · θ`` (torque × angular displacement in radians) as
     a first-order approximation of the mechanical work performed.
