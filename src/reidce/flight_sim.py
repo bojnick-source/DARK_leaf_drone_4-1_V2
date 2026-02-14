@@ -1,14 +1,76 @@
 from __future__ import annotations
 
 import math
+import random
 from dataclasses import dataclass, field
 from typing import Callable, Dict, Iterable, List, Optional, Tuple
+
+
+@dataclass(frozen=True)
+class WindModel:
+    """Constant wind vector in the world frame (m/s).
+
+    ``gust_intensity`` adds a random perturbation to each component on every
+    evaluation, modelling turbulence as white noise scaled by this value.
+    """
+
+    wx_m_s: float = 0.0
+    wy_m_s: float = 0.0
+    wz_m_s: float = 0.0
+    gust_intensity: float = 0.0
+
+    def sample(self) -> tuple[float, float, float]:
+        """Return an instantaneous wind vector including gust."""
+        g = self.gust_intensity
+        return (
+            self.wx_m_s + random.gauss(0.0, g) if g > 0 else self.wx_m_s,
+            self.wy_m_s + random.gauss(0.0, g) if g > 0 else self.wy_m_s,
+            self.wz_m_s + random.gauss(0.0, g) if g > 0 else self.wz_m_s,
+        )
+
+    @property
+    def steady_speed_m_s(self) -> float:
+        """Magnitude of the steady-state (non-gust) wind."""
+        return math.sqrt(self.wx_m_s**2 + self.wy_m_s**2 + self.wz_m_s**2)
+
+    @staticmethod
+    def vector_speed(vec: tuple[float, float, float]) -> float:
+        """Magnitude of a 3-component wind vector sample."""
+        return math.sqrt(vec[0] ** 2 + vec[1] ** 2 + vec[2] ** 2)
+
+
+@dataclass(frozen=True)
+class SensorNoise:
+    """Gaussian noise standard deviations applied to sensor readings."""
+
+    altitude_m_std: float = 0.0
+    speed_m_s_std: float = 0.0
+    heading_rad_std: float = 0.0
 
 
 @dataclass(frozen=True)
 class Atmosphere:
     rho_kg_m3: float = 1.225
     gravity_m_s2: float = 9.80665
+    wind: WindModel = field(default_factory=WindModel)
+    sensor_noise: SensorNoise = field(default_factory=SensorNoise)
+    use_isa_density: bool = False
+
+    def density_at(self, altitude_m: float) -> float:
+        """Return air density at *altitude_m* using ISA troposphere model.
+
+        If ``use_isa_density`` is *False* the constant ``rho_kg_m3`` is
+        returned regardless of altitude.
+        """
+        if not self.use_isa_density:
+            return self.rho_kg_m3
+        # ISA troposphere: T = T0 - L*h, rho = rho0 * (T/T0)^(g/(L*R)-1)
+        t0 = 288.15  # sea-level temperature K
+        lapse = 0.0065  # K/m
+        r_air = 287.058  # J/(kg·K)
+        t = max(t0 - lapse * altitude_m, 1.0)
+        exponent = self.gravity_m_s2 / (lapse * r_air) - 1.0
+        return self.rho_kg_m3 * (t / t0) ** exponent
 
 
 @dataclass(frozen=True)
@@ -70,6 +132,7 @@ class SimulationResult:
     energy_used_j: List[float]
     battery_pct: List[float]
     temperature_c: List[float]
+    wind_speed_m_s: List[float] = field(default_factory=list)
 
 
 class PID:
@@ -220,6 +283,7 @@ def simulate_flight(
     energy_used: List[float] = []
     battery_pct: List[float] = []
     temperature_c: List[float] = []
+    wind_speed_log: List[float] = []
 
     cumulative_energy_j = 0.0
     motor_temp_c = ambient_temp_c
@@ -227,9 +291,10 @@ def simulate_flight(
     for step in range(steps + 1):
         t = step * dt_s
         active_target = guidance_profile(t, target) if guidance_profile else target
-        sensed = _sense(state)
+        sensed = _sense(state, atmosphere.sensor_noise)
         cmd = controller.compute(active_target, sensed, dt_s)
-        state = _integrate(state, cmd, dt_s, params, atmosphere)
+        wind_vec = atmosphere.wind.sample()
+        state = _integrate(state, cmd, dt_s, params, atmosphere, wind_vec)
 
         # Power model: motor efficiency ~30%, plus 15 W idle draw
         power_w = cmd.throttle * params.max_thrust_n * sensed.speed_m_s * 0.3 + 15.0
@@ -246,6 +311,7 @@ def simulate_flight(
         energy_used.append(cumulative_energy_j)
         battery_pct.append(remaining_pct)
         temperature_c.append(motor_temp_c)
+        wind_speed_log.append(WindModel.vector_speed(wind_vec))
 
     return SimulationResult(
         time_s=time,
@@ -254,11 +320,21 @@ def simulate_flight(
         energy_used_j=energy_used,
         battery_pct=battery_pct,
         temperature_c=temperature_c,
+        wind_speed_m_s=wind_speed_log,
     )
 
 
-def _sense(state: VehicleState) -> SensorSample:
+def _sense(state: VehicleState, noise: Optional[SensorNoise] = None) -> SensorSample:
     speed = math.sqrt(state.vx_m_s**2 + state.vy_m_s**2 + state.vz_m_s**2)
+    if noise and (noise.altitude_m_std > 0 or noise.speed_m_s_std > 0 or noise.heading_rad_std > 0):
+        return SensorSample(
+            altitude_m=state.z_m + random.gauss(0.0, noise.altitude_m_std),
+            speed_m_s=max(0.0, speed + random.gauss(0.0, noise.speed_m_s_std)),
+            heading_rad=state.yaw_rad + random.gauss(0.0, noise.heading_rad_std),
+            roll_rad=state.roll_rad,
+            pitch_rad=state.pitch_rad,
+            yaw_rad=state.yaw_rad,
+        )
     return SensorSample(
         altitude_m=state.z_m,
         speed_m_s=speed,
@@ -275,11 +351,18 @@ def _integrate(
     dt: float,
     params: VehicleParams,
     atmosphere: Atmosphere,
+    wind_sample: tuple[float, float, float] = (0.0, 0.0, 0.0),
 ) -> VehicleState:
+    rho = atmosphere.density_at(state.z_m)
+
     def deriv(s: VehicleState) -> VehicleState:
-        speed = math.sqrt(s.vx_m_s**2 + s.vy_m_s**2 + s.vz_m_s**2) + 1e-6
-        lift = _lift_force(speed, s.pitch_rad, params, atmosphere)
-        drag = _drag_force(speed, s.pitch_rad, params, atmosphere)
+        # Airspeed = ground speed − wind
+        air_vx = s.vx_m_s - wind_sample[0]
+        air_vy = s.vy_m_s - wind_sample[1]
+        air_vz = s.vz_m_s - wind_sample[2]
+        airspeed = math.sqrt(air_vx**2 + air_vy**2 + air_vz**2) + 1e-6
+        lift = _lift_force(airspeed, s.pitch_rad, params, rho)
+        drag = _drag_force(airspeed, s.pitch_rad, params, rho)
         thrust = cmd.throttle * params.max_thrust_n
 
         ax = (thrust * math.cos(s.pitch_rad) - drag) / params.mass_kg
@@ -328,15 +411,15 @@ def _attitude_rate(current: float, target: float, dt: float, params: VehiclePara
     return (limited - current) / max(dt, 1e-6)
 
 
-def _lift_force(speed: float, pitch: float, params: VehicleParams, atmosphere: Atmosphere) -> float:
+def _lift_force(speed: float, pitch: float, params: VehicleParams, rho: float) -> float:
     cl = params.cl_alpha_per_rad * pitch
-    return 0.5 * atmosphere.rho_kg_m3 * speed**2 * params.wing_area_m2 * cl
+    return 0.5 * rho * speed**2 * params.wing_area_m2 * cl
 
 
-def _drag_force(speed: float, pitch: float, params: VehicleParams, atmosphere: Atmosphere) -> float:
+def _drag_force(speed: float, pitch: float, params: VehicleParams, rho: float) -> float:
     alpha = pitch
     cd = params.cd0 + params.cd_alpha2 * alpha * alpha
-    return 0.5 * atmosphere.rho_kg_m3 * speed**2 * params.wing_area_m2 * cd
+    return 0.5 * rho * speed**2 * params.wing_area_m2 * cd
 
 
 def _wrap_angle(angle: float) -> float:
@@ -358,13 +441,17 @@ def _clone_state(state: VehicleState) -> VehicleState:
 
 def _limit_state(state: VehicleState, params: VehicleParams) -> VehicleState:
     vmax = params.max_speed_m_s
+    z = max(0.0, state.z_m)  # ground collision clamp
+    vz = state.vz_m_s
+    if z == 0.0 and vz < 0.0:
+        vz = 0.0
     return VehicleState(
         x_m=state.x_m,
         y_m=state.y_m,
-        z_m=state.z_m,
+        z_m=z,
         vx_m_s=max(-vmax, min(vmax, state.vx_m_s)),
         vy_m_s=max(-vmax, min(vmax, state.vy_m_s)),
-        vz_m_s=max(-vmax, min(vmax, state.vz_m_s)),
+        vz_m_s=max(-vmax, min(vmax, vz)),
         roll_rad=state.roll_rad,
         pitch_rad=state.pitch_rad,
         yaw_rad=_wrap_angle(state.yaw_rad),
@@ -485,6 +572,7 @@ def simulate_flight_bemt(
     energy_used: List[float] = []
     battery_pct: List[float] = []
     temperature_c: List[float] = []
+    wind_speed_log: List[float] = []
 
     cumulative_energy_j = 0.0
     motor_temp_c = ambient_temp_c
@@ -494,23 +582,25 @@ def simulate_flight_bemt(
         active_target = (
             guidance_profile(t, target) if guidance_profile else target
         )
-        sensed = _sense(state)
+        sensed = _sense(state, atmosphere.sensor_noise)
         cmd = controller.compute(active_target, sensed, dt_s)
+        wind_vec = atmosphere.wind.sample()
 
         # BEMT-based thrust and power
+        rho = atmosphere.density_at(state.z_m)
         rotor_out = bemt_rotor_thrust(
-            cmd.throttle, state.vz_m_s, rotor, atmosphere.rho_kg_m3,
+            cmd.throttle, state.vz_m_s, rotor, rho,
         )
         thrust = rotor_out["thrust_n"]
         power_w = rotor_out["power_w"] + 15.0  # idle electronics draw
 
-        # Physics integration with BEMT thrust
-        lift = _lift_force(
-            sensed.speed_m_s + 1e-6, state.pitch_rad, params, atmosphere
-        )
-        drag = _drag_force(
-            sensed.speed_m_s + 1e-6, state.pitch_rad, params, atmosphere
-        )
+        # Physics integration with BEMT thrust — use airspeed
+        air_vx = state.vx_m_s - wind_vec[0]
+        air_vy = state.vy_m_s - wind_vec[1]
+        air_vz = state.vz_m_s - wind_vec[2]
+        airspeed = math.sqrt(air_vx**2 + air_vy**2 + air_vz**2) + 1e-6
+        lift = _lift_force(airspeed, state.pitch_rad, params, rho)
+        drag = _drag_force(airspeed, state.pitch_rad, params, rho)
 
         ax = (
             thrust * math.cos(state.pitch_rad) - drag
@@ -544,6 +634,7 @@ def simulate_flight_bemt(
         energy_used.append(cumulative_energy_j)
         battery_pct.append(remaining_pct)
         temperature_c.append(motor_temp_c)
+        wind_speed_log.append(WindModel.vector_speed(wind_vec))
 
     return SimulationResult(
         time_s=time,
@@ -552,6 +643,7 @@ def simulate_flight_bemt(
         energy_used_j=energy_used,
         battery_pct=battery_pct,
         temperature_c=temperature_c,
+        wind_speed_m_s=wind_speed_log,
     )
 
 

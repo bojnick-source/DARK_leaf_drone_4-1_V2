@@ -10,7 +10,9 @@ from reidce.flight_sim import (
 from reidce.flight_sim_report import (
     build_report,
     generate_report,
+    load_report,
     run_ai_flight,
+    summarize_telemetry,
     write_report,
 )
 
@@ -128,3 +130,31 @@ def test_dashboard_links_to_flight_sim() -> None:
     root = Path(__file__).resolve().parents[1]
     html = (root / "ui" / "dashboard.html").read_text(encoding="utf-8")
     assert "flight_sim.html" in html
+
+
+def test_load_report_roundtrip(tmp_path: Path) -> None:
+    report = generate_report(duration_s=2.0, dt_s=0.1)
+    out_path = tmp_path / "report.json"
+    write_report(report, out_path)
+    loaded = load_report(out_path)
+    assert loaded["schema"] == report["schema"]
+    assert loaded["summary"] == report["summary"]
+
+
+def test_generate_report_forwards_battery_params() -> None:
+    report = generate_report(
+        duration_s=3.0, dt_s=0.1, battery_capacity_j=50000.0, ambient_temp_c=35.0,
+    )
+    assert report["summary"]["battery_remaining_pct"] < 100.0
+    assert report["summary"]["max_temperature_c"] >= 35.0
+
+
+def test_summarize_telemetry_returns_aggregates() -> None:
+    report = generate_report(duration_s=5.0, dt_s=0.1)
+    summary = summarize_telemetry(report)
+    assert "distance_traveled_m" in summary
+    assert "average_speed_m_s" in summary
+    assert "average_throttle_pct" in summary
+    assert summary["distance_traveled_m"] >= 0.0
+    assert summary["average_speed_m_s"] >= 0.0
+    assert summary["average_throttle_pct"] >= 0.0
