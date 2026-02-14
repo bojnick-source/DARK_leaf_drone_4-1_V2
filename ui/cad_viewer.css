@@ -19,6 +19,14 @@
   --sidebar-w: 300px;
   --header-h: 52px;
   --footer-h: 44px;
+
+  /* Liquid Obsidian noir palette (shared with mesh3d_enhanced.css) */
+  --noir-bg0: #0A0B0E;
+  --noir-bg1: #0E1118;
+  --noir-bg2: #131827;
+  --ink-teal: #00C0B8;
+  --ink-blue: #0088D8;
+  --ink-indigo: #2868F8;
 }
 
 *,
