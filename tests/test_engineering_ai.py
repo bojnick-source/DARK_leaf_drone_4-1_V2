@@ -3,10 +3,13 @@
 from pathlib import Path
 
 from reidce.engineering_ai import (
+    ConversationContext,
+    ConversationTurn,
     EngineeringKnowledgeBase,
     EngineeringQueryEngine,
     KnowledgeChunk,
     QueryResult,
+    classify_intent,
 )
 from reidce.memory import MemoryStore
 
@@ -194,3 +197,98 @@ def test_query_engine_from_knowledge_dir(tmp_path: Path) -> None:
     engine = EngineeringQueryEngine.from_knowledge_dir(tmp_path)
     result = engine.query("force mass acceleration")
     assert result.confidence > 0.0
+
+
+# ── Conversational context ──────────────────────────────────────────
+
+
+def test_classify_intent_competition() -> None:
+    intents = classify_intent("What are the DARPA LIFT competition rules?")
+    assert len(intents) > 0
+    intent_names = [i[0] for i in intents]
+    assert "competition_rules" in intent_names
+
+
+def test_classify_intent_cad() -> None:
+    intents = classify_intent("Generate a CAD mesh for the drone")
+    intent_names = [i[0] for i in intents]
+    assert "cad_generate" in intent_names
+
+
+def test_classify_intent_topology() -> None:
+    intents = classify_intent("Optimize the topology for structural stiffness")
+    intent_names = [i[0] for i in intents]
+    assert "topology_optimize" in intent_names
+
+
+def test_classify_intent_empty() -> None:
+    intents = classify_intent("")
+    assert intents == []
+
+
+def test_classify_intent_no_match() -> None:
+    intents = classify_intent("hello world zzzz")
+    assert intents == []
+
+
+def test_conversation_context_creation() -> None:
+    ctx = ConversationContext()
+    assert len(ctx.turns) == 0
+    assert ctx.active_intents == {}
+    assert ctx.design_parameters == {}
+
+
+def test_conversation_context_add_turn() -> None:
+    ctx = ConversationContext()
+    turn = ctx.add_turn("user", "Build the competition drone with 4 motors")
+    assert isinstance(turn, ConversationTurn)
+    assert turn.role == "user"
+    assert len(ctx.turns) == 1
+
+
+def test_conversation_context_tracks_intents() -> None:
+    ctx = ConversationContext()
+    ctx.add_turn("user", "What are the DARPA LIFT rules?")
+    assert len(ctx.active_intents) > 0
+    assert "competition_rules" in ctx.active_intents
+
+
+def test_conversation_context_extracts_parameters() -> None:
+    ctx = ConversationContext()
+    ctx.add_turn("user", "Build a drone with 6 motors and payload of 50 kg")
+    assert ctx.design_parameters.get("arm_count") == 6
+    assert ctx.design_parameters.get("payload_kg") == 50.0
+
+
+def test_conversation_context_multi_turn() -> None:
+    ctx = ConversationContext()
+    ctx.add_turn("user", "I want to build a competition drone")
+    ctx.add_turn("assistant", "Sure, let me configure the DARPA LIFT quad.")
+    ctx.add_turn("user", "Now generate the CAD mesh")
+    assert len(ctx.turns) == 3
+    assert "cad_generate" in ctx.active_intents
+
+
+def test_conversation_context_dominant_intent() -> None:
+    ctx = ConversationContext()
+    ctx.add_turn("user", "Generate a high-fidelity CAD mesh model for the drone")
+    intent, confidence = ctx.get_dominant_intent()
+    assert intent == "cad_generate"
+    assert confidence > 0.0
+
+
+def test_conversation_context_summary() -> None:
+    ctx = ConversationContext()
+    ctx.add_turn("user", "Competition drone design with 4 motors 2.5 kg")
+    summary = ctx.get_context_summary()
+    assert "Turns: 1" in summary
+
+
+def test_conversation_context_to_dict() -> None:
+    ctx = ConversationContext()
+    ctx.add_turn("user", "Optimize topology for the DARPA drone")
+    d = ctx.to_dict()
+    assert d["schema"] == "dark/conversation_context/1.0"
+    assert d["turn_count"] == 1
+    assert isinstance(d["active_intents"], dict)
+

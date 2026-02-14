@@ -9,6 +9,12 @@ from reidce.aerospace import (
     thrust_to_weight,
     wing_loading,
 )
+from reidce.cad_agent import (
+    CadAgentResult,
+    CompetitionDroneSpec,
+    generate_competition_drone_mesh,
+    run_cad_agent,
+)
 from reidce.cad_rendering import (
     CadMesh,
     CrossSection,
@@ -84,11 +90,14 @@ from reidce.electromagnetic import (
     saturation_curve,
 )
 from reidce.engineering_ai import (
+    ConversationContext,
+    ConversationTurn,
     EngineeringKnowledgeBase,
     EngineeringQueryEngine,
     KnowledgeChunk,
     QueryResult,
     RetrievedPassage,
+    classify_intent,
 )
 from reidce.fea import (
     BeamElement,
@@ -430,6 +439,15 @@ __all__ = [
     "KnowledgeChunk",
     "QueryResult",
     "RetrievedPassage",
+    # conversational context
+    "ConversationContext",
+    "ConversationTurn",
+    "classify_intent",
+    # CAD agent
+    "CadAgentResult",
+    "CompetitionDroneSpec",
+    "generate_competition_drone_mesh",
+    "run_cad_agent",
     # protocols
     "AcceptanceEvaluator",
     "DesignValidator",

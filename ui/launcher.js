@@ -21,6 +21,13 @@ const State = {
   simRunning:    false,
   simTimer:      null,
   simT:          0,
+  // Conversational AI context (multi-turn, competition-focused)
+  conversationContext: {
+    turns: [],
+    activeIntents: {},
+    designParameters: {},
+    cadAgentRunning: false,
+  },
   // 3D scenes
   cadScene:      null,
   cadCamera:     null,
@@ -278,6 +285,17 @@ function sendPrompt() {
 function vibeEngineerResponse(prompt) {
   const lower = prompt.toLowerCase();
   const components = [];
+  const ctx = State.conversationContext;
+
+  // ── Multi-turn context tracking ───────────────────────────────────
+  const intentScores = classifyIntent(lower);
+  ctx.turns.push({ role: "user", text: prompt, intents: intentScores });
+  // Decay older intents, accumulate new ones
+  for (const [intent, conf] of intentScores) {
+    ctx.activeIntents[intent] = Math.min((ctx.activeIntents[intent] || 0) * 0.7 + conf, 1.0);
+  }
+  extractDesignParameters(lower, ctx);
+  const dominant = getDominantIntent(ctx);
 
   // ── Component generation (keyword-based) ──────────────────────────
   if (lower.includes("propeller") || lower.includes("rotor") || lower.includes("prop")) {
@@ -292,95 +310,144 @@ function vibeEngineerResponse(prompt) {
   if (lower.includes("battery") || lower.includes("power") || lower.includes("energy")) {
     components.push({ name: "Battery",   type: "power",       length: 0.08, color: 0xd29922 });
   }
-  if (lower.includes("camera") || lower.includes("sensor") || lower.includes("lidar")) {
-    components.push({ name: "Camera",    type: "sensor",      diameter: 0.02, color: 0xf85149 });
-  }
   if (lower.includes("arm") || lower.includes("boom")) {
     components.push({ name: "Arm",       type: "structure",   length: 0.2,  color: 0x58a6ff });
   }
 
-  // ── Intent-based drone presets ────────────────────────────────────
-  const isRacing   = /rac(e|ing)|fast|speed|fpv|freestyle/i.test(prompt);
-  const isPhoto    = /photo|video|film|cinema|landscape|aerial/i.test(prompt);
-  const isDelivery = /deliver|cargo|carry|transport|payload|heavy.?lift/i.test(prompt);
-  const isSurvey   = /survey|map|inspect|agriculture|thermal|multispectral/i.test(prompt);
-  const isExplore  = /explor|option|idea|suggest|recommend|show me|not sure|help me|what can|what should/i.test(prompt);
+  // ── Competition-focused drone preset (DARPA LIFT 4:1) ────────────
+  const isCompetition = /compet|darpa|lift|4.?1|challenge|prize|race|contest|rules/i.test(prompt);
+  const isDesign     = /design|build|create|make|generat|configur|setup|set.?up/i.test(prompt);
+  const isCad        = /cad|mesh|3d|model|render|stl|autocad|shapr|visual|see|look/i.test(prompt);
+  const isOptimize   = /optim|topolog|weight|stiff|structur|strength/i.test(prompt);
+  const isFlight     = /flight|fly|hover|speed|endur|climb|turn|power|thrust/i.test(prompt);
+  const isExplore    = /explor|option|idea|suggest|recommend|show me|not sure|help me|what can|what should/i.test(prompt);
 
-  if (isRacing && !components.length) {
+  // Competition drone preset — default build for DARPA LIFT
+  if ((isCompetition || isDesign) && !components.length) {
     components.push(
-      { name: "Racing Frame",  type: "structure", length: 0.22,  color: 0x3fb950 },
-      { name: "Motor ×4",      type: "actuator",  diameter: 0.023, color: 0xa855f7 },
-      { name: "Racing Prop ×4", type: "rotor",    diameter: 0.13,  color: 0x00d4ff },
-      { name: "LiPo 4S",      type: "power",     length: 0.06,   color: 0xd29922 },
-    );
-  } else if (isPhoto && !components.length) {
-    components.push(
-      { name: "Stable Frame",  type: "structure", length: 0.35,   color: 0x3fb950 },
-      { name: "Motor ×4",      type: "actuator",  diameter: 0.03,  color: 0xa855f7 },
-      { name: "Low-KV Prop ×4", type: "rotor",   diameter: 0.25,  color: 0x00d4ff },
-      { name: "Camera Gimbal", type: "sensor",    diameter: 0.03,  color: 0xf85149 },
-      { name: "LiPo 6S",      type: "power",     length: 0.08,   color: 0xd29922 },
-    );
-  } else if (isDelivery && !components.length) {
-    components.push(
-      { name: "Heavy-Lift Frame", type: "structure", length: 0.5,  color: 0x3fb950 },
-      { name: "Motor ×6",      type: "actuator",  diameter: 0.04,  color: 0xa855f7 },
-      { name: "Large Prop ×6", type: "rotor",     diameter: 0.38,  color: 0x00d4ff },
-      { name: "Cargo Bay",     type: "structure",  length: 0.15,   color: 0x58a6ff },
-      { name: "LiPo 6S ×2",   type: "power",     length: 0.1,    color: 0xd29922 },
-    );
-  } else if (isSurvey && !components.length) {
-    components.push(
-      { name: "Survey Frame",  type: "structure", length: 0.4,   color: 0x3fb950 },
-      { name: "Motor ×4",      type: "actuator",  diameter: 0.03,  color: 0xa855f7 },
-      { name: "Efficient Prop ×4", type: "rotor", diameter: 0.28,  color: 0x00d4ff },
-      { name: "Sensor Array",  type: "sensor",    diameter: 0.025, color: 0xf85149 },
-      { name: "LiPo 6S",      type: "power",     length: 0.09,   color: 0xd29922 },
+      { name: "Competition Frame",  type: "structure", length: 0.35,  color: 0x3fb950 },
+      { name: "Motor ×4",           type: "actuator",  diameter: 0.036, color: 0xa855f7 },
+      { name: "Competition Prop ×4", type: "rotor",    diameter: 0.24,  color: 0x00d4ff },
+      { name: "LiPo 6S Power",      type: "power",    length: 0.07,   color: 0xd29922 },
     );
   }
 
-  // ── Response generation ───────────────────────────────────────────
+  // ── Context-aware response generation ─────────────────────────────
   let message;
 
-  if (components.length && (isRacing || isPhoto || isDelivery || isSurvey)) {
-    // Matched a drone type — give an enthusiastic, conversational response
-    const presetMessages = {
-      racing: "Nice, a racing build! 🏁 I've put together a lightweight 5\" quad setup — small frame, high-KV motors, and a punchy 4S battery. This should rip. Want me to tweak the prop size or swap to a 6S setup for more top speed?",
-      photo: "Great choice! 📷 I've set up a stable photography platform — larger props for smooth flight, a camera gimbal, and a 6S battery for longer flight times. Want to add GPS hold or adjust the frame size?",
-      delivery: "Got it — heavy-lift config coming up! 📦 I've gone with a hex (6 motors) for redundancy and a dedicated cargo bay. The larger props will handle the extra weight. How much payload are we targeting? I can adjust the motor size.",
-      survey: "Perfect for mapping work! 🔬 I've configured a survey quad with efficient props for max flight time, plus a sensor array mount. Want to add RTK GPS or a specific sensor type like multispectral or thermal?",
-    };
-    const key = isRacing ? "racing" : isPhoto ? "photo" : isDelivery ? "delivery" : "survey";
-    message = presetMessages[key];
+  if (isCad || dominant === "cad_generate") {
+    // CAD generation intent — trigger the CAD agent pipeline
+    message = "Understood! 🏗️ I'm spinning up the **CAD agent pipeline** now — this will run:\n\n" +
+      "1. **Topology optimization** — evaluating structural variants for the 4:1 competition frame\n" +
+      "2. **Mesh validation** — checking watertight, manifold, and degenerate faces\n" +
+      "3. **High-fidelity mesh generation** — multi-component drone geometry\n\n" +
+      "The CAD output is competition-focused: central hub, " + (ctx.designParameters.arm_count || 4) + " arms, motor mounts, propeller disks, and battery tray. " +
+      "No camera or gimbal — strictly what the competition rules dictate.\n\n" +
+      "Head to the **CAD Mesh Viewer** tab to inspect the generated geometry. Want me to adjust arm length, prop size, or tessellation quality?";
+    ctx.cadAgentRunning = true;
+  } else if (isCompetition || dominant === "competition_rules") {
+    // Competition rules — give specific DARPA LIFT constraints
+    message = "Great — let's focus on the **DARPA LIFT challenge** constraints! 🎯\n\n" +
+      "Here's what the competition rules dictate:\n" +
+      "• **Aircraft mass** (dry + fuel): ≤ 24.95 kg (55 lb)\n" +
+      "• **Payload minimum**: 49.9 kg (110 lb)\n" +
+      "• **Full prize ratio**: 4:1 payload-to-aircraft mass\n" +
+      "• **Course**: 5 NM at 350 ft altitude, ≤ 30 min\n\n" +
+      "The computational pipeline evaluates every design against these exact constraints. " +
+      "Want me to generate the competition drone CAD mesh, or would you like to discuss specific design parameters first?";
+    if (!components.length) {
+      components.push(
+        { name: "Competition Frame",  type: "structure", length: 0.35,  color: 0x3fb950 },
+        { name: "Motor ×4",           type: "actuator",  diameter: 0.036, color: 0xa855f7 },
+        { name: "Competition Prop ×4", type: "rotor",    diameter: 0.24,  color: 0x00d4ff },
+        { name: "LiPo 6S Power",      type: "power",    length: 0.07,   color: 0xd29922 },
+      );
+    }
+  } else if (isOptimize || dominant === "topology_optimize") {
+    // Topology optimization
+    message = "On it! 🔧 The **topology optimizer** evaluates three structural variants:\n\n" +
+      "1. **Lightweight** — reduced wall thickness and diameter for minimum mass\n" +
+      "2. **Stiffened** — increased wall thickness for maximum structural rigidity\n" +
+      "3. **Extended reach** — longer actuators with balanced stiffness\n\n" +
+      "Each variant is scored on: stiffness, pressure force, slenderness, deflection capacity, and a diameter penalty. " +
+      "The best candidate feeds directly into the CAD agent for mesh generation. " +
+      "Want me to run topology optimization with the current design parameters?";
+  } else if (isFlight || dominant === "flight_performance") {
+    // Flight performance
+    message = "Let's talk flight performance! ✈️ The design loop runs four key tests:\n\n" +
+      "• **Climb test** — push to 100 m altitude, check thermal limits\n" +
+      "• **Speed test** — full throttle, verify structural envelope\n" +
+      "• **Turn test** — sustained turn rate at cruise, check g-limits\n" +
+      "• **Endurance test** — cruise at 30 m for 60 s, monitor battery\n\n" +
+      "The AI learns from each failure and auto-adjusts parameters (thrust, drag, bank angle, wing area, mass). " +
+      "This runs up to 5 iterations until the design converges. Want to start a design loop?";
+  } else if (components.length && (isDesign || isCompetition)) {
+    // Matched a competition build
+    message = "Perfect — here's your **4:1 competition drone** configuration! 🏁\n\n" +
+      "I've set up a quad frame optimized for the DARPA LIFT challenge: 4 high-efficiency motors, " +
+      "competition-spec propellers for maximum thrust-to-weight, and a 6S power system. " +
+      "Everything is centered on the competition rules — no cameras, no gimbals, just pure performance.\n\n" +
+      "Next steps:\n" +
+      "• Say **\"generate CAD\"** to run the full CAD agent pipeline\n" +
+      "• Say **\"optimize topology\"** to evaluate structural variants\n" +
+      "• Say **\"run flight test\"** to start the build-fly-learn loop\n\n" +
+      "What would you like to do?";
   } else if (components.length) {
     // Matched specific component keywords
     const names = components.map(c => c.name).join(", ");
-    message = `On it! I'm generating ${names} for you. These will show up in the Assembly Lab once we're ready.\n\nWant me to add anything else? For a complete build you'd typically also need ${suggestMissing(components)}.`;
+    message = `On it! I'm generating ${names} for you. These will show up in the Assembly Lab once we're ready.\n\nWant me to add anything else? For a complete competition build you'd typically also need ${suggestMissing(components)}.`;
   } else if (isExplore) {
-    // User is exploring / not sure what they want
-    message = "No problem — let's figure it out together! Here are some popular starting points:\n\n" +
-      "🏁 **Racing/FPV** — Small, fast, agile. Think 5\" props and 4S power.\n" +
-      "📷 **Photography** — Stable, smooth, long flight time. Gimbal + GPS.\n" +
-      "📦 **Delivery/Cargo** — Heavy-lift hex or octo with a cargo bay.\n" +
-      "🔬 **Survey/Mapping** — Max endurance, sensor array, RTK GPS.\n" +
-      "🎮 **Freestyle** — Durable frame, punchy motors, acro-ready.\n\n" +
-      "Just say which one sounds closest to what you're after, or describe your own idea — even something vague like \"I want something that flies far\" works!";
+    // User is exploring — competition-centric options
+    message = "No problem — let's figure it out! Here's what I can help with for the **4:1 competition drone**:\n\n" +
+      "🏁 **Competition build** — Generate the DARPA LIFT quad configuration\n" +
+      "🏗️ **CAD generation** — Run the full topology → validation → mesh pipeline\n" +
+      "🔧 **Topology optimization** — Compare structural variants\n" +
+      "✈️ **Flight testing** — Run the AI design loop (build-fly-learn)\n" +
+      "📐 **Competition rules** — Review DARPA LIFT constraints\n\n" +
+      "Just describe what you need — even something vague like \"show me the drone design\" works. " +
+      "I'll use the full computational pipeline including topology optimization, validation, and mathematical engines to generate accurate results.";
   } else if (lower.includes("?") || lower.includes("how") || lower.includes("what") || lower.includes("why") || lower.includes("can")) {
-    // Question — give a helpful, conversational answer
-    const answers = [
-      "Good question! Here's the quick version — most drones share the same core: frame, motors, propellers, a flight controller, and a battery. The differences come down to what you want it *to do*. A racing quad is light with tiny props; a photography rig is big with a gimbal. Tell me the mission and I'll pick the right combo for you.",
-      "I can definitely help with that! The key variables are: how much weight it needs to carry, how long it needs to fly, and how fast. Once I know the mission profile, I can suggest the right frame size, motor KV, prop diameter, and battery. What are you trying to achieve?",
-      "Absolutely! Think of it this way — every drone design is really just balancing weight, thrust, and flight time. More thrust means bigger motors and props (but heavier). Longer flight means bigger battery (but also heavier). I can help you find the sweet spot. What's the primary use case?",
-    ];
-    message = answers[State.chatHistory.length % answers.length];
+    // Question — context-aware answer using conversation history
+    const turnCount = ctx.turns.length;
+    const hasDesignContext = Object.keys(ctx.designParameters).length > 0;
+    if (hasDesignContext) {
+      const params = Object.entries(ctx.designParameters).map(([k, v]) => `${k}: ${v}`).join(", ");
+      message = `Based on our conversation so far (${params}), here's what I can tell you:\n\n` +
+        "The computational pipeline uses topology optimization, uncertainty quantification, and " +
+        "the design loop to validate every parameter against DARPA LIFT competition rules. " +
+        "All mathematical calculations — momentum theory for hover power, structural FEA, " +
+        "energy budgets — are run through the validator before any CAD mesh is generated.\n\n" +
+        "What specific aspect would you like me to go deeper on?";
+    } else {
+      const answers = [
+        "Good question! The **4:1 competition drone** is built around DARPA LIFT constraints — 24.95 kg aircraft mass, 49.9 kg minimum payload. " +
+          "Every design passes through topology optimization, flight testing, and mesh validation before CAD output. " +
+          "What specifically would you like to know about the design or competition rules?",
+        "The computational AI pipeline works like this: your design parameters go through **topology optimization** → **constraint validation** → " +
+          "**uncertainty quantification** → **CAD mesh generation**. All focused on the competition — no camera or photography features. " +
+          "Want me to walk you through any specific stage?",
+        "The engine handles everything from structural analysis to flight dynamics. For the competition drone, " +
+          "it evaluates hover power (momentum theory), mission closure (energy budgets), and mass constraints — " +
+          "all from the DARPA LIFT rules. Tell me what aspect you'd like me to focus on.",
+      ];
+      message = answers[turnCount % answers.length];
+    }
   } else {
-    // General input — be encouraging, suggest directions, don't just wait for keywords
-    const fallbacks = [
-      "Interesting idea! I can work with that. To get the ball rolling, would you say this is more of a speed build, a camera platform, or something else? I'll suggest a starting config and we can tweak from there.",
-      "Love it! Let me suggest a starting point — how about a classic quad setup? 4 motors, a clean frame, and a solid battery. I can spin that up and we can customize from there. Sound good?",
-      "Cool! Here's what I'm thinking — let me throw together a versatile all-rounder quad (4 motors, 10\" props, 6S battery) and you can tell me what to change. Sometimes it's easier to react to something than start from scratch. Want me to go ahead?",
-    ];
-    message = fallbacks[State.chatHistory.length % fallbacks.length];
+    // General input — competition-focused default, referencing context
+    const turnCount = ctx.turns.length;
+    if (turnCount <= 1) {
+      message = "Let's get started on your **competition drone**! 🚀 To kick things off, I'll configure a quad optimized " +
+        "for the DARPA LIFT 4:1 challenge. Just say **\"build\"** or **\"design\"** and I'll set up the full component list. " +
+        "Or tell me specific parameters (e.g., \"4 motors, 24 cm props\") and I'll incorporate them.";
+    } else {
+      const ctxSummary = dominant ? `I'm tracking your interest in **${dominant.replace("_", " ")}**. ` : "";
+      message = ctxSummary + "I can work with that! For the competition drone, I recommend we:\n\n" +
+        "1. Lock in the design parameters\n" +
+        "2. Run topology optimization\n" +
+        "3. Generate the high-fidelity CAD mesh\n\n" +
+        "Each step uses the full computational pipeline — topology scorer, mesh validator, and all mathematical engines. " +
+        "What would you like to do next?";
+    }
   }
 
   return { message, components };
@@ -394,8 +461,52 @@ function suggestMissing(components) {
   if (!types.has("actuator")) missing.push("motors");
   if (!types.has("rotor"))    missing.push("propellers");
   if (!types.has("power"))    missing.push("a battery");
-  if (!types.has("sensor"))   missing.push("a camera or sensors");
   return missing.length ? missing.join(", ") : "looks like you've got the essentials covered!";
+}
+
+// ── Conversational AI helpers (competition-focused) ─────────────────
+
+/** Competition-centric intent classification with weighted keyword matching. */
+const COMPETITION_INTENTS = {
+  design_review:      ["design", "review", "evaluate", "assess", "check", "validate", "constraint", "requirement", "spec"],
+  topology_optimize:  ["topology", "optimize", "optimise", "stiffness", "weight", "lightweight", "structural", "strength", "deflection"],
+  cad_generate:       ["cad", "mesh", "3d", "model", "generate", "render", "stl", "geometry", "shape", "autocad", "shapr", "visual", "see", "look"],
+  competition_rules:  ["competition", "darpa", "lift", "rules", "constraint", "payload", "ratio", "course", "prize", "challenge"],
+  flight_performance: ["flight", "fly", "performance", "speed", "endurance", "climb", "turn", "hover", "power", "thrust", "energy"],
+  manufacturing:      ["manufacturing", "build", "fabricate", "material", "process", "composite", "carbon", "assembly", "production"],
+};
+
+function classifyIntent(text) {
+  const lower = text.toLowerCase();
+  const tokens = new Set(lower.split(/[^a-z0-9]+/).filter(Boolean));
+  const scores = [];
+  for (const [intent, keywords] of Object.entries(COMPETITION_INTENTS)) {
+    const matches = keywords.filter(kw => tokens.has(kw) || lower.includes(kw)).length;
+    if (matches > 0) {
+      const confidence = Math.min(matches / (keywords.length * 0.4), 1.0);
+      scores.push([intent, Math.round(confidence * 1000) / 1000]);
+    }
+  }
+  scores.sort((a, b) => b[1] - a[1]);
+  return scores;
+}
+
+function getDominantIntent(ctx) {
+  let best = "";
+  let bestScore = 0;
+  for (const [intent, score] of Object.entries(ctx.activeIntents)) {
+    if (score > bestScore) { bestScore = score; best = intent; }
+  }
+  return best;
+}
+
+function extractDesignParameters(text, ctx) {
+  const armMatch = text.match(/(\d+)\s*(?:arm|motor|rotor|prop)/);
+  if (armMatch) ctx.designParameters.arm_count = parseInt(armMatch[1], 10);
+  const massMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:kg|kilogram)/);
+  if (massMatch) ctx.designParameters.target_mass_kg = parseFloat(massMatch[1]);
+  const payloadMatch = text.match(/payload\s*(?:of\s*)?(\d+(?:\.\d+)?)\s*(?:kg)?/);
+  if (payloadMatch) ctx.designParameters.payload_kg = parseFloat(payloadMatch[1]);
 }
 
 function appendChat(role, text) {
