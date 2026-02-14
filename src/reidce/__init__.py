@@ -620,15 +620,6 @@ __all__ = [
     "discretize_rotor",
     "hover_thrust",
     "solve_bemt",
-    # design catalog
-    "CatalogValidation",
-    "DESIGN_CATALOG",
-    "DesignEntry",
-    "catalog_summary",
-    "get_design",
-    "get_designs_by_category",
-    "validate_catalog",
-    "validate_design",
     # sampling / Latin Hypercube
     "SampleSet",
     "SamplingBounds",
