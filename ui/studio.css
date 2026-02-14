@@ -1,0 +1,442 @@
+/* ── studio.css — v2 Studio · Chrome-tab noir-glass theme ──────────
+   Shapr3D-inspired context toolbar + Chrome-like tab strip.
+   Palette: black / white / gray only (noir glass).
+   ────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  --bg: #0a0a0a;
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-glow: rgba(255, 255, 255, 0.03);
+  --accent: #ffffff;
+  --accent-2: #999999;
+  --text: #f0f0f0;
+  --muted: #888888;
+  --tab-height: 36px;
+  --toolbar-height: 40px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #1a1a1a 0%, var(--bg) 50%, #000000 100%);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Top Chrome bar ────────────────────────────────────────────── */
+
+.chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.status {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+}
+
+.actions button,
+.actions a {
+  margin-left: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: inherit;
+}
+
+.actions button:hover,
+.actions a:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Chrome-like Tab Strip ─────────────────────────────────────── */
+
+.tab-strip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  height: var(--tab-height);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: calc(var(--tab-height) - 4px);
+  padding: 0 18px;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.tab.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px 2px 0 0;
+}
+
+/* ── Shapr3D-style Context Toolbar ─────────────────────────────── */
+
+.ctx-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--toolbar-height);
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  gap: 12px;
+}
+
+.ctx-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ctx-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+}
+
+.ctx-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+
+.ctx-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ctx-btn.primary {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+}
+
+.ctx-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+}
+
+.ctx-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── Main Layout ───────────────────────────────────────────────── */
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  gap: 12px;
+  padding: 12px 16px;
+  min-height: 0;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow-y: auto;
+}
+
+.panel-block {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel-block h3 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.panel h2 {
+  margin-top: 0;
+  font-size: 13px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.list li {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.list li:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.list li.active {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.04);
+}
+
+/* ── Viewport ──────────────────────────────────────────────────── */
+
+.viewport {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-height: 0;
+}
+
+.viewport-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.viewport-header h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ── Canvas ────────────────────────────────────────────────────── */
+
+.canvas {
+  position: relative;
+  flex: 1;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(20, 20, 20, 0.9), rgba(5, 5, 5, 0.95));
+  overflow: hidden;
+  min-height: 300px;
+}
+
+.canvas-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
+  background-size: 24px 24px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.canvas-card {
+  position: absolute;
+  inset: 60px;
+  border-radius: 14px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  display: none;
+}
+
+/* ── Tab Panels inside canvas ──────────────────────────────────── */
+
+.tab-panel {
+  position: absolute;
+  inset: 0;
+  display: none;
+  padding: 16px;
+}
+
+.tab-panel.active {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.tab-panel canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: transparent;
+}
+
+/* ── Status bars (inside status tab) ───────────────────────────── */
+
+.tab-panel .status-bars {
+  width: 100%;
+  display: grid;
+  gap: 14px;
+  align-content: center;
+  padding: 20px 40px;
+}
+
+.status-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.status-bar {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.status-bar .bar {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-bar .fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.6), rgba(180, 180, 180, 0.6));
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+  transition: width 0.6s ease;
+}
+
+/* ── Card / KV rows ────────────────────────────────────────────── */
+
+.card-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+
+/* ── Footer ────────────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 20px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .tab-strip {
+    padding: 0 8px;
+  }
+}

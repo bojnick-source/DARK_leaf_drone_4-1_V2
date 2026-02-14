@@ -1,14 +1,15 @@
-<!-- ui/dashboard.html — PRIME-GRADE V9
-     (EFFECTIVE-100 + HEADER-ENFORCED “ENTERPRISE PERFECT”)
-     This version bakes the “server-header enforcement” contract INTO FILE 1 as an auditable,
-     copy/paste-able block.
-     (HTML cannot force HTTP response headers; this is the correct way to make it provably 100/100
-     in deployment.)
+<!-- ui/dashboard.html — v2 Studio
+     Chrome-tabbed engineering workspace with per-tab contextual toolbars.
+     Each computational domain (CAD, FEA, Flight AI, Thermal, Wind, Sales,
+     System Status) occupies a full-viewport tab with a Shapr3D-inspired
+     context toolbar.  The DARK validator loop, Pico-GK+ topology optimizer,
+     Monte-Carlo / Latin-Hypercube sampling, and REIDCE v2 AI stack are
+     surfaced through the inspector and status panels.
 
 ENTERPRISE HEADER CONTRACT (MUST BE SET AS HTTP RESPONSE HEADERS)
 REQUIRED (match exactly; keep in sync with meta tags below):
   Content-Security-Policy:
-    default-src 'self'; script-src 'self' https://cdn.plot.ly; style-src 'self';
+    default-src 'self'; script-src 'self'; style-src 'self';
     img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self';
     frame-ancestors 'none';
   X-Content-Type-Options: nosniff
@@ -22,11 +23,11 @@ REQUIRED (match exactly; keep in sync with meta tags below):
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dark Leaf Drone — Daily Dashboard</title>
+    <title>Dark Leaf Drone — v2 Studio</title>
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self';
-        script-src 'self' https://cdn.plot.ly;
+        script-src 'self';
         style-src 'self';
         img-src 'self' data:;
         font-src 'self';
@@ -38,99 +39,18 @@ REQUIRED (match exactly; keep in sync with meta tags below):
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta name="referrer" content="no-referrer" />
     <meta http-equiv="Permissions-Policy" content="geolocation=(), camera=(), microphone=()" />
-    <link rel="stylesheet" href="./dashboard.css" />
+    <link rel="stylesheet" href="./studio.css" />
   </head>
   <body>
-    <div id="chromeStrip">
-      <div class="workspace-tabs" id="workspaceTabs" aria-label="Workspaces">
-        <button class="workspace-tab active" data-workspace="ws-1" type="button">
-          <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path
-              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
-            />
-          </svg>
-          <span class="tab-title">Daily Dashboard</span>
-          <span class="tab-close" aria-label="Close workspace">×</span>
-        </button>
-        <button class="workspace-tab" data-workspace="ws-2" type="button">
-          <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path
-              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
-            />
-          </svg>
-          <span class="tab-title">Run Review</span>
-          <span class="tab-close" aria-label="Close workspace">×</span>
-        </button>
-        <button class="workspace-tab" data-workspace="ws-3" type="button">
-          <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path
-              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
-            />
-          </svg>
-          <span class="tab-title">Comparison</span>
-          <span class="tab-close" aria-label="Close workspace">×</span>
-        </button>
-        <button
-          id="workspaceAdd"
-          class="workspace-add"
-          type="button"
-          aria-label="New Workspace"
-        >
-          +
-        </button>
-      </div>
-    </div>
-
-    <div id="tripwireBanner" role="alert" hidden></div>
-
-    <header id="menuBar" class="glass glass--thick">
-      <div class="brand">Dark Leaf Drone — Daily Dashboard</div>
-      <nav class="menu-bar" aria-label="Menu bar">
-        <button class="menu-trigger" type="button" data-menu="file">File</button>
-        <button class="menu-trigger" type="button" data-menu="edit">Edit</button>
-        <button class="menu-trigger" type="button" data-menu="view">View</button>
-        <button class="menu-trigger" type="button" data-menu="tools">Tools</button>
-        <button class="menu-trigger" type="button" data-menu="help">Help</button>
-      </nav>
-      <div class="menu-panels">
-        <div class="menu-panel" data-menu-panel="file">
-          <button class="menu-item" type="button" data-action="open-json">
-            Open JSON…
-            <span class="shortcut">⌘O</span>
-          </button>
-          <button class="menu-item" type="button" data-action="export-diagnostics">
-            Export Diagnostics
-            <span class="shortcut">⇧⌘D</span>
-          </button>
-        </div>
-        <div class="menu-panel" data-menu-panel="edit">
-          <button class="menu-item" type="button">Undo<span class="shortcut">⌘Z</span></button>
-          <button class="menu-item" type="button">Redo<span class="shortcut">⇧⌘Z</span></button>
-        </div>
-        <div class="menu-panel" data-menu-panel="view">
-          <button class="menu-item" type="button">Zoom In<span class="shortcut">⌘+</span></button>
-          <button class="menu-item" type="button">Zoom Out<span class="shortcut">⌘−</span></button>
-          <a class="menu-item" href="./cad_viewer.html">
-            Open CAD Viewer
-            <span class="shortcut">⌘3</span>
-          </a>
-          <a class="menu-item" href="./flight_sim.html">
-            Open Flight Sim Dashboard
-            <span class="shortcut">⌘4</span>
-          </a>
-        </div>
-        <div class="menu-panel" data-menu-panel="tools">
-          <button class="menu-item" type="button" data-action="self-test">
-            Self-Test
-            <span class="shortcut">⌥⌘T</span>
-          </button>
-        </div>
-        <div class="menu-panel" data-menu-panel="help">
-          <button class="menu-item" type="button">
-            Documentation
-            <span class="shortcut">F1</span>
-          </button>
-        </div>
+    <!-- ── Top Chrome ─────────────────────────────────────────────── -->
+    <header class="chrome">
+      <div class="brand">v2 Studio</div>
+      <div class="status" id="statusBadge">READY</div>
+      <div class="actions">
+        <a href="./cad_viewer.html">CAD Viewer</a>
+        <a href="./flight_sim.html">Flight Sim</a>
+        <button id="btnLoadSample" type="button">Load Sample</button>
+        <button id="btnExport" type="button">Export Snapshot</button>
       </div>
     </header>
 
@@ -177,252 +97,117 @@ REQUIRED (match exactly; keep in sync with meta tags below):
       </div>
     </div>
 
-    <main id="appShell">
-      <section id="notice">
-        <div class="title">Dashboard Shell Loaded</div>
-        <div class="hint">
-          If you see this but no data, open Console logs or run via local server.
+    <main class="layout">
+      <!-- ── Left Panel: Workspaces + AI ──────────────────────────── -->
+      <aside class="panel">
+        <h2>Workspaces</h2>
+        <ul class="list">
+          <li class="active">Fuselage Systems</li>
+          <li>Topology AI</li>
+          <li>Electro-thermal</li>
+          <li>Flight AI</li>
+          <li>Wind Power</li>
+          <li>Sales + Shipping</li>
+          <li>CAD Rendering</li>
+          <li>FEA Analysis</li>
+        </ul>
+        <div class="panel-block">
+          <h3>AI Stack</h3>
+          <div class="kv"><span>Model</span><span id="aiModel">REIDCE v2</span></div>
+          <div class="kv"><span>Confidence</span><span id="aiConfidence">0.91</span></div>
+          <div class="kv"><span>Status</span><span id="aiStatus">Stable</span></div>
+        </div>
+        <div class="panel-block">
+          <h3>Compute Pipeline</h3>
+          <div class="kv"><span>Optimizer</span><span>Pico-GK+</span></div>
+          <div class="kv"><span>Sampling</span><span>MC + LHS</span></div>
+          <div class="kv"><span>Validator</span><span>DARK Loop</span></div>
+        </div>
+      </aside>
+
+      <!-- ── Viewport: single full-width canvas per tab ───────────── -->
+      <section class="viewport">
+        <div class="viewport-header">
+          <h2 id="viewportTitle">CAD Wireframe — High Fidelity</h2>
+          <span class="pill" id="viewportPill">Preview</span>
+        </div>
+        <div class="canvas" id="canvas">
+          <div class="canvas-grid"></div>
+          <!-- hidden card appears only when no tab canvas is active -->
+          <div class="canvas-card" id="canvasCard">
+            <div class="card-title">Smart Fuselage System</div>
+            <div class="card-row"><span>Power Rails</span><span id="railCount">3</span></div>
+            <div class="card-row"><span>Photonic Links</span><span id="photonicLinks">2</span></div>
+            <div class="card-row"><span>Thermal Nodes</span><span id="thermalNodes">4</span></div>
+            <div class="card-row"><span>AI Best Topology</span><span id="aiBest">baseline_topology_2</span></div>
+            <div class="card-row"><span>AI Score</span><span id="aiScore">0.82</span></div>
+          </div>
+
+          <!-- Tab panels — only one visible at a time -->
+          <div class="tab-panel active" data-panel="cad"     id="panel-cad">
+            <canvas id="cadCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="fea"     id="panel-fea">
+            <canvas id="feaCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="feadisp" id="panel-feadisp">
+            <canvas id="feaDispCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="flight"  id="panel-flight">
+            <canvas id="flightCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="thermal" id="panel-thermal">
+            <canvas id="thermalCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="wind"    id="panel-wind">
+            <canvas id="windCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="sales"   id="panel-sales">
+            <canvas id="salesCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="status"  id="panel-status">
+            <div class="status-bars">
+              <div class="status-bar" data-value="82">
+                <span>AI Confidence</span>
+                <div class="bar"><div class="fill" id="barAI"></div></div>
+                <span id="valAI">82%</span>
+              </div>
+              <div class="status-bar" data-value="74">
+                <span>Flight Stability</span>
+                <div class="bar"><div class="fill" id="barFlight"></div></div>
+                <span id="valFlight">74%</span>
+              </div>
+              <div class="status-bar" data-value="67">
+                <span>Thermal Margin</span>
+                <div class="bar"><div class="fill" id="barThermal"></div></div>
+                <span id="valThermal">67%</span>
+              </div>
+              <div class="status-bar" data-value="88">
+                <span>Wind Efficiency</span>
+                <div class="bar"><div class="fill" id="barWind"></div></div>
+                <span id="valWind">88%</span>
+              </div>
+              <div class="status-bar" data-value="92">
+                <span>Mesh Quality</span>
+                <div class="bar"><div class="fill" id="barMesh"></div></div>
+                <span id="valMesh">92%</span>
+              </div>
+              <div class="status-bar" data-value="85">
+                <span>FEA Safety Factor</span>
+                <div class="bar"><div class="fill" id="barFEA"></div></div>
+                <span id="valFEA">85%</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-      <section id="app">
-        <div id="dashboardGrid" data-tab-panel="cad" class="tab-panel active">
-          <aside class="panel glass glass--thick" id="panelCadLayers">
-            <div class="panel-header">
-              <span>Layers</span>
-              <span class="panel-tag">CAD</span>
-            </div>
-            <ul class="tree">
-              <li class="tree-item active">
-                <span class="caret">▾</span>
-                <span>Airframe</span>
-              </li>
-              <li class="tree-item">
-                <span class="caret">▸</span>
-                <span>Wing Assembly</span>
-              </li>
-              <li class="tree-item">
-                <span class="caret">▸</span>
-                <span>Rotor Array</span>
-              </li>
-              <li class="tree-item">
-                <span class="caret">▸</span>
-                <span>Payload Bay</span>
-              </li>
-            </ul>
-          </aside>
 
-          <section class="panel glass glass--thin" id="panelCadViewport">
-            <div class="panel-header">
-              <span>Model Viewport</span>
-              <span class="panel-tag accent">3D</span>
-            </div>
-            <div class="viewport-canvas cad-viewport" id="cadViewport">
-              <div class="cad-hud">
-                <div class="cad-hud-row">
-                  <span>GRID 0.1m</span>
-                  <span>MODE: ORBIT</span>
-                </div>
-                <div class="cad-hud-row">
-                  <span>AXIS: BODY</span>
-                  <span>LOD: HIGH</span>
-                </div>
-              </div>
-              <svg class="cad-grid" viewBox="0 0 800 420" aria-hidden="true">
-                <defs>
-                  <pattern id="cadGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(124, 92, 255, 0.35)" stroke-width="1" />
-                  </pattern>
-                  <linearGradient id="cadGlow" x1="0" x2="1" y1="0" y2="1">
-                    <stop offset="0" stop-color="rgba(56, 243, 255, 0.35)" />
-                    <stop offset="1" stop-color="rgba(124, 92, 255, 0.15)" />
-                  </linearGradient>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#cadGrid)" />
-                <rect width="100%" height="100%" fill="url(#cadGlow)" opacity="0.2" />
-              </svg>
-              <svg class="cad-model" id="cadModelSvg" viewBox="0 0 800 420" role="img" aria-label="Drone CAD model">
-                <defs>
-                  <linearGradient id="fuseGradient" x1="0" x2="1" y1="0" y2="1">
-                    <stop offset="0" stop-color="#3a4a72" />
-                    <stop offset="1" stop-color="#1d2433" />
-                  </linearGradient>
-                  <radialGradient id="rotorGlow" cx="0.5" cy="0.5" r="0.65">
-                    <stop offset="0" stop-color="rgba(56, 243, 255, 0.7)" />
-                    <stop offset="1" stop-color="rgba(56, 243, 255, 0.05)" />
-                  </radialGradient>
-                </defs>
-                <g class="model-shadow">
-                  <ellipse cx="400" cy="240" rx="190" ry="70" />
-                </g>
-                <g id="cadModelGroup" class="model-core">
-                  <rect x="140" y="198" width="520" height="24" rx="12" class="wing-core" />
-                  <rect x="380" y="92" width="40" height="236" rx="18" class="boom-core" />
-                  <ellipse cx="400" cy="210" rx="110" ry="58" class="body-core" />
-                  <rect x="368" y="170" width="64" height="80" rx="22" class="battery-core" />
-                  <circle cx="220" cy="210" r="54" class="rotor-core" />
-                  <circle cx="580" cy="210" r="54" class="rotor-core" />
-                  <circle cx="400" cy="90" r="46" class="rotor-core" />
-                  <circle cx="400" cy="330" r="46" class="rotor-core" />
-                  <circle cx="220" cy="210" r="22" class="rotor-hub" />
-                  <circle cx="580" cy="210" r="22" class="rotor-hub" />
-                  <circle cx="400" cy="90" r="18" class="rotor-hub" />
-                  <circle cx="400" cy="330" r="18" class="rotor-hub" />
-                </g>
-                <g class="model-outline">
-                  <ellipse cx="400" cy="210" rx="118" ry="66" />
-                  <rect x="140" y="198" width="520" height="24" rx="12" />
-                  <circle cx="220" cy="210" r="56" />
-                  <circle cx="580" cy="210" r="56" />
-                  <circle cx="400" cy="90" r="48" />
-                  <circle cx="400" cy="330" r="48" />
-                </g>
-              </svg>
-              <div class="cad-axis">
-                <span class="axis-x">X</span>
-                <span class="axis-y">Y</span>
-                <span class="axis-z">Z</span>
-              </div>
-              <div class="cad-legend">
-                <div class="legend-row"><span class="dot dot-cyan"></span>Airframe</div>
-                <div class="legend-row"><span class="dot dot-violet"></span>Rotors</div>
-                <div class="legend-row"><span class="dot dot-magenta"></span>Payload</div>
-              </div>
-            </div>
-          </section>
-
-          <aside class="panel glass glass--thick" id="panelCadInspector">
-            <div class="panel-header">
-              <span>Inspector</span>
-              <span class="panel-tag accent">CAD</span>
-            </div>
-            <div class="panel-section">
-              <div class="section-title">Parameters</div>
-              <div class="param-row"><span>Span</span><span id="cadSpan" data-default="1.20 m">1.20 m</span></div>
-              <div class="param-row"><span>Mass</span><span id="cadMass" data-default="2.40 kg">2.40 kg</span></div>
-              <div class="param-row"><span>Battery</span><span id="cadBattery" data-default="4.2 Ah">4.2 Ah</span></div>
-            </div>
-            <div class="panel-section">
-              <div class="section-title">Geometry</div>
-              <div class="param-row"><span>Envelope</span><span id="cadEnvelope" data-default="0.38 m">0.38 m</span></div>
-              <div class="param-row"><span>Actuator Ø</span><span id="cadActuator" data-default="0.06 m">0.06 m</span></div>
-              <div class="param-row"><span>Tolerance</span><span id="cadTolerance" data-default="0.30 mm">0.30 mm</span></div>
-            </div>
-          </aside>
-        </div>
-
-        <div id="simGrid" data-tab-panel="sim" class="tab-panel">
-          <aside class="panel glass glass--thick">
-            <div class="panel-header">
-              <span>Layers</span>
-              <span class="panel-tag">SIM</span>
-            </div>
-            <ul class="tree">
-              <li class="tree-item active">
-                <span class="caret">▾</span>
-                <span>Load Cases</span>
-              </li>
-              <li class="tree-item">
-                <span class="caret">▸</span>
-                <span>Wind Tunnel</span>
-              </li>
-              <li class="tree-item">
-                <span class="caret">▸</span>
-                <span>Thermal Sweep</span>
-              </li>
-              <li class="tree-item">
-                <span class="caret">▸</span>
-                <span>Flight Test</span>
-              </li>
-            </ul>
-          </aside>
-
-          <section class="panel glass glass--thin">
-            <div class="panel-header">
-              <span>Simulation Viewport</span>
-              <span class="panel-tag accent">SIM</span>
-            </div>
-            <div class="viewport-canvas">
-              <div class="viewport-label">
-                <a href="./flight_sim.html" style="color:var(--accent-cyan);text-decoration:none;">
-                  🛩️ Open Flight Simulation Dashboard →
-                </a>
-              </div>
-            </div>
-          </section>
-
-          <aside class="panel glass glass--thick">
-            <div class="panel-header">
-              <span>Simulation Viewer</span>
-              <span class="panel-tag accent">RUN</span>
-            </div>
-            <div class="stat-row"><span>Solver</span><span>AI Autopilot</span></div>
-            <div class="stat-row"><span>Mode</span><span>Triple-Redundant</span></div>
-            <div class="stat-row"><span>Integrator</span><span>RK4</span></div>
-            <div class="stat-row"><span>dt</span><span>0.05 s</span></div>
-            <div class="panel-header">
-              <span>Quick Telemetry</span>
-              <span class="panel-tag accent">LIVE</span>
-            </div>
-            <div class="stat-row"><span>Altitude</span><span>—</span></div>
-            <div class="stat-row"><span>Speed</span><span>—</span></div>
-            <div class="stat-row"><span>Battery</span><span>—</span></div>
-            <div class="stat-row"><span>Motor Temp</span><span>—</span></div>
-          </aside>
-        </div>
-
-        <div id="insightsGrid" data-tab-panel="insights" class="tab-panel">
-          <aside class="panel glass glass--thick">
-            <div class="panel-header">
-              <span>Layers / Filters</span>
-              <span class="panel-tag">INS</span>
-            </div>
-            <div class="param-row"><span>Mission Set</span><span>Alpha</span></div>
-            <div class="param-row"><span>Altitude</span><span>480 m</span></div>
-            <div class="param-row"><span>Payload</span><span>Nominal</span></div>
-          </aside>
-
-          <section class="panel glass glass--thin">
-            <div class="panel-header">
-              <span>Stability Radar</span>
-              <span class="panel-tag accent">RADAR</span>
-            </div>
-            <svg class="radar" viewBox="0 0 140 140" aria-hidden="true">
-              <circle cx="70" cy="70" r="50" />
-              <circle cx="70" cy="70" r="30" />
-              <circle cx="70" cy="70" r="10" />
-              <polygon points="70,18 108,62 92,110 48,108 32,56" />
-            </svg>
-            <div class="panel-header">
-              <span>Trajectory Confidence</span>
-              <span class="panel-tag accent">CONF</span>
-            </div>
-            <svg class="sparkline" viewBox="0 0 120 36" aria-hidden="true">
-              <path d="M2 30 L20 18 L38 22 L56 14 L74 16 L92 10 L118 12" />
-            </svg>
-          </section>
-
-          <aside class="panel glass glass--thick">
-            <div class="panel-header">
-              <span>Thermal Map</span>
-              <span class="panel-tag accent">THERM</span>
-            </div>
-            <div class="viewport-canvas heat">
-              <div class="viewport-label">Thermal grid placeholder</div>
-            </div>
-            <div class="panel-header">
-              <span>Global Activity</span>
-              <span class="panel-tag accent">LIVE</span>
-            </div>
-            <div class="stat-row"><span>Nodes</span><span>14</span></div>
-            <div class="stat-row"><span>Alerts</span><span>0</span></div>
-            <div class="panel-header">
-              <span>Health</span>
-              <span class="panel-tag accent">OK</span>
-            </div>
-            <div class="health-meter">
-              <div class="health-fill"></div>
-            </div>
-          </aside>
+      <!-- ── Right Panel: Inspector ───────────────────────────────── -->
+      <aside class="panel">
+        <h2>Inspector</h2>
+        <div class="kv">
+          <span>Processor</span>
+          <span id="processorLabel">Photonic Core</span>
         </div>
 
         <div id="computeGrid" data-tab-panel="compute" class="tab-panel">
@@ -569,21 +354,11 @@ REQUIRED (match exactly; keep in sync with meta tags below):
       </section>
     </main>
 
-    <footer id="taskBar" class="glass glass--thick">
-      <div class="left">
-        <span class="pill" id="modePill">MODE: CAD</span>
-        <span class="pill" id="schemaPill">SCHEMA: (pending)</span>
-        <span class="pill" id="payloadPill">PAYLOAD: (pending)</span>
-      </div>
-      <div class="right">
-        <span class="pill" id="selfTestPill">SELF-TEST: --</span>
-        <span class="pill" id="statusPill">STATUS: READY</span>
-        <span class="pill" id="clockPill">TIME: --:--</span>
-      </div>
+    <footer class="footer">
+      <span>v2 Studio</span>
+      <span id="clock">--:--:--</span>
     </footer>
 
-    <input id="jsonFileInput" type="file" accept="application/json" hidden />
-
-    <script src="./dashboard.js" defer></script>
+    <script src="./studio.js"></script>
   </body>
 </html>
