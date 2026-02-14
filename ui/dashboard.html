@@ -1,6 +1,10 @@
 <!-- ui/dashboard.html — v2 Studio
-     Updated to use the v2 Studio UI layout with engineering workspaces,
-     computational output overlay, and AI-powered inspector panels.
+     Chrome-tabbed engineering workspace with per-tab contextual toolbars.
+     Each computational domain (CAD, FEA, Flight AI, Thermal, Wind, Sales,
+     System Status) occupies a full-viewport tab with a Shapr3D-inspired
+     context toolbar.  The DARK validator loop, Pico-GK+ topology optimizer,
+     Monte-Carlo / Latin-Hypercube sampling, and REIDCE v2 AI stack are
+     surfaced through the inspector and status panels.
 
 ENTERPRISE HEADER CONTRACT (MUST BE SET AS HTTP RESPONSE HEADERS)
 REQUIRED (match exactly; keep in sync with meta tags below):
@@ -38,6 +42,7 @@ REQUIRED (match exactly; keep in sync with meta tags below):
     <link rel="stylesheet" href="./studio.css" />
   </head>
   <body>
+    <!-- ── Top Chrome ─────────────────────────────────────────────── -->
     <header class="chrome">
       <div class="brand">v2 Studio</div>
       <div class="status" id="statusBadge">READY</div>
@@ -49,7 +54,26 @@ REQUIRED (match exactly; keep in sync with meta tags below):
       </div>
     </header>
 
+    <!-- ── Chrome Tab Strip ───────────────────────────────────────── -->
+    <nav class="tab-strip" id="tabStrip" role="tablist">
+      <button class="tab active" role="tab" aria-selected="true"  data-tab="cad"      id="tab-cad">CAD Wireframe</button>
+      <button class="tab"        role="tab" aria-selected="false" data-tab="fea"      id="tab-fea">FEA Stress</button>
+      <button class="tab"        role="tab" aria-selected="false" data-tab="feadisp"  id="tab-feadisp">FEA Displacement</button>
+      <button class="tab"        role="tab" aria-selected="false" data-tab="flight"   id="tab-flight">Flight AI</button>
+      <button class="tab"        role="tab" aria-selected="false" data-tab="thermal"  id="tab-thermal">Electro-thermal</button>
+      <button class="tab"        role="tab" aria-selected="false" data-tab="wind"     id="tab-wind">Wind Power</button>
+      <button class="tab"        role="tab" aria-selected="false" data-tab="sales"    id="tab-sales">Sales + Shipping</button>
+      <button class="tab"        role="tab" aria-selected="false" data-tab="status"   id="tab-status">System Status</button>
+    </nav>
+
+    <!-- ── Context Toolbar (changes per-tab) ──────────────────────── -->
+    <div class="ctx-toolbar" id="ctxToolbar">
+      <div class="ctx-tools" id="ctxTools"><!-- populated by JS --></div>
+      <div class="ctx-meta" id="ctxMeta"><!-- populated by JS --></div>
+    </div>
+
     <main class="layout">
+      <!-- ── Left Panel: Workspaces + AI ──────────────────────────── -->
       <aside class="panel">
         <h2>Workspaces</h2>
         <ul class="list">
@@ -68,15 +92,23 @@ REQUIRED (match exactly; keep in sync with meta tags below):
           <div class="kv"><span>Confidence</span><span id="aiConfidence">0.91</span></div>
           <div class="kv"><span>Status</span><span id="aiStatus">Stable</span></div>
         </div>
+        <div class="panel-block">
+          <h3>Compute Pipeline</h3>
+          <div class="kv"><span>Optimizer</span><span>Pico-GK+</span></div>
+          <div class="kv"><span>Sampling</span><span>MC + LHS</span></div>
+          <div class="kv"><span>Validator</span><span>DARK Loop</span></div>
+        </div>
       </aside>
 
+      <!-- ── Viewport: single full-width canvas per tab ───────────── -->
       <section class="viewport">
         <div class="viewport-header">
-          <h2>System Canvas</h2>
-          <span class="pill">Preview</span>
+          <h2 id="viewportTitle">CAD Wireframe — High Fidelity</h2>
+          <span class="pill" id="viewportPill">Preview</span>
         </div>
         <div class="canvas" id="canvas">
           <div class="canvas-grid"></div>
+          <!-- hidden card appears only when no tab canvas is active -->
           <div class="canvas-card" id="canvasCard">
             <div class="card-title">Smart Fuselage System</div>
             <div class="card-row"><span>Power Rails</span><span id="railCount">3</span></div>
@@ -85,77 +117,67 @@ REQUIRED (match exactly; keep in sync with meta tags below):
             <div class="card-row"><span>AI Best Topology</span><span id="aiBest">baseline_topology_2</span></div>
             <div class="card-row"><span>AI Score</span><span id="aiScore">0.82</span></div>
           </div>
-          <div class="canvas-overlay" id="canvasOverlay">
-            <div class="overlay-title">Computational Output</div>
-            <div class="overlay-grid">
-              <div class="overlay-panel span-2">
-                <h4>CAD Wireframe — High Fidelity</h4>
-                <canvas id="cadCanvas" width="720" height="220"></canvas>
+
+          <!-- Tab panels — only one visible at a time -->
+          <div class="tab-panel active" data-panel="cad"     id="panel-cad">
+            <canvas id="cadCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="fea"     id="panel-fea">
+            <canvas id="feaCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="feadisp" id="panel-feadisp">
+            <canvas id="feaDispCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="flight"  id="panel-flight">
+            <canvas id="flightCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="thermal" id="panel-thermal">
+            <canvas id="thermalCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="wind"    id="panel-wind">
+            <canvas id="windCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="sales"   id="panel-sales">
+            <canvas id="salesCanvas" width="960" height="400"></canvas>
+          </div>
+          <div class="tab-panel" data-panel="status"  id="panel-status">
+            <div class="status-bars">
+              <div class="status-bar" data-value="82">
+                <span>AI Confidence</span>
+                <div class="bar"><div class="fill" id="barAI"></div></div>
+                <span id="valAI">82%</span>
               </div>
-              <div class="overlay-panel">
-                <h4>FEA Stress Distribution</h4>
-                <canvas id="feaCanvas" width="360" height="160"></canvas>
+              <div class="status-bar" data-value="74">
+                <span>Flight Stability</span>
+                <div class="bar"><div class="fill" id="barFlight"></div></div>
+                <span id="valFlight">74%</span>
               </div>
-              <div class="overlay-panel">
-                <h4>FEA Displacement</h4>
-                <canvas id="feaDispCanvas" width="360" height="160"></canvas>
+              <div class="status-bar" data-value="67">
+                <span>Thermal Margin</span>
+                <div class="bar"><div class="fill" id="barThermal"></div></div>
+                <span id="valThermal">67%</span>
               </div>
-              <div class="overlay-panel">
-                <h4>Flight AI Path</h4>
-                <canvas id="flightCanvas" width="360" height="160"></canvas>
+              <div class="status-bar" data-value="88">
+                <span>Wind Efficiency</span>
+                <div class="bar"><div class="fill" id="barWind"></div></div>
+                <span id="valWind">88%</span>
               </div>
-              <div class="overlay-panel">
-                <h4>Electro-thermal</h4>
-                <canvas id="thermalCanvas" width="360" height="160"></canvas>
+              <div class="status-bar" data-value="92">
+                <span>Mesh Quality</span>
+                <div class="bar"><div class="fill" id="barMesh"></div></div>
+                <span id="valMesh">92%</span>
               </div>
-              <div class="overlay-panel">
-                <h4>Wind Power</h4>
-                <canvas id="windCanvas" width="360" height="160"></canvas>
-              </div>
-              <div class="overlay-panel">
-                <h4>Sales + Shipping</h4>
-                <canvas id="salesCanvas" width="360" height="160"></canvas>
-              </div>
-              <div class="overlay-panel span-2">
-                <h4>System Status</h4>
-                <div class="status-bars">
-                  <div class="status-bar" data-value="82">
-                    <span>AI Confidence</span>
-                    <div class="bar"><div class="fill" id="barAI"></div></div>
-                    <span id="valAI">82%</span>
-                  </div>
-                  <div class="status-bar" data-value="74">
-                    <span>Flight Stability</span>
-                    <div class="bar"><div class="fill" id="barFlight"></div></div>
-                    <span id="valFlight">74%</span>
-                  </div>
-                  <div class="status-bar" data-value="67">
-                    <span>Thermal Margin</span>
-                    <div class="bar"><div class="fill" id="barThermal"></div></div>
-                    <span id="valThermal">67%</span>
-                  </div>
-                  <div class="status-bar" data-value="88">
-                    <span>Wind Efficiency</span>
-                    <div class="bar"><div class="fill" id="barWind"></div></div>
-                    <span id="valWind">88%</span>
-                  </div>
-                  <div class="status-bar" data-value="92">
-                    <span>Mesh Quality</span>
-                    <div class="bar"><div class="fill" id="barMesh"></div></div>
-                    <span id="valMesh">92%</span>
-                  </div>
-                  <div class="status-bar" data-value="85">
-                    <span>FEA Safety Factor</span>
-                    <div class="bar"><div class="fill" id="barFEA"></div></div>
-                    <span id="valFEA">85%</span>
-                  </div>
-                </div>
+              <div class="status-bar" data-value="85">
+                <span>FEA Safety Factor</span>
+                <div class="bar"><div class="fill" id="barFEA"></div></div>
+                <span id="valFEA">85%</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      <!-- ── Right Panel: Inspector ───────────────────────────────── -->
       <aside class="panel">
         <h2>Inspector</h2>
         <div class="kv">
