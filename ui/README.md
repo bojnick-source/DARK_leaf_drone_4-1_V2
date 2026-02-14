@@ -1,9 +1,10 @@
 # UI
 
-## Daily Dashboard Shell
+## v2 Studio Dashboard
 
-Open `ui/dashboard.html` to view the dashboard shell with always-visible menu and task bars. The
-shell remains visible even if JavaScript or network requests fail.
+Open `ui/dashboard.html` to view the v2 Studio interface with engineering workspaces,
+computational output overlays (CAD wireframe, FEA analysis, Flight AI), and AI-powered inspector
+panels. The UI loads sample data on demand and renders interactive canvas visualisations.
 
 For the best experience, run a local server:
 
@@ -14,7 +15,7 @@ python -m http.server
 
 Then open `http://localhost:8000/dashboard.html` in your browser.
 
-## Preview-safe shell
+## Legacy Preview
 
-Open `ui/dashboard_preview.html` for a single-file fallback preview that renders menu/task bars
-and placeholder panels without external assets.
+Open `ui/dashboard_preview.html` for a static preview of the earlier dashboard shell (menu/task
+bars and placeholder panels) without external assets.
