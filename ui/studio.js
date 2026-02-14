@@ -228,7 +228,7 @@ function drawFlightPath(canvas, points) {
   }
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "rgba(56, 243, 255, 0.8)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   points.forEach((point, idx) => {
@@ -255,7 +255,7 @@ function drawThermalBars(canvas, nodes) {
     const height = ((node.temp / maxTemp) * (canvas.height - 30)) || 0;
     const x = 10 + idx * barWidth;
     const y = canvas.height - height - 10;
-    ctx.fillStyle = "rgba(124, 92, 255, 0.7)";
+    ctx.fillStyle = "rgba(180, 180, 180, 0.7)";
     ctx.fillRect(x, y, barWidth * 0.6, height);
   });
 }
@@ -266,7 +266,7 @@ function drawWindCurve(canvas, series) {
   }
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "rgba(199, 125, 255, 0.8)";
+  ctx.strokeStyle = "rgba(200, 200, 200, 0.7)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   series.forEach((value, idx) => {
@@ -288,7 +288,7 @@ function drawSalesBars(canvas, sales) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const values = [sales.revenue_usd || 3200000, sales.gross_margin_usd || 1200000, sales.shipping_cost_usd || 180000];
-  const colors = ["rgba(56, 243, 255, 0.7)", "rgba(124, 92, 255, 0.7)", "rgba(255, 120, 120, 0.6)"];
+  const colors = ["rgba(255, 255, 255, 0.6)", "rgba(180, 180, 180, 0.6)", "rgba(120, 120, 120, 0.6)"];
   const maxVal = Math.max(...values);
   values.forEach((value, idx) => {
     const barWidth = (canvas.width - 30) / values.length;
@@ -310,7 +310,7 @@ function drawCadWireframe(canvas, wireframe, cadData) {
   ctx.clearRect(0, 0, w, h);
 
   // Grid backdrop
-  ctx.strokeStyle = "rgba(56, 243, 255, 0.12)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   ctx.lineWidth = 0.5;
   const gridStep = 20;
   for (let gx = 0; gx <= w; gx += gridStep) {
@@ -336,7 +336,7 @@ function drawCadWireframe(canvas, wireframe, cadData) {
   ctx.lineWidth = 1.5;
   edges.forEach(function (edge, idx) {
     const alpha = 0.3 + 0.5 * (idx / edges.length);
-    ctx.strokeStyle = `rgba(56, 243, 255, ${alpha.toFixed(2)})`;
+    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha.toFixed(2)})`;
     ctx.beginPath();
     ctx.moveTo(cx + edge.x1 * scale, cy - edge.y1 * scale);
     ctx.lineTo(cx + edge.x2 * scale, cy - edge.y2 * scale);
@@ -344,7 +344,7 @@ function drawCadWireframe(canvas, wireframe, cadData) {
   });
 
   // Draw vertices as dots
-  ctx.fillStyle = "rgba(124, 92, 255, 0.8)";
+  ctx.fillStyle = "rgba(180, 180, 180, 0.8)";
   edges.forEach(function (edge) {
     ctx.beginPath();
     ctx.arc(cx + edge.x1 * scale, cy - edge.y1 * scale, 2, 0, 2 * Math.PI);
@@ -355,7 +355,7 @@ function drawCadWireframe(canvas, wireframe, cadData) {
   });
 
   // Labels
-  ctx.fillStyle = "rgba(56, 243, 255, 0.6)";
+  ctx.fillStyle = "rgba(200, 200, 200, 0.6)";
   ctx.font = "10px monospace";
   ctx.fillText("CAD: " + (cadData.quality || "High Fidelity"), 8, 14);
   ctx.fillText("Triangles: " + (cadData.triangle_count || 192), 8, 26);
@@ -411,13 +411,13 @@ function drawFEAStress(canvas, stresses) {
     const x = 15 + idx * barWidth;
     const y = h - barH - 20;
     const r = Math.round(255 * ratio);
-    const g = Math.round(100 * (1 - ratio));
-    const b = Math.round(255 * (1 - ratio));
+    const g = Math.round(255 * ratio);
+    const b = Math.round(255 * ratio);
     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.8)`;
     ctx.fillRect(x, y, barWidth * 0.7, barH);
   });
 
-  ctx.fillStyle = "rgba(56, 243, 255, 0.6)";
+  ctx.fillStyle = "rgba(200, 200, 200, 0.6)";
   ctx.font = "10px monospace";
   ctx.fillText("Von Mises (MPa)", 8, 14);
 }
@@ -444,7 +444,7 @@ function drawFEADisplacement(canvas, displacements) {
 
   // Draw undeformed beam (dashed)
   ctx.setLineDash([4, 4]);
-  ctx.strokeStyle = "rgba(160, 172, 200, 0.4)";
+  ctx.strokeStyle = "rgba(160, 160, 160, 0.4)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(20, h / 2);
@@ -453,7 +453,7 @@ function drawFEADisplacement(canvas, displacements) {
   ctx.setLineDash([]);
 
   // Draw deformed beam
-  ctx.strokeStyle = "rgba(56, 243, 255, 0.9)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
   ctx.lineWidth = 2.5;
   ctx.beginPath();
   data.forEach(function (node, idx) {
@@ -469,7 +469,7 @@ function drawFEADisplacement(canvas, displacements) {
   ctx.stroke();
 
   // Draw nodes
-  ctx.fillStyle = "rgba(124, 92, 255, 0.9)";
+  ctx.fillStyle = "rgba(180, 180, 180, 0.9)";
   data.forEach(function (node, idx) {
     const x = 20 + ((w - 40) * idx) / (data.length - 1);
     const yOffset = maxDisp > 0 ? (node.ux / maxDisp) * (h / 2 - 30) : 0;
@@ -480,10 +480,10 @@ function drawFEADisplacement(canvas, displacements) {
   });
 
   // Fixed support indicator
-  ctx.fillStyle = "rgba(255, 120, 120, 0.6)";
+  ctx.fillStyle = "rgba(150, 150, 150, 0.6)";
   ctx.fillRect(10, h / 2 - 15, 10, 30);
 
-  ctx.fillStyle = "rgba(56, 243, 255, 0.6)";
+  ctx.fillStyle = "rgba(200, 200, 200, 0.6)";
   ctx.font = "10px monospace";
   ctx.fillText("Displacement (exaggerated)", 8, 14);
 }
