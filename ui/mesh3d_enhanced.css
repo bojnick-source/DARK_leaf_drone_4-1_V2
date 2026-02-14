@@ -345,7 +345,7 @@
   backdrop-filter: blur(8px);
   border: 1px solid var(--noir-stroke);
   font-size: 10px;
-  font-family: "SF Mono", "Fira Code", monospace;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
   color: rgba(255, 255, 255, 0.60);
   min-width: 160px;
 }

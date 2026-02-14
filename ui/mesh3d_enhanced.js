@@ -37,6 +37,9 @@
     debug: false,
   };
 
+  // Lookup maps for radio → numeric conversions
+  const SSAA_MAP = { "Off": 1.0, "1.25×": 1.25, "1.5×": 1.5, "2.0×": 2.0 };
+
   // Three.js refs (populated via attach)
   let _scene = null;
   let _camera = null;
@@ -117,6 +120,7 @@
 
     const mesh3dBtn = $id("tbMesh3DToggle");
     if (mesh3dBtn) {
+      // Filter for single click only (detail===1) to avoid double-click toggling twice
       mesh3dBtn.addEventListener("click", (e) => {
         if (e.detail === 1) {
           toggleEnhanced();
@@ -182,10 +186,11 @@
       });
     }
     // AO radios
+    const aoLevelMap = { "Off": 0, "Low": 1, "High": 2 };
     for (const row of panel.querySelectorAll("[data-group='ao']")) {
       row.addEventListener("click", () => {
         selectRadio(panel, "ao", row.dataset.value);
-        toggles.ao = ["Off", "Low", "High"].indexOf(row.dataset.value);
+        toggles.ao = aoLevelMap[row.dataset.value] ?? 0;
         applyAO();
       });
     }
@@ -253,11 +258,10 @@
     });
 
     // SSAA radios
-    const ssaaMap = { "Off": 1.0, "1.25×": 1.25, "1.5×": 1.5, "2.0×": 2.0 };
     for (const row of panel.querySelectorAll("[data-group='ssaa']")) {
       row.addEventListener("click", () => {
         selectRadio(panel, "ssaa", row.dataset.value);
-        toggles.idleSSAA = ssaaMap[row.dataset.value] || 1.0;
+        toggles.idleSSAA = SSAA_MAP[row.dataset.value] || 1.0;
       });
     }
   }
@@ -437,10 +441,12 @@
 
     drone.traverse((child) => {
       if (child.isMesh && child.material) {
-        // Store original for restoration
+        // Store original for restoration (once only)
         if (!child.userData._origMaterial) {
           child.userData._origMaterial = child.material.clone();
         }
+        // Restore from original before applying noir to prevent compounding
+        child.material.copy(child.userData._origMaterial);
         // Apply noir metallic look
         if (child.material.isMeshStandardMaterial) {
           child.material.metalness = Math.min(child.material.metalness + 0.2, 1.0);
@@ -600,13 +606,14 @@
           child.material.depthWrite = false;
           break;
         default:
-          // Restore based on stored original or defaults
+          // Restore from stored original if available
           if (child.userData._origMaterial) {
             child.material.transparent = child.userData._origMaterial.transparent;
             child.material.opacity = child.userData._origMaterial.opacity;
             child.material.depthWrite = true;
           } else {
-            child.material.transparent = child.material.opacity < 1.0;
+            child.material.opacity = 1.0;
+            child.material.transparent = false;
             child.material.depthWrite = true;
           }
       }

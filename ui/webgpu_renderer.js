@@ -269,6 +269,7 @@ async function initWebGPURenderer() {
 
     return { device, renderer, graph };
   } catch (_err) {
+    // Silent failure: caller checks null return and falls back to Three.js
     return null;
   }
 }
