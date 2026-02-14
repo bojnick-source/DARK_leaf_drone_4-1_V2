@@ -57,6 +57,102 @@ def test_dashboard_links_to_cad_viewer() -> None:
     assert "cad_viewer.html" in html
 
 
+# ---- Compute Tab tests ----
+
+
+def test_dashboard_has_compute_tab() -> None:
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "ui" / "dashboard.html").read_text(encoding="utf-8")
+
+    assert 'data-tab="compute"' in html
+    assert "COMPUTE" in html
+    assert "computeGrid" in html
+    assert 'data-tab-panel="compute"' in html
+
+
+def test_dashboard_compute_tab_has_generate_button() -> None:
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "ui" / "dashboard.html").read_text(encoding="utf-8")
+
+    assert "compute-generate" in html
+    assert "Generate Drone" in html
+
+
+def test_dashboard_compute_tab_has_module_list() -> None:
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "ui" / "dashboard.html").read_text(encoding="utf-8")
+
+    assert "Design Loop AI" in html
+    assert "Energy Maneuverability" in html
+    assert "Aerospace" in html
+    assert "Flight Simulation" in html
+    assert "Drivetrain" in html
+    assert "FEA" in html
+    assert "CAD Mesh Rendering" in html
+
+
+def test_dashboard_compute_tab_has_results_panel() -> None:
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "ui" / "dashboard.html").read_text(encoding="utf-8")
+
+    assert "Computation Results" in html
+    assert "Energy-Maneuverability" in html
+    assert "Vehicle Parameters" in html
+    assert "Test Results" in html
+    assert "compScore" in html
+    assert "compPs" in html
+    assert "compLoadFactor" in html
+    assert "compTurnRate" in html
+
+
+def test_dashboard_js_has_compute_tab_support() -> None:
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "ui" / "dashboard.js").read_text(encoding="utf-8")
+
+    assert '"compute"' in js
+    assert "COMPUTE" in js
+    assert "runComputeGenerate" in js
+    assert "clearComputeResults" in js
+    assert "DRONE_COMPONENTS" in js
+
+
+def test_dashboard_js_has_design_loop_simulation() -> None:
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "ui" / "dashboard.js").read_text(encoding="utf-8")
+
+    assert "_simDesignLoop" in js
+    assert "_renderDroneModel" in js
+    assert "_updateComputeResults" in js
+
+
+def test_dashboard_js_drone_components_are_labeled() -> None:
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "ui" / "dashboard.js").read_text(encoding="utf-8")
+
+    # Components must have meaningful names, not generic shapes
+    assert "Fuselage" in js
+    assert "Battery Pack" in js
+    assert "Flight Controller" in js
+    assert "Motor" in js
+    assert "Propeller" in js
+    assert "ESC" in js
+    assert "GPS" in js
+    assert "Landing Gear" in js
+    assert "Camera Gimbal" in js
+    assert "Payload Bay" in js
+
+
+def test_dashboard_css_has_compute_styles() -> None:
+    root = Path(__file__).resolve().parents[1]
+    css = (root / "ui" / "dashboard.css").read_text(encoding="utf-8")
+
+    assert "#computeGrid" in css
+    assert ".compute-placeholder" in css
+    assert ".compute-progress" in css
+    assert ".progress-bar" in css
+    assert ".progress-fill" in css
+
+
 # ---- Mesh3D Enhanced Mode tests ----
 
 
