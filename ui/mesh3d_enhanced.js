@@ -548,7 +548,16 @@
   }
 
   function removeMatCap() {
-    // MatCap removal is handled by restoreStandardMaterials or applyNoirMaterials
+    // Restore original materials on all meshes when disabling MatCap
+    const drone = _droneMeshGetter ? _droneMeshGetter() : null;
+    if (drone) {
+      drone.traverse((child) => {
+        if (child.isMesh && child.userData._origMaterial) {
+          child.material.copy(child.userData._origMaterial);
+          child.material.needsUpdate = true;
+        }
+      });
+    }
     matcapMaterial = null;
   }
 
@@ -964,6 +973,8 @@
     } else {
       // Re-apply base mode features (ground shadow, debug overlays)
       applyAO();
+      applyWireframe();
+      applyNormals();
       applyHeatmap();
     }
   }

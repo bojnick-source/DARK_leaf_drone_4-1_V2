@@ -240,6 +240,7 @@ class CADViewportRenderer {
     // Draw selection outlines using object ID buffer.
     // Compares adjacent IDs to detect silhouette of selected object,
     // then composites a restrained glow (ink-teal accent) outline.
+    // TODO: implement full selection outline from ID buffer comparisons
     void enc;
   }
 }
