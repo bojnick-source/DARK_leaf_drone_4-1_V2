@@ -111,6 +111,11 @@ class CADViewportRenderer {
     this._rtEdges = null;
     this._rtTAAHistory = null;
 
+    // CAD-Tuned TAA render targets
+    this._rtMotionVectors = null;    // rg16float — per-pixel UV-space velocity
+    this._rtReactiveMask = null;     // r8unorm — CAD edge / UI reactive mask
+    this._rtTAAOutput = null;        // rgba16float — resolved TAA output
+
     // Glass System 100/100 render targets
     this._rtLinearDepth = null;        // r32float — view-space linear depth
     this._rtDepthPyramid = null;       // r32float mip chain (conservative min)
@@ -130,6 +135,10 @@ class CADViewportRenderer {
     this._pipeComposite = null;
     this._pipeTAA = null;
 
+    // CAD-Tuned TAA pipelines
+    this._pipeMotionVectors = null;  // motion_from_depth.wgsl compute
+    this._pipeTAAResolve = null;     // taa_resolve.wgsl compute
+
     // Glass System 100/100 pipelines
     this._pipeDownsampleR32F = null;   // depth pyramid downsample
     this._pipeDownsampleRGBA16F = null; // color pyramid downsample
@@ -143,6 +152,10 @@ class CADViewportRenderer {
     // Dynamic resolution / idle-supersample state
     this._motionActive = false;
     this._lastCameraMoveMs = 0;
+
+    // CAD-Tuned TAA frame state
+    this._prevViewProj = null;       // mat4x4 from previous frame
+    this._taaFrameIndex = 0;         // frame counter for jitter sequence
   }
 
   /** Merge partial toggle updates. */
@@ -226,8 +239,13 @@ class CADViewportRenderer {
       graph.addPass((enc) => this._glassComposite(enc));
     }
 
-    // 7) TAA Resolve
+    // 7) CAD-Tuned TAA
     if (this._toggles.taaEnabled) {
+      // 7a) Generate per-pixel motion vectors from depth reprojection
+      graph.addPass((enc) => this._taaMotionVectors(enc));
+      // 7b) Build reactive mask from CAD edges + UI overlays
+      graph.addPass((enc) => this._taaBuildReactiveMask(enc));
+      // 7c) TAA resolve: reproject, neighbourhood clamp, depth reject, blend
       graph.addPass((enc) => this._taaResolve(enc));
     }
 
@@ -272,7 +290,35 @@ class CADViewportRenderer {
   }
 
   _taaResolve(enc) {
-    // History reprojection + neighbourhood clamping → stable lines, no shimmer.
+    // CAD-Tuned TAA resolve using taa_resolve.wgsl.
+    // Reads currentColorHDR + historyColor + motionVectors + depth + reactiveMask.
+    // Performs neighbourhood clamp in YCoCg space, depth rejection for
+    // disoccluded regions, reactive-mask weighting to protect CAD edges,
+    // and CAS-like responsive sharpening to prevent "TAA mush".
+    // Output → rtTAAOutput (becomes next frame's history via ping-pong).
+    void enc;
+  }
+
+  // -- CAD-Tuned TAA sub-passes -----------------------------------------------
+
+  _taaMotionVectors(enc) {
+    // Generate per-pixel UV-space motion vectors using motion_from_depth.wgsl.
+    // Unprojects each pixel from depth using invCurrViewProj, then reprojects
+    // with prevViewProj to find where the pixel was last frame.
+    // Input: rtDepth + prevViewProj + invCurrViewProj uniforms
+    // Output: rtMotionVectors (rg16float)
+    void enc;
+  }
+
+  _taaBuildReactiveMask(enc) {
+    // Build the reactive mask that tells TAA to reduce history weight on:
+    //   - CAD edges (from rtEdges screen-space edge detection)
+    //   - Selection outlines / UI overlays
+    //   - Newly disoccluded regions
+    // This prevents TAA from blurring sharp CAD features or lagging on
+    // selection highlights.
+    // Input: rtEdges + rtID (selection state)
+    // Output: rtReactiveMask (r8unorm, 0 = full history, 1 = responsive)
     void enc;
   }
 

@@ -325,3 +325,74 @@ def test_glass_system_css_tokens() -> None:
     assert ".glass-panel--frosted" in css
     assert ".glass-panel--clear" in css
     assert ".glass-panel--noir" in css
+
+
+# ---- CAD-Tuned TAA tests ----
+
+
+def test_taa_shader_files_present() -> None:
+    root = Path(__file__).resolve().parents[1]
+    shaders = root / "ui" / "shaders"
+
+    assert (shaders / "motion_from_depth.wgsl").is_file()
+    assert (shaders / "taa_resolve.wgsl").is_file()
+
+
+def test_motion_from_depth_shader() -> None:
+    root = Path(__file__).resolve().parents[1]
+    wgsl = (root / "ui" / "shaders" / "motion_from_depth.wgsl").read_text(
+        encoding="utf-8"
+    )
+
+    assert "@compute" in wgsl
+    assert "depthTex" in wgsl
+    assert "outVelocity" in wgsl
+    assert "rg16float" in wgsl
+    assert "invCurrVP" in wgsl
+    assert "prevVP" in wgsl
+    assert "velocity" in wgsl
+
+
+def test_taa_resolve_shader() -> None:
+    root = Path(__file__).resolve().parents[1]
+    wgsl = (root / "ui" / "shaders" / "taa_resolve.wgsl").read_text(encoding="utf-8")
+
+    assert "@compute" in wgsl
+    # Inputs
+    assert "currentColor" in wgsl
+    assert "historyColor" in wgsl
+    assert "velocityTex" in wgsl
+    assert "reactiveMask" in wgsl
+    assert "depthTex" in wgsl
+    # Core TAA features
+    assert "neighbourhoodClamp" in wgsl or "neighbourhoodClamp" in wgsl
+    assert "rgbToYCoCg" in wgsl
+    assert "depthRejection" in wgsl
+    assert "reactiveBoost" in wgsl
+    assert "sharpenStrength" in wgsl
+    assert "blendMin" in wgsl
+    assert "blendMax" in wgsl
+
+
+def test_webgpu_renderer_has_taa_system() -> None:
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "ui" / "webgpu_renderer.js").read_text(encoding="utf-8")
+
+    # TAA render targets
+    assert "_rtMotionVectors" in js
+    assert "_rtReactiveMask" in js
+    assert "_rtTAAOutput" in js
+    assert "_rtTAAHistory" in js
+
+    # TAA pipelines
+    assert "_pipeMotionVectors" in js
+    assert "_pipeTAAResolve" in js
+
+    # TAA render passes
+    assert "_taaMotionVectors" in js
+    assert "_taaBuildReactiveMask" in js
+    assert "_taaResolve" in js
+
+    # TAA frame state
+    assert "_prevViewProj" in js
+    assert "_taaFrameIndex" in js
