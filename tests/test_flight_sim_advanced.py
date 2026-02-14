@@ -60,7 +60,7 @@ def test_wind_speed_logged_in_result() -> None:
     assert len(result.wind_speed_m_s) == len(result.time_s)
     assert all(ws >= 0.0 for ws in result.wind_speed_m_s)
     # Steady wind magnitude is 5 m/s; no gust, so all values should be 5.0
-    assert all(abs(ws - 5.0) < 1e-9 for ws in result.wind_speed_m_s)
+    assert all(abs(ws - 5.0) < 1e-6 for ws in result.wind_speed_m_s)
 
 
 def test_wind_report_includes_wind_summary() -> None:

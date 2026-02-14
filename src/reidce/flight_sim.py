@@ -33,6 +33,11 @@ class WindModel:
         """Magnitude of the steady-state (non-gust) wind."""
         return math.sqrt(self.wx_m_s**2 + self.wy_m_s**2 + self.wz_m_s**2)
 
+    @staticmethod
+    def vector_speed(vec: tuple[float, float, float]) -> float:
+        """Magnitude of a 3-component wind vector sample."""
+        return math.sqrt(vec[0] ** 2 + vec[1] ** 2 + vec[2] ** 2)
+
 
 @dataclass(frozen=True)
 class SensorNoise:
@@ -306,7 +311,7 @@ def simulate_flight(
         energy_used.append(cumulative_energy_j)
         battery_pct.append(remaining_pct)
         temperature_c.append(motor_temp_c)
-        wind_speed_log.append(math.sqrt(wind_vec[0] ** 2 + wind_vec[1] ** 2 + wind_vec[2] ** 2))
+        wind_speed_log.append(WindModel.vector_speed(wind_vec))
 
     return SimulationResult(
         time_s=time,
@@ -321,7 +326,7 @@ def simulate_flight(
 
 def _sense(state: VehicleState, noise: Optional[SensorNoise] = None) -> SensorSample:
     speed = math.sqrt(state.vx_m_s**2 + state.vy_m_s**2 + state.vz_m_s**2)
-    if noise and (noise.altitude_m_std or noise.speed_m_s_std or noise.heading_rad_std):
+    if noise and (noise.altitude_m_std > 0 or noise.speed_m_s_std > 0 or noise.heading_rad_std > 0):
         return SensorSample(
             altitude_m=state.z_m + random.gauss(0.0, noise.altitude_m_std),
             speed_m_s=max(0.0, speed + random.gauss(0.0, noise.speed_m_s_std)),
@@ -591,8 +596,9 @@ def simulate_flight_bemt(
 
         # Physics integration with BEMT thrust — use airspeed
         air_vx = state.vx_m_s - wind_vec[0]
+        air_vy = state.vy_m_s - wind_vec[1]
         air_vz = state.vz_m_s - wind_vec[2]
-        airspeed = math.sqrt(air_vx**2 + air_vz**2) + 1e-6
+        airspeed = math.sqrt(air_vx**2 + air_vy**2 + air_vz**2) + 1e-6
         lift = _lift_force(airspeed, state.pitch_rad, params, rho)
         drag = _drag_force(airspeed, state.pitch_rad, params, rho)
 
@@ -628,9 +634,7 @@ def simulate_flight_bemt(
         energy_used.append(cumulative_energy_j)
         battery_pct.append(remaining_pct)
         temperature_c.append(motor_temp_c)
-        wind_speed_log.append(
-            math.sqrt(wind_vec[0] ** 2 + wind_vec[1] ** 2 + wind_vec[2] ** 2)
-        )
+        wind_speed_log.append(WindModel.vector_speed(wind_vec))
 
     return SimulationResult(
         time_s=time,
