@@ -171,6 +171,7 @@ from reidce.flight_sim import (
     bemt_rotor_thrust,
     simulate_flight,
     simulate_flight_bemt,
+    simulate_flight_wind_tunnel,
 )
 from reidce.flight_sim_report import (
     build_report,
@@ -336,6 +337,19 @@ from reidce.wind_ship import (
     hull_drag,
     sail_aero_force,
 )
+from reidce.wind_tunnel import (
+    AeroResult,
+    AirfoilGeometry,
+    ConvergenceMetrics,
+    DrydenGust,
+    FlowCondition,
+    WindTunnelResult,
+    WindTunnelSweepPoint,
+    compute_aero,
+    dryden_gust_velocities,
+    interpolate_aero,
+    run_wind_tunnel,
+)
 
 __all__ = [
     "BuildPacket",
@@ -371,6 +385,7 @@ __all__ = [
     "bemt_rotor_thrust",
     "simulate_flight",
     "simulate_flight_bemt",
+    "simulate_flight_wind_tunnel",
     "AeroCoefficients",
     "ISAAtmosphere",
     "RangeEstimate",
@@ -641,6 +656,18 @@ __all__ = [
     "random_sample",
     "sample_to_dict",
     "sobol_like_sample",
+    # wind tunnel
+    "AeroResult",
+    "AirfoilGeometry",
+    "ConvergenceMetrics",
+    "DrydenGust",
+    "FlowCondition",
+    "WindTunnelResult",
+    "WindTunnelSweepPoint",
+    "compute_aero",
+    "dryden_gust_velocities",
+    "interpolate_aero",
+    "run_wind_tunnel",
     # flight sim report
     "build_report",
     "generate_report",

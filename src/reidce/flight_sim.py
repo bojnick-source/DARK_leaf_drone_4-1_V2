@@ -645,3 +645,162 @@ def simulate_flight_bemt(
         temperature_c=temperature_c,
         wind_speed_m_s=wind_speed_log,
     )
+
+
+# ── Wind-tunnel-enhanced flight simulation ────────────────────────────────
+
+
+def simulate_flight_wind_tunnel(
+    initial_state: VehicleState,
+    target: GuidanceTarget,
+    duration_s: float,
+    dt_s: float,
+    tunnel_result: object,
+    params: Optional[VehicleParams] = None,
+    atmosphere: Optional[Atmosphere] = None,
+    controller: Optional[TripleRedundantController] = None,
+    guidance_profile: Optional[
+        Callable[[float, GuidanceTarget], GuidanceTarget]
+    ] = None,
+    gust: Optional[object] = None,
+    battery_capacity_j: float = 180000.0,
+    ambient_temp_c: float = 25.0,
+) -> SimulationResult:
+    """Flight simulation using wind-tunnel aerodynamic data.
+
+    Replaces the simple lift/drag model with high-accuracy coefficients
+    interpolated from a pre-computed ``WindTunnelResult``.  Optionally
+    injects Dryden gust disturbances for turbulence analysis.
+
+    Parameters
+    ----------
+    initial_state : VehicleState
+        Starting position and velocity.
+    target : GuidanceTarget
+        Guidance targets for the autopilot.
+    duration_s, dt_s : float
+        Simulation duration and time step.
+    tunnel_result : WindTunnelResult
+        Pre-computed wind-tunnel coefficient table (from ``run_wind_tunnel``).
+    params : VehicleParams, optional
+        Vehicle parameters (defaults applied if *None*).
+    atmosphere : Atmosphere, optional
+        Atmospheric conditions.
+    controller : TripleRedundantController, optional
+        Autopilot controller.
+    guidance_profile : callable, optional
+        Time-varying guidance profile.
+    gust : DrydenGust, optional
+        Dryden turbulence parameters.  If *None*, no gusts are applied.
+    battery_capacity_j : float
+        Battery capacity in joules.
+    ambient_temp_c : float
+        Ambient temperature in degrees Celsius.
+    """
+    from reidce.wind_tunnel import (
+        DrydenGust,
+        WindTunnelResult,
+        dryden_gust_velocities,
+        interpolate_aero,
+    )
+
+    if duration_s <= 0.0 or dt_s <= 0.0:
+        raise ValueError("duration_s and dt_s must be > 0")
+    if not isinstance(tunnel_result, WindTunnelResult):
+        raise TypeError("tunnel_result must be a WindTunnelResult")
+
+    params = params or VehicleParams()
+    atmosphere = atmosphere or Atmosphere()
+    controller = controller or TripleRedundantController()
+    controller.reset()
+
+    steps = int(duration_s / dt_s)
+    state = _clone_state(initial_state)
+    wt_time: List[float] = []
+    wt_states: List[VehicleState] = []
+    wt_commands: List[ControlCommand] = []
+    wt_energy_used: List[float] = []
+    wt_battery_pct: List[float] = []
+    wt_temperature_c: List[float] = []
+
+    # Pre-generate gust velocities if requested
+    time_array = [step * dt_s for step in range(steps + 1)]
+    gust_vels: Optional[List[Tuple[float, float, float]]] = None
+    if gust is not None and isinstance(gust, DrydenGust):
+        sensed_speed = math.sqrt(
+            state.vx_m_s ** 2 + state.vy_m_s ** 2 + state.vz_m_s ** 2,
+        )
+        gust_vels = dryden_gust_velocities(
+            gust, time_array, max(sensed_speed, 5.0),
+        )
+
+    cumulative_energy_j = 0.0
+    motor_temp_c = ambient_temp_c
+
+    for step in range(steps + 1):
+        t = step * dt_s
+        active_target = (
+            guidance_profile(t, target) if guidance_profile else target
+        )
+        sensed = _sense(state)
+        cmd = controller.compute(active_target, sensed, dt_s)
+
+        speed = sensed.speed_m_s + 1e-6
+
+        # Look up wind-tunnel coefficients at current AoA and speed
+        aero = interpolate_aero(tunnel_result, state.pitch_rad, speed)
+        q = 0.5 * atmosphere.rho_kg_m3 * speed ** 2
+        s = params.wing_area_m2
+
+        lift = q * s * aero.cl
+        drag = q * s * abs(aero.cd)
+
+        thrust = cmd.throttle * params.max_thrust_n
+
+        ax = (thrust * math.cos(state.pitch_rad) - drag) / params.mass_kg
+        az = (
+            lift + thrust * math.sin(state.pitch_rad)
+        ) / params.mass_kg - atmosphere.gravity_m_s2
+
+        # Inject gust disturbance
+        if gust_vels is not None and step < len(gust_vels):
+            ug, _vg, wg = gust_vels[step]
+            ax += ug / max(dt_s, 1e-6) * 0.01
+            az += wg / max(dt_s, 1e-6) * 0.01
+
+        ax = max(-params.max_accel_m_s2, min(params.max_accel_m_s2, ax))
+        az = max(-params.max_accel_m_s2, min(params.max_accel_m_s2, az))
+
+        state.vx_m_s += ax * dt_s
+        state.vz_m_s += az * dt_s
+        state.x_m += state.vx_m_s * dt_s
+        state.z_m += state.vz_m_s * dt_s
+        state.yaw_rad = _wrap_angle(
+            state.yaw_rad + cmd.yaw_rate_cmd_rad_s * dt_s,
+        )
+        state = _limit_state(state, params)
+
+        power_w = cmd.throttle * params.max_thrust_n * speed * 0.3 + 15.0
+        cumulative_energy_j += power_w * dt_s
+        remaining_pct = max(
+            0.0, 100.0 * (1.0 - cumulative_energy_j / battery_capacity_j),
+        )
+        heating = cmd.throttle * 0.08 * dt_s
+        cooling = (motor_temp_c - ambient_temp_c) * 0.005 * dt_s
+        motor_temp_c += heating - cooling
+
+        wt_time.append(t)
+        wt_states.append(_clone_state(state))
+        wt_commands.append(cmd)
+        wt_energy_used.append(cumulative_energy_j)
+        wt_battery_pct.append(remaining_pct)
+        wt_temperature_c.append(motor_temp_c)
+
+    return SimulationResult(
+        time_s=wt_time,
+        state=wt_states,
+        commands=wt_commands,
+        energy_used_j=wt_energy_used,
+        battery_pct=wt_battery_pct,
+        temperature_c=wt_temperature_c,
+    )
