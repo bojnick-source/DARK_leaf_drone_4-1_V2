@@ -60,6 +60,13 @@
     validateConstraints();
     setStatus("READY");
     animate();
+
+    // Attach Mesh3D Enhanced Mode controller
+    if (window.Mesh3DEnhanced) {
+      window.Mesh3DEnhanced.attach(scene, camera, renderer, function () {
+        return droneMesh;
+      });
+    }
   }
 
   function initScene(canvas) {
@@ -460,6 +467,11 @@
     updateMeshInfo();
     updateCamera();
     setStatus(constraintViolated ? "CONSTRAINT VIOLATED" : "READY");
+
+    // Notify enhanced mode of model rebuild
+    if (window.Mesh3DEnhanced) {
+      window.Mesh3DEnhanced.onModelRebuilt();
+    }
   }
 
   // --- Mesh Info ---

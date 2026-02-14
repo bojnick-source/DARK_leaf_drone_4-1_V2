@@ -1,0 +1,395 @@
+/* ui/mesh3d_enhanced.css — Liquid Obsidian Noir Theme + Mesh3D Enhanced Mode UI
+   Black metallic + watercolor blacks + restrained pastel ink accents.
+   Provides the floating viewport toolbar, Mesh3D+ toggle, and sub-menus. */
+
+/* ===================================================================
+   Liquid Obsidian Design Tokens
+   =================================================================== */
+:root {
+  /* Noir backgrounds */
+  --noir-bg0: #0A0B0E;
+  --noir-bg1: #0E1118;
+  --noir-bg2: #131827;
+  --noir-matte0: rgba(255, 255, 255, 0.05);
+  --noir-matte1: rgba(255, 255, 255, 0.08);
+  --noir-stroke: rgba(255, 255, 255, 0.10);
+  --noir-stroke-strong: rgba(255, 255, 255, 0.16);
+
+  /* Metallic sheen */
+  --metal-spec-a: rgba(255, 255, 255, 0.22);
+  --metal-spec-b: rgba(255, 255, 255, 0.10);
+  --metal-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.00));
+
+  /* Ink accents — used ONLY for active/selection/progress/alerts */
+  --ink-teal: #00C0B8;
+  --ink-blue: #0088D8;
+  --ink-indigo: #2868F8;
+  --ink-warm-pastel: rgba(255, 196, 160, 0.18);
+  --ink-smoke-lavender: rgba(196, 170, 255, 0.14);
+
+  /* Viewport toolbar */
+  --toolbar-h: 44px;
+  --toolbar-radius: 12px;
+  --toolbar-blur: 18px;
+}
+
+/* ===================================================================
+   Floating Viewport Toolbar (glass)
+   =================================================================== */
+.viewport-toolbar {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: var(--toolbar-h);
+  padding: 0 6px;
+  border-radius: var(--toolbar-radius);
+  background: rgba(10, 11, 14, 0.78);
+  backdrop-filter: blur(var(--toolbar-blur)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--toolbar-blur)) saturate(1.4);
+  border: 1px solid var(--noir-stroke);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.50),
+    inset 0 1px 0 var(--metal-spec-b);
+}
+
+/* Toolbar item base */
+.toolbar-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toolbar-btn:hover {
+  background: var(--noir-matte1);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.toolbar-btn:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.toolbar-btn[aria-expanded="true"] {
+  background: var(--noir-matte1);
+  color: #fff;
+}
+
+/* Dropdown caret */
+.toolbar-btn .caret {
+  font-size: 9px;
+  opacity: 0.55;
+  transition: transform 0.15s;
+}
+
+.toolbar-btn[aria-expanded="true"] .caret {
+  transform: rotate(180deg);
+}
+
+/* Separator line between groups */
+.toolbar-sep {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: var(--noir-stroke);
+  flex-shrink: 0;
+}
+
+/* ===================================================================
+   Mesh3D+ Toggle Button — special styling
+   =================================================================== */
+.mesh3d-toggle {
+  position: relative;
+  border: 1px solid transparent;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.mesh3d-toggle[data-active="true"] {
+  border-color: var(--ink-teal);
+  color: var(--ink-teal);
+  background: rgba(0, 192, 184, 0.08);
+}
+
+.mesh3d-toggle[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--ink-teal);
+  opacity: 0.6;
+}
+
+/* Label showing current mode */
+.toggle-mode-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.70;
+}
+
+/* ===================================================================
+   Dropdown Panels (from toolbar buttons)
+   =================================================================== */
+.toolbar-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  padding: 8px 0;
+  border-radius: 10px;
+  background: rgba(14, 17, 24, 0.94);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid var(--noir-stroke-strong);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.60);
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+}
+
+.toolbar-dropdown.open {
+  display: flex;
+}
+
+/* Dropdown group heading */
+.dropdown-heading {
+  padding: 6px 14px 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.38);
+  pointer-events: none;
+}
+
+/* Dropdown row — toggle switch style */
+.dropdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.dropdown-row:hover {
+  background: var(--noir-matte1);
+}
+
+/* Small switch track */
+.switch-track {
+  position: relative;
+  width: 32px;
+  height: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.10);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.switch-track[data-on="true"] {
+  background: var(--ink-teal);
+}
+
+.switch-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+
+.switch-track[data-on="true"]::after {
+  transform: translateX(16px);
+}
+
+/* Radio-like selector rows */
+.dropdown-radio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.dropdown-radio-row:hover {
+  background: var(--noir-matte1);
+}
+
+.dropdown-radio-row[data-selected="true"] {
+  color: var(--ink-teal);
+}
+
+.radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.30);
+  flex-shrink: 0;
+}
+
+.dropdown-radio-row[data-selected="true"] .radio-dot {
+  border-color: var(--ink-teal);
+  background: var(--ink-teal);
+  box-shadow: 0 0 4px rgba(0, 192, 184, 0.40);
+}
+
+/* ===================================================================
+   Enhanced mode edge overlay indicator
+   =================================================================== */
+.enhanced-badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(10, 11, 14, 0.72);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 192, 184, 0.25);
+  color: var(--ink-teal);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.enhanced-badge.visible {
+  display: inline-flex;
+}
+
+.enhanced-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-teal);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ===================================================================
+   Section Plane Indicator
+   =================================================================== */
+.section-indicator {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: rgba(10, 11, 14, 0.72);
+  border: 1px solid rgba(40, 104, 248, 0.30);
+  color: var(--ink-indigo);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.section-indicator.visible {
+  display: inline-flex;
+}
+
+/* ===================================================================
+   Debug Overlay Panels
+   =================================================================== */
+.debug-overlay {
+  position: absolute;
+  top: 60px;
+  right: 12px;
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(10, 11, 14, 0.82);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--noir-stroke);
+  font-size: 10px;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  color: rgba(255, 255, 255, 0.60);
+  min-width: 160px;
+}
+
+.debug-overlay.visible {
+  display: flex;
+}
+
+.debug-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 1px 0;
+}
+
+.debug-row .label {
+  color: rgba(255, 255, 255, 0.40);
+}
+
+.debug-row .value {
+  color: var(--ink-teal);
+  font-weight: 600;
+}
+
+/* ===================================================================
+   Responsive adjustments
+   =================================================================== */
+@media (max-width: 920px) {
+  .viewport-toolbar {
+    gap: 1px;
+    padding: 0 4px;
+    height: 38px;
+  }
+  .toolbar-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Collapse toolbar to essential items only */
+  .toolbar-btn.hide-mobile {
+    display: none;
+  }
+  .toolbar-sep.hide-mobile {
+    display: none;
+  }
+}
