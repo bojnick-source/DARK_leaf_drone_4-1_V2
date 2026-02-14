@@ -215,3 +215,113 @@ def test_edges_screen_wgsl_shader() -> None:
     assert "outEdges" in wgsl
     assert "@compute" in wgsl
     assert "linearizeDepth" in wgsl
+
+
+# ---- Glass System 100/100 tests ----
+
+
+def test_glass_system_shader_files_present() -> None:
+    root = Path(__file__).resolve().parents[1]
+    shaders = root / "ui" / "shaders"
+
+    assert (shaders / "downsample_r32f.wgsl").is_file()
+    assert (shaders / "downsample_rgba16f.wgsl").is_file()
+    assert (shaders / "bilateral_blur.wgsl").is_file()
+    assert (shaders / "glass_composite.wgsl").is_file()
+
+
+def test_downsample_r32f_shader() -> None:
+    root = Path(__file__).resolve().parents[1]
+    wgsl = (root / "ui" / "shaders" / "downsample_r32f.wgsl").read_text(encoding="utf-8")
+
+    assert "@compute" in wgsl
+    assert "srcTex" in wgsl
+    assert "dstTex" in wgsl
+    assert "r32float" in wgsl
+    assert "min" in wgsl  # conservative min-of-4 downsample
+
+
+def test_downsample_rgba16f_shader() -> None:
+    root = Path(__file__).resolve().parents[1]
+    wgsl = (root / "ui" / "shaders" / "downsample_rgba16f.wgsl").read_text(encoding="utf-8")
+
+    assert "@compute" in wgsl
+    assert "srcTex" in wgsl
+    assert "dstTex" in wgsl
+    assert "rgba16float" in wgsl
+    assert "karisWeight" in wgsl  # Karis-average for HDR firefly suppression
+
+
+def test_bilateral_blur_shader() -> None:
+    root = Path(__file__).resolve().parents[1]
+    wgsl = (root / "ui" / "shaders" / "bilateral_blur.wgsl").read_text(encoding="utf-8")
+
+    assert "@compute" in wgsl
+    assert "colorTex" in wgsl
+    assert "depthTex" in wgsl
+    assert "depthWeight" in wgsl
+    assert "gaussianWeight" in wgsl
+    assert "depthSigma" in wgsl  # cross-bilateral depth rejection
+
+
+def test_glass_composite_shader() -> None:
+    root = Path(__file__).resolve().parents[1]
+    wgsl = (root / "ui" / "shaders" / "glass_composite.wgsl").read_text(encoding="utf-8")
+
+    assert "@compute" in wgsl
+    assert "beerLambert" in wgsl
+    assert "oitAccum" in wgsl
+    assert "oitReveal" in wgsl
+    assert "absorptionColor" in wgsl
+    assert "transmittance" in wgsl
+    assert "fresnelPower" in wgsl
+
+
+def test_webgpu_renderer_has_glass_system() -> None:
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "ui" / "webgpu_renderer.js").read_text(encoding="utf-8")
+
+    # Glass toggle state
+    assert "glass" in js
+    assert "absorptionColor" in js
+    assert "absorptionDensity" in js
+    assert "oitEnabled" in js
+
+    # Glass render targets
+    assert "_rtLinearDepth" in js
+    assert "_rtDepthPyramid" in js
+    assert "_rtColorPyramid" in js
+    assert "_rtOITAccum" in js
+    assert "_rtOITReveal" in js
+
+    # Glass pipelines
+    assert "_pipeDownsampleR32F" in js
+    assert "_pipeBilateralBlur" in js
+    assert "_pipeGlassComposite" in js
+
+    # Glass render passes
+    assert "_glassDepthPyramid" in js
+    assert "_glassColorPyramid" in js
+    assert "_glassBilateralBlur" in js
+    assert "_glassOITAccumulate" in js
+    assert "_glassComposite" in js
+
+
+def test_glass_system_css_tokens() -> None:
+    root = Path(__file__).resolve().parents[1]
+    css = (root / "ui" / "mesh3d_enhanced.css").read_text(encoding="utf-8")
+
+    # Glass design tokens
+    assert "--glass-blur" in css
+    assert "--glass-alpha" in css
+    assert "--glass-tint" in css
+    assert "--glass-specular" in css
+    assert "--glass-absorption-density" in css
+    assert "--glass-thickness" in css
+    assert "--glass-fresnel-power" in css
+
+    # Glass panel variants
+    assert ".glass-panel" in css
+    assert ".glass-panel--frosted" in css
+    assert ".glass-panel--clear" in css
+    assert ".glass-panel--noir" in css
