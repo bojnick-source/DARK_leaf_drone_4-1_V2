@@ -1081,7 +1081,7 @@ class CircuitBoardMap:
         return len(self.nets)
 
     def manhattan_distance_mm(self, ref_a: str, ref_b: str) -> float:
-        """Manhattan distance between two component centres."""
+        """Manhattan distance between two component centers."""
         a = self.component_by_ref(ref_a)
         b = self.component_by_ref(ref_b)
         if a is None or b is None:

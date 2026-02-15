@@ -461,7 +461,7 @@ def test_taa_resolve_shader() -> None:
     assert "reactiveMask" in wgsl
     assert "depthTex" in wgsl
     # Core TAA features
-    assert "neighbourhoodClamp" in wgsl or "neighbourhoodClamp" in wgsl
+    assert "neighborhoodClamp" in wgsl
     assert "rgbToYCoCg" in wgsl
     assert "depthRejection" in wgsl
     assert "reactiveBoost" in wgsl

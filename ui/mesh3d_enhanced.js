@@ -798,7 +798,7 @@
   }
 
   // -----------------------------------------------------------------------
-  // Triangle Density Heatmap — colours faces by relative triangle area
+  // Triangle Density Heatmap — colors faces by relative triangle area
   // -----------------------------------------------------------------------
   function applyHeatmap() {
     removeHeatmap();

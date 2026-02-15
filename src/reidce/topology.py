@@ -478,7 +478,7 @@ def optimize_topology_gk(
     for ix in range(nx):
         densities[0 * nx + ix] = 1.0  # bottom row (support)
     for iy in range(ny):
-        densities[iy * nx + nx // 2] = 0.8  # centre column (load path)
+        densities[iy * nx + nx // 2] = 0.8  # center column (load path)
 
     history: List[float] = []
     growth_rate = 0.15

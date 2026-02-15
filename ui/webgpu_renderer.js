@@ -245,7 +245,7 @@ class CADViewportRenderer {
       graph.addPass((enc) => this._taaMotionVectors(enc));
       // 7b) Build reactive mask from CAD edges + UI overlays
       graph.addPass((enc) => this._taaBuildReactiveMask(enc));
-      // 7c) TAA resolve: reproject, neighbourhood clamp, depth reject, blend
+      // 7c) TAA resolve: reproject, neighborhood clamp, depth reject, blend
       graph.addPass((enc) => this._taaResolve(enc));
     }
 
@@ -266,7 +266,7 @@ class CADViewportRenderer {
   }
 
   _ssao(enc, scale) {
-    // GTAO / SSAO compute dispatch → rtAO with optional temporal stabilisation.
+    // GTAO / SSAO compute dispatch → rtAO with optional temporal stabilization.
     void enc; void scale;
   }
 
@@ -292,7 +292,7 @@ class CADViewportRenderer {
   _taaResolve(enc) {
     // CAD-Tuned TAA resolve using taa_resolve.wgsl.
     // Reads currentColorHDR + historyColor + motionVectors + depth + reactiveMask.
-    // Performs neighbourhood clamp in YCoCg space, depth rejection for
+    // Performs neighborhood clamp in YCoCg space, depth rejection for
     // disoccluded regions, reactive-mask weighting to protect CAD edges,
     // and CAS-like responsive sharpening to prevent "TAA mush".
     // Output → rtTAAOutput (becomes next frame's history via ping-pong).

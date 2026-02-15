@@ -236,9 +236,9 @@ def adaptive_sample(
 
     1. Generate *n_initial* points via LHS.
     2. Evaluate *score_fn(point)* on each (higher score is better).
-    3. Select the top 25 % of points as "elite" centres.
-    4. Generate *n_refinement* new points by perturbing elite centres
-       within a shrinking neighbourhood (10 % of the range per dim).
+    3. Select the top 25 % of points as "elite" centers.
+    4. Generate *n_refinement* new points by perturbing elite centers
+       within a shrinking neighborhood (10 % of the range per dim).
     """
     initial = latin_hypercube_sample(bounds, n_initial, seed=seed)
     scored: list[tuple[float, list[float]]] = []
@@ -252,11 +252,11 @@ def adaptive_sample(
     rng = random.Random(seed + 1)
     refinement: list[list[float]] = []
     for idx in range(n_refinement):
-        centre = elite[idx % len(elite)]
+        center = elite[idx % len(elite)]
         point: list[float] = []
         for d in range(bounds.n_dims):
             span = (bounds.upper[d] - bounds.lower[d]) * 0.1
-            val = rng.gauss(centre[d], span)
+            val = rng.gauss(center[d], span)
             val = max(bounds.lower[d], min(bounds.upper[d], val))
             point.append(val)
         refinement.append(point)
