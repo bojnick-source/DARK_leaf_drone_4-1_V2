@@ -74,7 +74,7 @@ def test_three_axis_gimbal_axes() -> None:
 
 
 def test_eis_config_crop() -> None:
-    eis = EISConfig(sensor_width_px=1920, sensor_height_px=1080, stabilisation_margin_px=60)
+    eis = EISConfig(sensor_width_px=1920, sensor_height_px=1080, stabilization_margin_px=60)
     eff_w, eff_h = eis.effective_resolution()
     assert eff_w == 1800
     assert eff_h == 960

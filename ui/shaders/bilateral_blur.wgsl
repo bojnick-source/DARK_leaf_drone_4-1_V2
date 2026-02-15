@@ -67,7 +67,7 @@ fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
     accumWeight = accumWeight + w;
   }
 
-  // Normalize; fall back to center pixel if no valid neighbours
+  // Normalize; fall back to center pixel if no valid neighbors
   let invWeight = select(1.0, 1.0 / accumWeight, accumWeight > 0.001);
   let result = select(centerColor, accumColor * invWeight, accumWeight > 0.001);
 

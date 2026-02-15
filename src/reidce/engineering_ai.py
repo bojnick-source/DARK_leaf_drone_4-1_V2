@@ -522,7 +522,7 @@ class ConversationContext:
         return "; ".join(parts)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Serialise context state."""
+        """Serialize context state."""
         return {
             "schema": "dark/conversation_context/1.0",
             "turn_count": len(self.turns),

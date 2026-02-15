@@ -3,7 +3,7 @@
 //
 // Features:
 //   1. Motion-vector reprojection from history buffer
-//   2. Neighbourhood clamp (AABB / variance) to prevent ghosting
+//   2. Neighborhood clamp (AABB / variance) to prevent ghosting
 //   3. Depth rejection for disoccluded pixels
 //   4. CAD edge/reactive mask to protect sharp edges + UI overlays
 //   5. Responsive sharpening to avoid "TAA mush" on thin lines
@@ -36,10 +36,10 @@ struct TAAParams {
 @group(0) @binding(5) var outColor     : texture_storage_2d<rgba16float, write>;
 @group(0) @binding(6) var<uniform> params : TAAParams;
 
-// ---- Colour-space helpers ----
+// ---- Color-space helpers ----
 
 fn rgbToYCoCg(rgb : vec3<f32>) -> vec3<f32> {
-  // Luma-chroma space for tighter neighbourhood clamping.
+  // Luma-chroma space for tighter neighborhood clamping.
   let y  = dot(rgb, vec3<f32>(0.25, 0.5, 0.25));
   let co = dot(rgb, vec3<f32>(0.5, 0.0, -0.5));
   let cg = dot(rgb, vec3<f32>(-0.25, 0.5, -0.25));
@@ -53,15 +53,15 @@ fn yCoCgToRgb(ycocg : vec3<f32>) -> vec3<f32> {
   return vec3<f32>(y + co - cg, y + cg, y - co - cg);
 }
 
-// ---- Neighbourhood clamp (variance-based AABB in YCoCg) ----
+// ---- Neighborhood clamp (variance-based AABB in YCoCg) ----
 
-fn neighbourhoodClamp(
+fn neighborhoodClamp(
   center : vec3<f32>,
   history : vec3<f32>,
   coord : vec2<i32>,
   res : vec2<i32>
 ) -> vec3<f32> {
-  // Gather 3×3 neighbourhood in YCoCg space for min/max AABB.
+  // Gather 3×3 neighborhood in YCoCg space for min/max AABB.
   var aabbMin = vec3<f32>(1e10);
   var aabbMax = vec3<f32>(-1e10);
   var moment1 = vec3<f32>(0.0);
@@ -130,8 +130,8 @@ fn sharpen(coord : vec2<i32>, center : vec3<f32>, res : vec2<i32>, strength : f3
   let u = textureLoad(currentColor, clamp(coord + vec2<i32>( 0,-1), vec2<i32>(0), res - vec2<i32>(1)), 0).rgb;
   let d = textureLoad(currentColor, clamp(coord + vec2<i32>( 0, 1), vec2<i32>(0), res - vec2<i32>(1)), 0).rgb;
 
-  let neighbours = (l + r + u + d) * 0.25;
-  let sharpened = center + (center - neighbours) * strength;
+  let neighbors = (l + r + u + d) * 0.25;
+  let sharpened = center + (center - neighbors) * strength;
   return max(sharpened, vec3<f32>(0.0));
 }
 
@@ -163,9 +163,9 @@ fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
   let histClamped = clamp(histCoord, vec2<i32>(0, 0), res - vec2<i32>(1, 1));
   var historyRGB = textureLoad(historyColor, histClamped, 0).rgb;
 
-  // --- Neighbourhood clamp in YCoCg to prevent ghosting ---
+  // --- Neighborhood clamp in YCoCg to prevent ghosting ---
   let historyYCoCg = rgbToYCoCg(historyRGB);
-  let clampedYCoCg = neighbourhoodClamp(
+  let clampedYCoCg = neighborhoodClamp(
     rgbToYCoCg(currentRGB), historyYCoCg, coord, res
   );
   historyRGB = yCoCgToRgb(clampedYCoCg);

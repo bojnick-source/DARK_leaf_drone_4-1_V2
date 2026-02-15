@@ -6,7 +6,7 @@ cycle inspired by fighter-jet development programs.  Each iteration:
 1. **Build** — construct a ``VehicleParams`` from the current design vector.
 2. **Fly** — run a suite of flight tests (climb, speed, turn, endurance).
 3. **Push** — progressively increase aggressiveness until a limit is hit.
-4. **Learn** — analyse failures and compute parameter adjustments.
+4. **Learn** — analyze failures and compute parameter adjustments.
 5. **Rebuild** — apply adjustments to produce a new design vector.
 6. **Repeat** — continue until the design converges or max iterations.
 
@@ -269,7 +269,7 @@ _MASS_FLOOR_KG = 0.5           # minimum mass (kg)
 _BANK_SWEEP_MAX_DEG = 80       # max bank angle for sustained turn sweep
 
 
-def _analyse_failures(
+def _analyze_failures(
     params: VehicleParams, results: List[FlightTestResult]
 ) -> List[DesignAdjustment]:
     """Derive parameter adjustments from test failures."""
@@ -420,7 +420,7 @@ def run_design_loop(
             best_iter = i
 
         # Learn from failures and rebuild
-        record.adjustments = _analyse_failures(params, record.test_results)
+        record.adjustments = _analyze_failures(params, record.test_results)
         log.iterations.append(record)
 
         if record.score >= convergence_score:

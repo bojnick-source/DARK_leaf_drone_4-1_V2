@@ -73,7 +73,7 @@ DESIGN_CATALOG: List[DesignEntry] = [
         max_tilt_rad=math.radians(44.0),
         max_speed_m_s=90.0,
         rotor_radius_m=0.09,
-        description="Ultra-light speed-optimised racing frame",
+        description="Ultra-light speed-optimized racing frame",
     ),
     DesignEntry(
         design_id="DESIGN_003",
@@ -246,7 +246,7 @@ DESIGN_CATALOG: List[DesignEntry] = [
         max_tilt_rad=math.radians(35.0),
         max_speed_m_s=68.0,
         rotor_radius_m=0.13,
-        description="Competition all-rounder optimised for 4-1 scoring",
+        description="Competition all-rounder optimized for 4-1 scoring",
     ),
     DesignEntry(
         design_id="DESIGN_016",

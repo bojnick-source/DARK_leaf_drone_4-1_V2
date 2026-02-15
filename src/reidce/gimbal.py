@@ -1,7 +1,7 @@
 """Gimbal control systems — mechanical and electronic.
 
-Models 2-axis and 3-axis gimbals with PID-based stabilisation,
-servo motor dynamics, and electronic image stabilisation (EIS).
+Models 2-axis and 3-axis gimbals with PID-based stabilization,
+servo motor dynamics, and electronic image stabilization (EIS).
 """
 
 from __future__ import annotations
@@ -133,21 +133,21 @@ class ThreeAxisGimbal:
 
 
 # ---------------------------------------------------------------------------
-# Electronic image stabilisation (EIS)
+# Electronic image stabilization (EIS)
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class EISConfig:
-    """Electronic image stabilisation parameters."""
+    """Electronic image stabilization parameters."""
 
     sensor_width_px: int
     sensor_height_px: int
-    stabilisation_margin_px: int = 50
+    stabilization_margin_px: int = 50
     filter_alpha: float = 0.85
 
     def effective_resolution(self) -> Tuple[int, int]:
-        margin2 = 2 * self.stabilisation_margin_px
+        margin2 = 2 * self.stabilization_margin_px
         return (
             max(1, self.sensor_width_px - margin2),
             max(1, self.sensor_height_px - margin2),
@@ -162,7 +162,7 @@ class EISConfig:
 
 @dataclass
 class EISFilter:
-    """Low-pass smoothing filter for electronic stabilisation."""
+    """Low-pass smoothing filter for electronic stabilization."""
 
     alpha: float = 0.85
     _prev_x: float = field(default=0.0, init=False, repr=False)
@@ -191,7 +191,7 @@ class GimbalAxisState:
 
 @dataclass(frozen=True)
 class GimbalSimResult:
-    """Result of a gimbal stabilisation simulation."""
+    """Result of a gimbal stabilization simulation."""
 
     axis_states: dict[str, GimbalAxisState]
 

@@ -488,7 +488,7 @@ class SurrogateModel:
         return model
 
     def to_dict(self) -> Dict[str, Any]:
-        """Serialise the model to a dictionary."""
+        """Serialize the model to a dictionary."""
         result: Dict[str, Any] = {
             "schema": "dark/surrogate_model/1.0",
             "feature_names": self.feature_names,
