@@ -1,6 +1,6 @@
 # Verification & Corrections Memo
 
-**As-of date:** 2026-02-14
+**As-of date:** 2026-02-15
 **Status:** Publication-ready (all claims independently verified)
 
 **Goal:** Eliminate previously identified incorrect/misleading statements, lock every
@@ -28,7 +28,7 @@ disagree (e.g., dataset landing pages vs. latest arXiv revisions).
 ### Poseidon (NeurIPS 2024)
 
 Poseidon presents itself as a foundation model for learning the solution operators of
-PDEs. Built on a multiscale operator transformer (scOT) with time-conditioned layer
+PDEs. Built on a scalable Operator Transformer (scOT), a multiscale vision transformer, with time-conditioned layer
 norms, pretrained on fluid dynamics, evaluated on 15 downstream tasks with claims of
 generalization to unseen physics.
 
@@ -143,7 +143,7 @@ Current docs at PyTorch 2.10 show it as stable API.
 - **2 Aug 2026:** Majority of rules come into force; enforcement starts. High-risk
   systems (Annex III), transparency requirements (Art. 50), innovation measures apply.
 - **2 Aug 2027:** Extended transition for high-risk AI embedded in regulated products
-  (Annex II). Legacy GPAI compliance deadline.
+  (Annex I). Legacy GPAI compliance deadline.
 
 ### Why this wording
 
