@@ -198,9 +198,12 @@ CMU author pages. The 2014 vs. 2018 distinction is clear and correctly attribute
 
 ### What happened (correctly framed)
 
-- LLNL used **43,520 AMD Instinct MI300A APUs** on El Capitan (>46,000 APUs total in
+- LLNL used **>43,500 AMD Instinct MI300A APUs** on El Capitan (>46,000 APUs total in
   the system, >11 million CPU cores) to achieve **55.5 trillion degrees of freedom** in
   the offline phase of a tsunami "digital twin" workflow.
+  - *Note:* The LLNL press release says "more than 43,500"; the ACM announcement and
+    some coverage round to 43,520. This memo uses the conservative "more than 43,500"
+    from the primary LLNL source.
 - The work won the **2025 ACM Gordon Bell Prize** (announced Nov 20, 2025 at SC25).
 
 ### Sources
@@ -266,6 +269,7 @@ search. The verification approach:
 | ODAC25 count | arXiv v2: "nearly 60M" | FAIR landing page: "nearly 70M" | arXiv v2 is canonical |
 | Keysight-ESI date | Finance: Jan 2024 | OpenFOAM comms: May 2025 | Both correct; different events |
 | EU AI Act "fully applicable" | Commission overview | AI Act Service Desk | Service Desk timeline is clearer |
+| El Capitan APU count | LLNL: "more than 43,500" | ACM/press: "43,520" | Use LLNL's ">43,500" as conservative primary |
 
 ### Next step (recommended)
 
