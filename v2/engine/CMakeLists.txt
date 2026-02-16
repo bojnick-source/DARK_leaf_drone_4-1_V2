@@ -22,6 +22,8 @@ add_library(v2_engine STATIC
   src/physics/physics_factory.cpp
   src/physics/baseline/disk_area_calculator.cpp
   src/physics/baseline/hover_power_model.cpp
+  src/physics/adapters/legacy_4_1/disk_area_adapter.cpp
+  src/physics/adapters/legacy_4_1/hover_power_adapter.cpp
   src/vendor_legacy/legacy_41drone.cpp
   src/core/run_config.cpp
   src/uncertainty/types.cpp
@@ -35,11 +37,23 @@ add_library(v2_engine STATIC
   src/calibration/calibrated_evaluator.cpp
   src/validity/types.cpp
   src/validity/conservative_ood_detector.cpp
+  src/analysis/accuracy_gate.cpp
+  src/analysis/commit_gate.cpp
+  src/analysis/lineage_stamper.cpp
   src/engine.cpp
   src/core/error.cpp
   src/io/run_id.cpp
   src/io/artifacts.cpp
   src/io/json_emit.cpp
+  # Legacy 4.1 sources
+  src/legacy_4_1/engine/analysis/closeout_eval.cpp
+  src/legacy_4_1/engine/analysis/closeout_json.cpp
+  src/legacy_4_1/engine/core/cache_key.cpp
+  src/legacy_4_1/engine/core/design_hash.cpp
+  src/legacy_4_1/engine/core/hashing.cpp
+  src/legacy_4_1/engine/core/logging.cpp
+  src/legacy_4_1/engine/physics/disk_area.cpp
+  src/legacy_4_1/engine/physics/hover_momentum.cpp
 )
 
 target_include_directories(v2_engine PUBLIC
@@ -49,6 +63,7 @@ target_include_directories(v2_engine PUBLIC
 # Private include for implementation files
 target_include_directories(v2_engine PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/legacy_4_1
 )
 
 # Inject build metadata as compile definitions
