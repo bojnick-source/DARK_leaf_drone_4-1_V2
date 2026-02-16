@@ -1,1 +1,0 @@
-/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/safety_test.dir/link.d CMakeFiles/safety_test.dir/safety/safety_test.cpp.o -o safety_test  ../libv2_engine.a

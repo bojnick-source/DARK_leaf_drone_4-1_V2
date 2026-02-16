@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/v2_studio.dir/link.d CMakeFiles/v2_studio.dir/app/main_stub.cpp.o -o v2_studio
