@@ -11,8 +11,8 @@ from sfcs_mdp.color_qa import ColorProfileScene, evaluate_color_profile_scene
 from sfcs_mdp.grading import format_grading_footer
 from sfcs_mdp.model import BlockLevel
 from sfcs_mdp.runner import package_build, run_traveler, status_build
-from v2.python.engine import find_engine_cli, run_engine
 from sfcs_mdp.validate import SpecValidationError, load_spec, validate_spec
+from v2.python.engine import find_engine_cli, run_engine
 
 
 def _parse_block_level(value: str) -> BlockLevel:

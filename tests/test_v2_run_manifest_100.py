@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+
 from v2.python.engine.v2_run_manifest import (
     FailLabel,
     LoadError,
@@ -173,7 +174,11 @@ int main() {
     assert len(cpp_lines) == 3
 
     # Compare Python and C++ outputs
-    from v2.python.engine.v2_run_manifest import canonicalize_inputs, format_scalar, run_id_from_inputs
+    from v2.python.engine.v2_run_manifest import (
+        canonicalize_inputs,
+        format_scalar,
+        run_id_from_inputs,
+    )
 
     scalars = {"mass": 1.0, "area": 0.5}
     arrays = {"vec": [1.0, 2.0]}

@@ -6,6 +6,7 @@ import socket
 from pathlib import Path
 
 import pytest
+
 from sfcs_mdp.desktop import (
     _find_free_port,
     _find_ui_dir,

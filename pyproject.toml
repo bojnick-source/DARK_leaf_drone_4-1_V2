@@ -55,12 +55,17 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["B", "E", "F", "I"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["sfcs_mdp", "reidce", "v2"]
+
 [tool.mypy]
 python_version = "3.12"
 ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
+mypy_path = "src:v2/python"
+explicit_package_bases = true
 
 [[tool.mypy.overrides]]
 module = ["yaml", "yaml.*"]
