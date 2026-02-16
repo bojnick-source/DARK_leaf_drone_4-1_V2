@@ -72,7 +72,13 @@ def run_topopt(mesh: Mesh2D, mat: Material, F: np.ndarray, fixed_dofs: np.ndarra
         x_phys = apply_density_filter(H, x)
 
         c, dc_dphys, _, solve_diag = compliance_and_sensitivities(
-            mesh=mesh, x_phys=x_phys, penal=topo.penal, mat=mat, F=F, fixed_dofs=fixed_dofs, solver_cfg=solver_cfg
+            mesh=mesh,
+            x_phys=x_phys,
+            penal=topo.penal,
+            mat=mat,
+            F=F,
+            fixed_dofs=fixed_dofs,
+            solver_cfg=solver_cfg,
         )
 
         dc_dx = chain_rule_grad_through_density_filter(H, dc_dphys)

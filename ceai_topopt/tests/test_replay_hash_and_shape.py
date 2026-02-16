@@ -40,10 +40,14 @@ def _make_run(tmp_path):
 
     H = density_filter_matrix(nely=mesh.nely, nelx=mesh.nelx, rmin=2.0)
     topo = TopOptParams(volfrac=0.4, penal=3.0, rmin=2.0, max_iter=10, change_tol=1e-3)
-    res = run_topopt(mesh=mesh, mat=mat, F=F, fixed_dofs=fixed, topo=topo, H=H, solver_cfg=solver_cfg)
+    res = run_topopt(
+        mesh=mesh, mat=mat, F=F, fixed_dofs=fixed, topo=topo, H=H, solver_cfg=solver_cfg
+    )
 
     np.save(run_dir / "x_phys.npy", res["x_phys"])
-    c, _, _, _ = compliance_and_sensitivities(mesh, res["x_phys"], 3.0, mat, F, fixed, solver_cfg=solver_cfg)
+    c, _, _, _ = compliance_and_sensitivities(
+        mesh, res["x_phys"], 3.0, mat, F, fixed, solver_cfg=solver_cfg
+    )
     assert np.isfinite(c)
 
     out_paths = {"x_phys.npy": str(run_dir / "x_phys.npy"), **prob_paths}
@@ -86,7 +90,8 @@ def test_replay_shape_mismatch_fails(tmp_path):
     np.save(run_dir / "x_phys.npy", x_bad)
 
     man = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
-    man["outputs"]["x_phys.npy"]["sha256"] = __import__("ceai_topopt.manifest", fromlist=["sha256_file"]).sha256_file(str(run_dir / "x_phys.npy"))
+    sha256_file = __import__("ceai_topopt.manifest", fromlist=["sha256_file"]).sha256_file
+    man["outputs"]["x_phys.npy"]["sha256"] = sha256_file(str(run_dir / "x_phys.npy"))
     (run_dir / "manifest.json").write_text(json.dumps(man, indent=2) + "\n", encoding="utf-8")
 
     with pytest.raises(ValueError):

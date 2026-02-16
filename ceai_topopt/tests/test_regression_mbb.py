@@ -22,11 +22,15 @@ def test_mbb_regression_envelope():
     topo = TopOptParams(volfrac=0.40, penal=3.0, rmin=2.0, max_iter=60, change_tol=1e-3)
 
     x0 = np.full((mesh.nely, mesh.nelx), topo.volfrac, dtype=float)
-    c0, _, _, _ = compliance_and_sensitivities(mesh, apply_density_filter(H, x0), topo.penal, mat, bc.F, bc.fixed_dofs)
+    c0, _, _, _ = compliance_and_sensitivities(
+        mesh, apply_density_filter(H, x0), topo.penal, mat, bc.F, bc.fixed_dofs
+    )
 
     res = run_topopt(mesh=mesh, mat=mat, F=bc.F, fixed_dofs=bc.fixed_dofs, topo=topo, H=H, x0=None)
 
-    c_final, _, _, _ = compliance_and_sensitivities(mesh, res["x_phys"], topo.penal, mat, bc.F, bc.fixed_dofs)
+    c_final, _, _, _ = compliance_and_sensitivities(
+        mesh, res["x_phys"], topo.penal, mat, bc.F, bc.fixed_dofs
+    )
 
     c0 = float(c0)
     c_final = float(c_final)

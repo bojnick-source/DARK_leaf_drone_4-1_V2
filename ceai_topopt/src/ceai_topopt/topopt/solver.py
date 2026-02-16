@@ -43,8 +43,16 @@ def _residual_norm(K: sp.spmatrix, u: np.ndarray, f: np.ndarray) -> float:
 def _direct_solve(K: sp.csr_matrix, f: np.ndarray) -> tuple[np.ndarray, SolveInfo]:
     u = spla.spsolve(K, f)
     if not np.all(np.isfinite(u)):
-        return u, SolveInfo(solver_used="direct", converged=False, iterations=None, residual_l2=None, note="non-finite solution")
-    return u, SolveInfo(solver_used="direct", converged=True, iterations=None, residual_l2=None, note=None)
+        return u, SolveInfo(
+            solver_used="direct",
+            converged=False,
+            iterations=None,
+            residual_l2=None,
+            note="non-finite solution",
+        )
+    return u, SolveInfo(
+        solver_used="direct", converged=True, iterations=None, residual_l2=None, note=None
+    )
 
 
 def _build_ilu_preconditioner(K: sp.csr_matrix, cfg: SolverConfig) -> spla.LinearOperator:
@@ -73,11 +81,23 @@ def _cg_solve(K: sp.csr_matrix, f: np.ndarray, cfg: SolverConfig) -> tuple[np.nd
 
     # scipy: info = 0 success, >0 iter limit, <0 breakdown
     if info == 0 and np.all(np.isfinite(u)):
-        return u, SolveInfo(solver_used="cg", converged=True, iterations=it_counter["k"], residual_l2=None, note=None)
+        return u, SolveInfo(
+            solver_used="cg",
+            converged=True,
+            iterations=it_counter["k"],
+            residual_l2=None,
+            note=None,
+        )
     note = "cg did not converge" if info > 0 else "cg breakdown"
     if not np.all(np.isfinite(u)):
         note = (note + "; non-finite solution") if note else "non-finite solution"
-    return u, SolveInfo(solver_used="cg", converged=False, iterations=it_counter["k"], residual_l2=None, note=note)
+    return u, SolveInfo(
+        solver_used="cg",
+        converged=False,
+        iterations=it_counter["k"],
+        residual_l2=None,
+        note=note,
+    )
 
 
 def solve_linear_system(
@@ -119,7 +139,10 @@ def solve_linear_system(
 
     # If fallback also fails: hard fail (stop-ship)
     if not info2.converged:
-        raise RuntimeError(f"Solver failed: direct({info.note}) then cg({info2.note}), residual={info2.residual_l2}")
+        raise RuntimeError(
+            f"Solver failed: direct({info.note}) then cg({info2.note}), "
+            f"residual={info2.residual_l2}"
+        )
 
     info2.note = f"auto fallback: direct failed ({info.note})"
     return u2, info2

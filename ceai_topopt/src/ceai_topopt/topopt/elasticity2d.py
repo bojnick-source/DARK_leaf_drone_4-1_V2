@@ -41,14 +41,14 @@ def lk_plane_stress(E: float, nu: float) -> np.ndarray:
     Standard matrix used in topology optimization literature.
     """
     k = np.array([
-        [ 1/2 - nu/6,   1/8 + nu/8,  -1/4 - nu/12, -1/8 + 3*nu/8, -1/4 + nu/12, -1/8 - nu/8,   nu/6,       1/8 - 3*nu/8],
-        [ 1/8 + nu/8,   1/2 - nu/6,   1/8 - 3*nu/8, nu/6,        -1/8 - nu/8,  -1/4 + nu/12,  -1/8 + 3*nu/8, -1/4 - nu/12],
-        [-1/4 - nu/12,  1/8 - 3*nu/8,  1/2 - nu/6, -1/8 - nu/8,   nu/6,        -1/8 + 3*nu/8, -1/4 + nu/12,  1/8 + nu/8],
-        [-1/8 + 3*nu/8, nu/6,        -1/8 - nu/8,  1/2 - nu/6,    1/8 - 3*nu/8, -1/4 - nu/12,  1/8 + nu/8,   -1/4 + nu/12],
-        [-1/4 + nu/12, -1/8 - nu/8,   nu/6,         1/8 - 3*nu/8, 1/2 - nu/6,  1/8 + nu/8,   -1/4 - nu/12, -1/8 + 3*nu/8],
-        [-1/8 - nu/8,  -1/4 + nu/12, -1/8 + 3*nu/8, -1/4 - nu/12, 1/8 + nu/8,  1/2 - nu/6,    1/8 - 3*nu/8,  nu/6],
-        [ nu/6,        -1/8 + 3*nu/8, -1/4 + nu/12,  1/8 + nu/8,  -1/4 - nu/12, 1/8 - 3*nu/8,  1/2 - nu/6,   -1/8 - nu/8],
-        [ 1/8 - 3*nu/8, -1/4 - nu/12, 1/8 + nu/8,   -1/4 + nu/12, -1/8 + 3*nu/8, nu/6,        -1/8 - nu/8,   1/2 - nu/6],
+        [ 1/2 - nu/6,   1/8 + nu/8,  -1/4 - nu/12, -1/8 + 3*nu/8, -1/4 + nu/12, -1/8 - nu/8,   nu/6,       1/8 - 3*nu/8],  # noqa: E501
+        [ 1/8 + nu/8,   1/2 - nu/6,   1/8 - 3*nu/8, nu/6,        -1/8 - nu/8,  -1/4 + nu/12,  -1/8 + 3*nu/8, -1/4 - nu/12],  # noqa: E501
+        [-1/4 - nu/12,  1/8 - 3*nu/8,  1/2 - nu/6, -1/8 - nu/8,   nu/6,        -1/8 + 3*nu/8, -1/4 + nu/12,  1/8 + nu/8],  # noqa: E501
+        [-1/8 + 3*nu/8, nu/6,        -1/8 - nu/8,  1/2 - nu/6,    1/8 - 3*nu/8, -1/4 - nu/12,  1/8 + nu/8,   -1/4 + nu/12],  # noqa: E501
+        [-1/4 + nu/12, -1/8 - nu/8,   nu/6,         1/8 - 3*nu/8, 1/2 - nu/6,  1/8 + nu/8,   -1/4 - nu/12, -1/8 + 3*nu/8],  # noqa: E501
+        [-1/8 - nu/8,  -1/4 + nu/12, -1/8 + 3*nu/8, -1/4 - nu/12, 1/8 + nu/8,  1/2 - nu/6,    1/8 - 3*nu/8,  nu/6],  # noqa: E501
+        [ nu/6,        -1/8 + 3*nu/8, -1/4 + nu/12,  1/8 + nu/8,  -1/4 - nu/12, 1/8 - 3*nu/8,  1/2 - nu/6,   -1/8 - nu/8],  # noqa: E501
+        [ 1/8 - 3*nu/8, -1/4 - nu/12, 1/8 + nu/8,   -1/4 + nu/12, -1/8 + 3*nu/8, nu/6,        -1/8 - nu/8,   1/2 - nu/6],  # noqa: E501
     ], dtype=float)
     return (E / (1.0 - nu**2)) * k
 
@@ -75,7 +75,9 @@ def edof_matrix(mesh: Mesh2D) -> np.ndarray:
     return edof
 
 
-def assemble_global_K(mesh: Mesh2D, x_phys: np.ndarray, penal: float, mat: Material) -> tuple[sp.csr_matrix, np.ndarray]:
+def assemble_global_K(
+    mesh: Mesh2D, x_phys: np.ndarray, penal: float, mat: Material
+) -> tuple[sp.csr_matrix, np.ndarray]:
     nelx, nely = mesh.nelx, mesh.nely
     if x_phys.shape != (nely, nelx):
         raise ValueError(f"x_phys must be shape ({nely},{nelx}), got {x_phys.shape}")
