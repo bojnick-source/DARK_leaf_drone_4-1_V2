@@ -56,6 +56,9 @@ function createDefaultToggles() {
       thickness: 0.012,              // glass panel thickness (world units)
       fresnelPower: 4.0,             // Fresnel rim exponent
       fresnelIntensity: 0.15,        // Fresnel specular brightness
+      chromaticDispersion: 0.6,      // chromatic dispersion strength (0 = off)
+      minTransmittance: 0.04,        // energy floor to prevent over-darkening
+      depthScale: 0.1,               // depth-to-thickness scale factor
       bilateralDepthSigma: 0.05,     // cross-bilateral depth rejection threshold
       bilateralSpatialSigma: 4.0,    // Gaussian spatial sigma (pixels)
       bilateralKernelRadius: 8,      // half-width of blur kernel
@@ -377,10 +380,11 @@ class CADViewportRenderer {
 
   _glassComposite(enc) {
     // Final glass composite using glass_composite.wgsl.
-    // Reads blurred scene + OIT buffers, applies Beer–Lambert absorption
-    // for noir glass tint, resolves OIT for correct overlap, and adds
-    // subtle Fresnel rim specular.
-    // Input: blurred color pyramid + rtOITAccum + rtOITReveal
+    // Reads blurred scene + OIT buffers + linear depth, applies
+    // depth-dependent Beer–Lambert absorption with chromatic dispersion
+    // for noir glass tint, resolves OIT for correct overlap, clamps to
+    // minimum transmittance floor, and adds subtle Fresnel rim specular.
+    // Input: blurred color pyramid + rtOITAccum + rtOITReveal + rtLinearDepth
     // Output: rtGlassOutput (rgba16float)
     void enc;
   }

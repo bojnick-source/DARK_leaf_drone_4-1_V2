@@ -4,6 +4,8 @@
 // Combines:
 //   1) Beer–Lambert absorption: attenuates background light through noir
 //      glass with physically-based exponential falloff by thickness.
+//      Enhanced with depth-dependent thickness, chromatic dispersion,
+//      and minimum transmittance floor.
 //   2) Weighted Blended OIT (McGuire & Bavoil 2013): correct alpha
 //      compositing of overlapping glass panels without sorting.
 //   3) Fresnel-approximate rim specular for glass sheen.
@@ -23,19 +25,41 @@ struct GlassParams {
   thickness : f32,              // glass panel thickness (world units)
   fresnelPower : f32,           // Fresnel rim exponent (typically 3–5)
   fresnelIntensity : f32,       // Fresnel specular brightness
+  chromaticDispersion : f32,    // chromatic dispersion strength (0 = off)
+  minTransmittance : f32,       // energy floor to prevent over-darkening
+  depthScale : f32,             // depth-to-thickness scale factor
   _pad0 : f32,
 };
 
 @group(0) @binding(0) var blurredScene : texture_2d<f32>;
 @group(0) @binding(1) var oitAccum : texture_2d<f32>;
 @group(0) @binding(2) var oitReveal : texture_2d<f32>;
-@group(0) @binding(3) var outColor : texture_storage_2d<rgba16float, write>;
-@group(0) @binding(4) var<uniform> params : GlassParams;
+@group(0) @binding(3) var linearDepth : texture_2d<f32>;
+@group(0) @binding(4) var outColor : texture_storage_2d<rgba16float, write>;
+@group(0) @binding(5) var<uniform> params : GlassParams;
 
 // Beer–Lambert transmittance: T = exp(-σ · d · color)
 // Models light absorption through a tinted medium of given thickness.
 fn beerLambert(absorptionCoeff : vec3<f32>, density : f32, dist : f32) -> vec3<f32> {
   return exp(-absorptionCoeff * density * dist);
+}
+
+// Chromatic dispersion: shorter wavelengths (blue) are absorbed faster
+// than longer wavelengths (red) in real glass. Apply a per-channel
+// exponent shift proportional to the dispersion strength.
+fn chromaticAbsorption(
+  absorptionCoeff : vec3<f32>,
+  density : f32,
+  dist : f32,
+  dispersion : f32
+) -> vec3<f32> {
+  // Per-channel dispersion multipliers: R < G < B extinction
+  let channelScale = vec3<f32>(
+    1.0 - dispersion * 0.15,   // red — least absorption
+    1.0,                       // green — reference
+    1.0 + dispersion * 0.25    // blue — most absorption
+  );
+  return exp(-absorptionCoeff * channelScale * density * dist);
 }
 
 @compute @workgroup_size(8, 8)
@@ -51,6 +75,7 @@ fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
   let background = textureLoad(blurredScene, coord, 0);
   let accum = textureLoad(oitAccum, coord, 0);
   let revealage = textureLoad(oitReveal, coord, 0).r;
+  let depth = textureLoad(linearDepth, coord, 0).r;
 
   // --- Weighted Blended OIT resolve ---
   // McGuire & Bavoil 2013: Ci/ai for premultiplied glass color
@@ -60,12 +85,34 @@ fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
     accum.a > 0.00001
   );
 
+  // --- Depth-dependent thickness ---
+  // Modulate base thickness by the per-pixel linear depth so that
+  // absorption varies with distance — thicker apparent glass at
+  // grazing angles or deeper geometry.
+  let depthFactor = 1.0 + depth * params.depthScale;
+  let effectiveThickness = params.thickness * depthFactor;
+
   // --- Beer–Lambert absorption through noir glass ---
-  let transmittance = beerLambert(
-    params.absorptionColor,
-    params.absorptionDensity,
-    params.thickness
-  );
+  // Use chromatic dispersion when enabled for wavelength-dependent
+  // extinction; otherwise fall back to the classic uniform model.
+  var transmittance : vec3<f32>;
+  if (params.chromaticDispersion > 0.0) {
+    transmittance = chromaticAbsorption(
+      params.absorptionColor,
+      params.absorptionDensity,
+      effectiveThickness,
+      params.chromaticDispersion
+    );
+  } else {
+    transmittance = beerLambert(
+      params.absorptionColor,
+      params.absorptionDensity,
+      effectiveThickness
+    );
+  }
+
+  // Clamp to minimum transmittance floor to prevent over-darkening
+  transmittance = max(transmittance, vec3<f32>(params.minTransmittance));
 
   // Apply absorption to background (the blurred scene behind the glass)
   let absorbedBg = background.rgb * transmittance;

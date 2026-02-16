@@ -372,6 +372,14 @@ def test_glass_composite_shader() -> None:
     assert "transmittance" in wgsl
     assert "fresnelPower" in wgsl
 
+    # Enhanced absorption features
+    assert "linearDepth" in wgsl
+    assert "chromaticDispersion" in wgsl
+    assert "chromaticAbsorption" in wgsl
+    assert "minTransmittance" in wgsl
+    assert "depthScale" in wgsl
+    assert "effectiveThickness" in wgsl
+
 
 def test_webgpu_renderer_has_glass_system() -> None:
     root = Path(__file__).resolve().parents[1]
@@ -382,6 +390,11 @@ def test_webgpu_renderer_has_glass_system() -> None:
     assert "absorptionColor" in js
     assert "absorptionDensity" in js
     assert "oitEnabled" in js
+
+    # Enhanced absorption parameters
+    assert "chromaticDispersion" in js
+    assert "minTransmittance" in js
+    assert "depthScale" in js
 
     # Glass render targets
     assert "_rtLinearDepth" in js
