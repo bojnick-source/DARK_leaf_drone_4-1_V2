@@ -29,8 +29,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from xml.sax.saxutils import escape as xml_escape
 from typing import Any, Dict, List, Optional, Tuple
+from xml.sax.saxutils import escape as xml_escape
 
 # ── Specification ────────────────────────────────────────────────────────
 

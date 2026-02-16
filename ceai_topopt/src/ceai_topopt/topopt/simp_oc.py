@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+
 import numpy as np
 
-from .elasticity2d import Mesh2D, Material, compliance_and_sensitivities
+from .elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from .filters import apply_density_filter, chain_rule_grad_through_density_filter
 
 

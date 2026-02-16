@@ -4,15 +4,22 @@ import json
 import os
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import typer
 import yaml
 from rich.console import Console
 from rich.table import Table
-import matplotlib.pyplot as plt
 
-from .manifest import RunManifest, basic_environment, run_id, utc_now_iso, write_manifest, hash_outputs
-from .topopt.elasticity2d import Mesh2D, Material, compliance_and_sensitivities
+from .manifest import (
+    RunManifest,
+    basic_environment,
+    hash_outputs,
+    run_id,
+    utc_now_iso,
+    write_manifest,
+)
+from .topopt.elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from .topopt.filters import density_filter_matrix
 from .topopt.gradcheck import gradcheck_compliance
 from .topopt.problem_spec import build_problem, save_problem_artifacts
