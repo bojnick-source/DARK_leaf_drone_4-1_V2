@@ -131,16 +131,6 @@ from reidce.electromagnetic import (
     evaluate_motor,
     saturation_curve,
 )
-from reidce.engineering_ai import (
-    ConversationContext,
-    ConversationTurn,
-    EngineeringKnowledgeBase,
-    EngineeringQueryEngine,
-    KnowledgeChunk,
-    QueryResult,
-    RetrievedPassage,
-    classify_intent,
-)
 from reidce.fea import (
     BeamElement,
     BoundaryCondition,
@@ -359,6 +349,18 @@ from reidce.wind_tunnel import (
     dryden_gust_velocities,
     interpolate_aero,
     run_wind_tunnel,
+)
+from v2.python.ai import (
+    EngineeringKnowledgeBase,
+    EngineeringQueryEngine,
+    KnowledgeChunk,
+    QueryResult,
+)
+from v2.python.ai.engineering_ai import (
+    ConversationContext,
+    ConversationTurn,
+    RetrievedPassage,
+    classify_intent,
 )
 
 __all__ = [
