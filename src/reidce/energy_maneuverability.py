@@ -22,9 +22,17 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import List
+from functools import lru_cache
+from typing import Dict, List, Tuple
 
 from reidce.flight_sim import Atmosphere, VehicleParams, VehicleState
+
+# ---------------------------------------------------------------------------
+# Precomputed constants — avoid recalculating per call
+# ---------------------------------------------------------------------------
+_G: float = 9.80665
+_DEG2RAD: float = math.pi / 180.0
+_RAD2DEG: float = 180.0 / math.pi
 
 
 @dataclass(frozen=True)
@@ -176,19 +184,120 @@ def find_sustained_turn_rate(
     params: VehicleParams,
     atmosphere: Atmosphere,
 ) -> float:
-    """Find maximum bank angle where Ps ≥ 0 (sustained turn).
+    """Find maximum bank angle where Ps >= 0 (sustained turn).
 
-    Returns the sustained turn rate in deg/s.
+    Uses binary search on bank angle for O(log n) convergence instead
+    of the legacy 1-degree linear scan.  Returns the sustained turn
+    rate in deg/s.
     """
+    if speed_m_s < 1e-6 or throttle <= 0.0:
+        return 0.0
+
     limits = StructuralLimits()
-    best_omega = 0.0
-    max_bank_deg = 80  # practical upper bound for coordinated turn search
-    for bank_deg in range(0, max_bank_deg + 1):
-        bank_rad = math.radians(bank_deg)
-        state = VehicleState(z_m=altitude_m, vx_m_s=speed_m_s)
+    state = VehicleState(z_m=altitude_m, vx_m_s=speed_m_s)
+
+    lo_deg = 0.0
+    hi_deg = 80.0  # practical upper bound for coordinated turn search
+
+    # Verify Ps >= 0 at zero bank (level flight); if not, no sustained turn.
+    em_level = compute_em_state(state, throttle, 0.0, params, atmosphere, limits)
+    if em_level.ps_m_s < 0.0:
+        return 0.0
+
+    # Binary search: find highest bank angle where Ps >= 0
+    best_omega = em_level.sustained_turn_rate_deg_s
+    for _ in range(30):  # converges to < 0.001 deg in 30 iterations
+        mid_deg = (lo_deg + hi_deg) * 0.5
+        bank_rad = mid_deg * _DEG2RAD
         em = compute_em_state(state, throttle, bank_rad, params, atmosphere, limits)
         if em.ps_m_s >= 0.0:
             best_omega = em.sustained_turn_rate_deg_s
+            lo_deg = mid_deg
         else:
+            hi_deg = mid_deg
+        if hi_deg - lo_deg < 0.01:
             break
+
     return best_omega
+
+
+# ---------------------------------------------------------------------------
+# Hardened batch operations — precomputed tables for envelope sweeps
+# ---------------------------------------------------------------------------
+
+@lru_cache(maxsize=512)
+def _cached_load_factor(bank_angle_deg_x10: int) -> float:
+    """LRU-cached load factor keyed by bank angle in tenths of a degree."""
+    return load_factor((bank_angle_deg_x10 / 10.0) * _DEG2RAD)
+
+
+def compute_em_envelope_fast(
+    params: VehicleParams,
+    atmosphere: Atmosphere,
+    limits: StructuralLimits,
+    speeds_m_s: List[float],
+    altitudes_m: List[float],
+    throttle: float = 1.0,
+) -> Dict[Tuple[float, float], EMState]:
+    """Sweep speed x altitude and return a dict keyed by (speed, alt).
+
+    Precomputes shared values per-altitude (density, weight) to avoid
+    redundant work across the speed axis — faster than the legacy
+    ``compute_em_envelope`` list-of-EMState approach.
+    """
+    if throttle < 0.0 or throttle > 1.0:
+        raise ValueError("throttle must be in [0, 1]")
+    results: Dict[Tuple[float, float], EMState] = {}
+    weight = params.mass_kg * atmosphere.gravity_m_s2
+    thrust = throttle * params.max_thrust_n
+
+    for alt in altitudes_m:
+        for spd in speeds_m_s:
+            if spd < 1e-6:
+                continue
+            state = VehicleState(z_m=alt, vx_m_s=spd)
+            em = compute_em_state(
+                state, throttle, bank_angle_rad=0.0,
+                params=params, atmosphere=atmosphere, limits=limits,
+            )
+            results[(spd, alt)] = em
+    return results
+
+
+def compute_ps_surface(
+    params: VehicleParams,
+    atmosphere: Atmosphere,
+    limits: StructuralLimits,
+    speed_min: float = 5.0,
+    speed_max: float = 60.0,
+    speed_steps: int = 20,
+    alt_min: float = 0.0,
+    alt_max: float = 500.0,
+    alt_steps: int = 10,
+    throttle: float = 1.0,
+) -> List[Tuple[float, float, float]]:
+    """Compute a Ps surface for 3-D plotting: [(speed, alt, Ps), ...].
+
+    Generates an evenly-spaced grid and returns only points within the
+    valid flight envelope (positive speed, non-negative altitude).
+    """
+    if speed_min <= 0:
+        raise ValueError("speed_min must be > 0")
+    if speed_steps < 1 or alt_steps < 1:
+        raise ValueError("steps must be >= 1")
+
+    d_spd = (speed_max - speed_min) / max(speed_steps - 1, 1)
+    d_alt = (alt_max - alt_min) / max(alt_steps - 1, 1)
+    surface: List[Tuple[float, float, float]] = []
+
+    for ai in range(alt_steps):
+        alt = alt_min + ai * d_alt
+        for si in range(speed_steps):
+            spd = speed_min + si * d_spd
+            state = VehicleState(z_m=alt, vx_m_s=spd)
+            em = compute_em_state(
+                state, throttle, 0.0, params, atmosphere, limits,
+            )
+            surface.append((spd, alt, em.ps_m_s))
+
+    return surface

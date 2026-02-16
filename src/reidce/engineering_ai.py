@@ -27,8 +27,9 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from reidce.memory import MemoryStore
 
@@ -187,8 +188,15 @@ class EngineeringKnowledgeBase:
         return kb
 
     def _build_index(self) -> None:
-        """Compute TF-IDF index over all chunks."""
+        """Compute TF-IDF index over all chunks.
+
+        Precomputes TF-IDF weighted vectors for each document at index
+        time so that search() only needs to compute the query vector
+        and dot products — avoids recomputing per-document vectors on
+        every query.
+        """
         self._doc_tokens = {}
+        self._doc_vectors: Dict[int, Dict[str, float]] = {}
         doc_freq: Dict[str, int] = {}
         for idx, chunk in enumerate(self.chunks):
             tokens = _tokenize(chunk.text)
@@ -201,6 +209,14 @@ class EngineeringKnowledgeBase:
             token: math.log((1.0 + n) / (1.0 + freq)) + 1.0
             for token, freq in doc_freq.items()
         }
+
+        # Precompute TF-IDF weighted vectors for each document
+        for idx in range(len(self.chunks)):
+            tokens = self._doc_tokens.get(idx, [])
+            tf = _term_frequency(tokens)
+            self._doc_vectors[idx] = {
+                t: tf[t] * self._idf.get(t, 0.0) for t in tf
+            }
 
     def search(
         self,
@@ -220,9 +236,12 @@ class EngineeringKnowledgeBase:
         for idx, chunk in enumerate(self.chunks):
             if domain_filter and domain_filter.lower() not in chunk.domain.lower():
                 continue
-            tokens = self._doc_tokens.get(idx, _tokenize(chunk.text))
-            tf = _term_frequency(tokens)
-            doc_vec = {t: tf[t] * self._idf.get(t, 0.0) for t in tf}
+            # Use precomputed TF-IDF vector (O(1) lookup vs O(n) recompute)
+            doc_vec = self._doc_vectors.get(idx)
+            if doc_vec is None:
+                tokens = self._doc_tokens.get(idx, _tokenize(chunk.text))
+                tf = _term_frequency(tokens)
+                doc_vec = {t: tf[t] * self._idf.get(t, 0.0) for t in tf}
             score = _cosine_similarity(query_vec, doc_vec)
             if score > 0.0:
                 results.append(
@@ -530,3 +549,93 @@ class ConversationContext:
             "design_parameters": dict(self.design_parameters),
             "dominant_intent": self.get_dominant_intent()[0],
         }
+
+
+# ---------------------------------------------------------------------------
+# Hardened AI pipeline — cached queries and cross-engine integration
+# ---------------------------------------------------------------------------
+
+_QUERY_CACHE: Dict[Tuple[str, Optional[str]], QueryResult] = {}
+_QUERY_CACHE_MAX = 256
+
+
+def cached_query(
+    engine: EngineeringQueryEngine,
+    question: str,
+    top_k: int = 3,
+    domain_filter: Optional[str] = None,
+) -> QueryResult:
+    """LRU-style cached query — avoids re-searching for repeated questions."""
+    cache_key = (question.strip().lower(), domain_filter)
+    if cache_key in _QUERY_CACHE:
+        return _QUERY_CACHE[cache_key]
+
+    result = engine.query(question, top_k=top_k, domain_filter=domain_filter)
+
+    if len(_QUERY_CACHE) >= _QUERY_CACHE_MAX:
+        oldest = next(iter(_QUERY_CACHE))
+        del _QUERY_CACHE[oldest]
+    _QUERY_CACHE[cache_key] = result
+    return result
+
+
+def clear_query_cache() -> None:
+    """Clear the engineering AI query cache."""
+    _QUERY_CACHE.clear()
+
+
+@dataclass(frozen=True)
+class PipelineResult:
+    """Result from the integrated engineering AI pipeline."""
+    query: str
+    answer: str
+    confidence: float
+    domain: str
+    intent: str
+    intent_confidence: float
+    design_parameters: Dict[str, Any]
+    passages_used: int
+
+
+def run_ai_pipeline(
+    engine: EngineeringQueryEngine,
+    context: ConversationContext,
+    user_text: str,
+    top_k: int = 3,
+) -> PipelineResult:
+    """Integrated pipeline: intent classification + retrieval + answer.
+
+    1. Classify intent from user text
+    2. Update conversation context
+    3. Route query to domain-specific search via intent
+    4. Return structured pipeline result with full provenance
+    """
+    turn = context.add_turn("user", user_text)
+
+    # Route to domain based on detected intent
+    intent = turn.intent
+    domain_filter: Optional[str] = None
+    _INTENT_TO_DOMAIN = {
+        "design_review": None,  # search all domains
+        "topology_optimize": "structural",
+        "cad_generate": "cad",
+        "competition_rules": "competition",
+        "flight_performance": "aerospace",
+        "manufacturing": "manufacturing",
+    }
+    domain_filter = _INTENT_TO_DOMAIN.get(intent)
+
+    result = cached_query(engine, user_text, top_k=top_k, domain_filter=domain_filter)
+
+    context.add_turn("assistant", result.answer[:200])
+
+    return PipelineResult(
+        query=user_text,
+        answer=result.answer,
+        confidence=result.confidence,
+        domain=result.domain,
+        intent=intent,
+        intent_confidence=turn.confidence,
+        design_parameters=dict(context.design_parameters),
+        passages_used=len(result.passages),
+    )
