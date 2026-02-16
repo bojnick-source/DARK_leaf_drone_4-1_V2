@@ -238,7 +238,10 @@ class VoiceCodec:
         for key, value in data.items():
             name_phonemes = _encode_field_name(key)
             sep = [Phoneme(symbol=_FIELD_SEP_PHONEME, duration_ms=150.0, frequency_hz=300.0)]
-            if isinstance(value, (int, float)):
+            if isinstance(value, bool):
+                value_phonemes = _encode_string(str(value).lower())
+                encoded = " ".join(p.symbol for p in value_phonemes)
+            elif isinstance(value, (int, float)):
                 value_phonemes = _encode_number(float(value), self.precision)
                 encoded = " ".join(p.symbol for p in value_phonemes)
             elif isinstance(value, str):
@@ -298,7 +301,10 @@ class VoiceCodec:
                 for p in value_phonemes
             ) and len(value_phonemes) > 0
 
-            if is_numeric:
+            if isinstance(token.original_value, bool):
+                decoded_text = _decode_string(value_phonemes).strip().lower()
+                result[field_name] = decoded_text in {"true", "1", "yes", "on"}
+            elif is_numeric:
                 result[field_name] = _decode_number(value_phonemes)
             else:
                 result[field_name] = _decode_string(value_phonemes)

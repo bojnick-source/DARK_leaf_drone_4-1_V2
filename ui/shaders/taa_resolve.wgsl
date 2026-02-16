@@ -192,7 +192,7 @@ fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
   blendFactor = mix(blendFactor, params.blendMin, motionReduction);
 
   // --- Blend current frame with clamped history ---
-  var resolved = mix(currentRGB, historyRGB, 1.0 - blendFactor);
+  var resolved = mix(currentRGB, historyRGB, blendFactor);
 
   // --- Apply CAS-like sharpening to preserve CAD edge crispness ---
   if (params.sharpenStrength > 0.0) {

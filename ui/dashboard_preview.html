@@ -1,130 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dark Leaf Drone — Dashboard Preview</title>
-    <link rel="stylesheet" href="./dashboard.css" />
-  </head>
-  <body>
-    <div id="chromeStrip">
-      <div class="workspace-tabs" aria-label="Workspaces">
-        <button class="workspace-tab active" type="button">
-          <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path
-              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
-            />
-          </svg>
-          <span class="tab-title">Daily Dashboard</span>
-        </button>
-        <button class="workspace-tab" type="button">
-          <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path
-              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
-            />
-          </svg>
-          <span class="tab-title">Run Review</span>
-        </button>
-        <button class="workspace-tab" type="button">
-          <svg class="tab-shape" viewBox="0 0 200 32" preserveAspectRatio="none" aria-hidden="true">
-            <path
-              d="M0 30 C0 18 6 6 20 4 L60 0 L140 0 L180 4 C194 6 200 18 200 30 L200 32 L0 32 Z"
-            />
-          </svg>
-          <span class="tab-title">Comparison</span>
-        </button>
-      </div>
-    </div>
-
-    <header id="menuBar" class="glass glass--thick">
-      <div class="brand">Dark Leaf Drone — Daily Dashboard</div>
-      <nav class="menu-bar" aria-label="Menu bar">
-        <button class="menu-trigger" type="button">File</button>
-        <button class="menu-trigger" type="button">Edit</button>
-        <button class="menu-trigger" type="button">View</button>
-        <button class="menu-trigger" type="button">Tools</button>
-        <button class="menu-trigger" type="button">Help</button>
-      </nav>
-    </header>
-
-    <div id="modeToolbar" class="glass glass--thin">
-      <div class="mode-tabs">
-        <button class="active" type="button">CAD</button>
-        <button type="button">SIM</button>
-        <button type="button">INSIGHTS</button>
-      </div>
-      <div class="mode-actions">
-        <button type="button">Export Image</button>
-        <button type="button">Load Sample</button>
-        <button type="button">Validate</button>
-        <button type="button">Help</button>
-      </div>
-    </div>
-
-    <main id="appShell">
-      <section id="notice">
-        <div class="title">Preview Shell</div>
-        <div class="hint">Static preview for UI review without scripts.</div>
-      </section>
-      <section id="app">
-        <div id="dashboardGrid" class="tab-panel active">
-          <aside class="panel glass glass--thick">
-            <div class="panel-header">
-              <span>Layers</span>
-              <span class="panel-tag">CAD</span>
-            </div>
-            <ul class="tree">
-              <li class="tree-item active">
-                <span class="caret">▾</span>
-                <span>Airframe</span>
-              </li>
-              <li class="tree-item">
-                <span class="caret">▸</span>
-                <span>Wing Assembly</span>
-              </li>
-              <li class="tree-item">
-                <span class="caret">▸</span>
-                <span>Rotor Array</span>
-              </li>
-            </ul>
-          </aside>
-          <section class="panel glass glass--thin">
-            <div class="panel-header">
-              <span>Model Viewport</span>
-              <span class="panel-tag accent">3D</span>
-            </div>
-            <div class="viewport-canvas">
-              <div class="viewport-label">CAD viewport placeholder</div>
-            </div>
-          </section>
-          <aside class="panel glass glass--thick">
-            <div class="panel-header">
-              <span>Inspector</span>
-              <span class="panel-tag accent">CAD</span>
-            </div>
-            <div class="panel-section">
-              <div class="section-title">Parameters</div>
-              <div class="param-row"><span>Span</span><span>1.20 m</span></div>
-              <div class="param-row"><span>Mass</span><span>2.40 kg</span></div>
-              <div class="param-row"><span>Battery</span><span>4.2 Ah</span></div>
-            </div>
-          </aside>
-        </div>
-      </section>
-    </main>
-
-    <footer id="taskBar" class="glass glass--thick">
-      <div class="left">
-        <span class="pill">MODE: CAD</span>
-        <span class="pill">SCHEMA: (pending)</span>
-        <span class="pill">PAYLOAD: (pending)</span>
-      </div>
-      <div class="right">
-        <span class="pill">SELF-TEST: --</span>
-        <span class="pill">STATUS: READY</span>
-        <span class="pill">TIME: --:--</span>
-      </div>
-    </footer>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moved to Obsidian Studio</title>
+  <style>
+    body{margin:0;display:grid;place-items:center;min-height:100vh;background:#0a0b0e;color:#e6edf3;font-family:Segoe UI,system-ui,sans-serif}
+    .card{max-width:620px;padding:22px;background:rgba(14,17,24,.82);border:1px solid rgba(255,255,255,.14);border-radius:14px}
+    a{color:#e6edf3}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>UI moved</h1>
+    <p>This entrypoint has been replaced. Use <a href="./launcher.html">Obsidian Studio (launcher.html)</a>.</p>
+  </div>
+  <script src="./desktop_only.js"></script>
+</body>
 </html>

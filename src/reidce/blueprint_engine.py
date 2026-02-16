@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from xml.sax.saxutils import escape as xml_escape
 from typing import Any, Dict, List, Optional, Tuple
 
 # ── Specification ────────────────────────────────────────────────────────
@@ -213,9 +214,10 @@ def _svg_text(
     font_size: float = 8.0, anchor: str = "middle",
     font_family: str = "monospace",
 ) -> str:
+    safe_text = xml_escape(str(text))
     return (
         f'<text x="{x:.2f}" y="{y:.2f}" font-size="{font_size}" '
-        f'text-anchor="{anchor}" font-family="{font_family}">{text}</text>'
+        f'text-anchor="{anchor}" font-family="{font_family}">{safe_text}</text>'
     )
 
 

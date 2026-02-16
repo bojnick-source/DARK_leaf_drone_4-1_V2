@@ -19,6 +19,7 @@
   let cameraPanX = 0;
   let cameraPanY = 0;
   let constraintViolated = false;
+  let cadRenderMode = "solid";
 
   const MESH_SEGMENTS = 48;
   const MIN_INNER_RADIUS = 0.0001;
@@ -56,6 +57,8 @@
     attachControls();
     attachSliders();
     attachButtons();
+    attachCadTypeControls();
+    attachChromeMenu();
     updateMeshInfo();
     validateConstraints();
     setStatus("READY");
@@ -128,8 +131,6 @@
 
     // Axis lines
     const axisLen = 0.3;
-    const axisGeo = new THREE.BufferGeometry();
-
     // X axis (cyan)
     const xMat = new THREE.LineBasicMaterial({ color: 0x38f3ff, linewidth: 2 });
     const xGeo = new THREE.BufferGeometry().setFromPoints([
@@ -167,143 +168,182 @@
     const group = new THREE.Group();
     wireframeGroup = new THREE.Group();
 
-    const r = params.diameter / 2;
-    const wallT = params.wallThickness;
-    const len = params.length;
-    const rInner = Math.max(r - wallT, MIN_INNER_RADIUS);
+    const hubRadius = Math.max(params.diameter * 0.55, 0.03);
+    const hubHeight = Math.max(params.wallThickness * 8.0, 0.014);
+    const armLength = Math.max(params.length * 0.58, 0.12);
+    const armRadius = Math.max(params.wallThickness * 2.2, 0.004);
+    const motorRadius = Math.max(params.diameter * 0.18, 0.012);
+    const motorHeight = Math.max(params.wallThickness * 9.0, 0.012);
+    const propRadius = Math.max(params.diameter * 0.95, 0.045);
 
-    // Color based on constraint status
-    const bodyColor = constraintViolated ? 0xff4d6a : 0x3a4a72;
-    const wireColor = constraintViolated ? 0xff2244 : 0x38f3ff;
-    const emissiveColor = constraintViolated ? 0x440011 : 0x0a1428;
+    const bodyColor = constraintViolated ? 0xbf3a50 : 0x838891;
+    const carbonColor = constraintViolated ? 0x9f2e44 : 0x4a4f57;
+    const propColor = constraintViolated ? 0xe8667b : 0xcfd4df;
 
-    // Outer cylinder (actuator body)
-    const outerGeo = new THREE.CylinderGeometry(r, r, len, MESH_SEGMENTS, 1, false);
-    const outerMat = new THREE.MeshStandardMaterial({
+    const bodyMat = new THREE.MeshStandardMaterial({
       color: bodyColor,
+      metalness: 0.55,
+      roughness: 0.42,
+      emissive: constraintViolated ? 0x180708 : 0x090a0d,
+    });
+
+    const hub = new THREE.Mesh(
+      new THREE.CylinderGeometry(hubRadius, hubRadius * 0.9, hubHeight, MESH_SEGMENTS),
+      bodyMat
+    );
+    hub.castShadow = true;
+    hub.receiveShadow = true;
+    group.add(hub);
+
+    const topDeck = new THREE.Mesh(
+      new THREE.CylinderGeometry(hubRadius * 0.72, hubRadius * 0.72, hubHeight * 0.34, MESH_SEGMENTS),
+      new THREE.MeshStandardMaterial({
+        color: 0x272b31,
+        metalness: 0.35,
+        roughness: 0.6,
+      })
+    );
+    topDeck.position.y = hubHeight * 0.40;
+    group.add(topDeck);
+
+    const armMat = new THREE.MeshStandardMaterial({
+      color: carbonColor,
+      metalness: 0.25,
+      roughness: 0.58,
+    });
+
+    const motorMat = new THREE.MeshStandardMaterial({
+      color: 0x262a31,
       metalness: 0.7,
-      roughness: 0.3,
-      emissive: emissiveColor,
-      transparent: true,
-      opacity: 0.85,
-      side: THREE.DoubleSide,
+      roughness: 0.34,
+      emissive: constraintViolated ? 0x200a0d : 0x050608,
     });
-    const outerMesh = new THREE.Mesh(outerGeo, outerMat);
-    outerMesh.castShadow = true;
-    outerMesh.receiveShadow = true;
-    group.add(outerMesh);
 
-    // Wireframe
-    const wireGeo = new THREE.WireframeGeometry(outerGeo);
-    const wireMat = new THREE.LineBasicMaterial({
-      color: wireColor,
+    const propMat = new THREE.MeshStandardMaterial({
+      color: propColor,
+      metalness: 0.12,
+      roughness: 0.55,
       transparent: true,
-      opacity: 0.25,
-    });
-    wireframeGroup.add(new THREE.LineSegments(wireGeo, wireMat));
-
-    // Inner hollow (if wall thickness makes sense)
-    if (rInner > MIN_INNER_RADIUS && rInner < r) {
-      const innerGeo = new THREE.CylinderGeometry(rInner, rInner, len + 0.001, MESH_SEGMENTS, 1, true);
-      const innerMat = new THREE.MeshStandardMaterial({
-        color: 0x0f141d,
-        metalness: 0.5,
-        roughness: 0.5,
-        side: THREE.BackSide,
-      });
-      group.add(new THREE.Mesh(innerGeo, innerMat));
-    }
-
-    // Top and bottom caps (annular rings)
-    const capGeo = new THREE.RingGeometry(rInner, r, MESH_SEGMENTS);
-    const capMat = new THREE.MeshStandardMaterial({
-      color: bodyColor,
-      metalness: 0.6,
-      roughness: 0.35,
-      emissive: emissiveColor,
+      opacity: cadRenderMode === "xray" ? 0.22 : 0.36,
       side: THREE.DoubleSide,
     });
 
-    const topCap = new THREE.Mesh(capGeo, capMat);
-    topCap.rotation.x = -Math.PI / 2;
-    topCap.position.y = len / 2;
-    group.add(topCap);
-
-    const bottomCap = new THREE.Mesh(capGeo.clone(), capMat);
-    bottomCap.rotation.x = Math.PI / 2;
-    bottomCap.position.y = -len / 2;
-    group.add(bottomCap);
-
-    // Wing cross-arms
-    const wingLen = params.diameter * 4;
-    const wingGeo = new THREE.BoxGeometry(wingLen, 0.004, 0.008);
-    const wingMat = new THREE.MeshStandardMaterial({
-      color: constraintViolated ? 0xff4d6a : 0x2c3c5c,
-      metalness: 0.6,
-      roughness: 0.4,
-      emissive: emissiveColor,
-    });
-    const wing1 = new THREE.Mesh(wingGeo, wingMat);
-    wing1.castShadow = true;
-    group.add(wing1);
-
-    const wing2 = new THREE.Mesh(wingGeo.clone(), wingMat);
-    wing2.rotation.y = Math.PI / 2;
-    wing2.castShadow = true;
-    group.add(wing2);
-
-    // Rotor discs at wing tips
-    const rotorRadius = r * 1.8;
-    const rotorGeo = new THREE.CylinderGeometry(rotorRadius, rotorRadius, 0.003, 32);
-    const rotorMat = new THREE.MeshStandardMaterial({
-      color: constraintViolated ? 0xff2244 : 0x38f3ff,
-      metalness: 0.3,
-      roughness: 0.6,
-      transparent: true,
-      opacity: 0.35,
-      emissive: constraintViolated ? 0x440011 : 0x0a2030,
-    });
-
-    const armLen = wingLen / 2;
-    const rotorPositions = [
-      [armLen, 0, 0],
-      [-armLen, 0, 0],
-      [0, 0, armLen],
-      [0, 0, -armLen],
+    const armOffsets = [
+      [1, 1],
+      [1, -1],
+      [-1, 1],
+      [-1, -1],
     ];
 
-    for (const pos of rotorPositions) {
-      const rotor = new THREE.Mesh(rotorGeo.clone(), rotorMat);
-      rotor.position.set(pos[0], pos[1], pos[2]);
-      rotor.castShadow = true;
-      group.add(rotor);
+    for (const [sx, sz] of armOffsets) {
+      const arm = new THREE.Mesh(
+        new THREE.CylinderGeometry(armRadius, armRadius, armLength, 20),
+        armMat
+      );
+      arm.rotation.z = Math.PI / 2;
+      arm.rotation.y = Math.atan2(sz, sx);
+      arm.position.set((sx * armLength) / 3.0, hubHeight * 0.10, (sz * armLength) / 3.0);
+      arm.castShadow = true;
+      arm.receiveShadow = true;
+      group.add(arm);
 
-      // Rotor hub
-      const hubGeo = new THREE.CylinderGeometry(rotorRadius * 0.3, rotorRadius * 0.3, 0.006, 16);
-      const hubMat = new THREE.MeshStandardMaterial({
-        color: constraintViolated ? 0x881122 : 0x0a1220,
-        metalness: 0.8,
-        roughness: 0.2,
-      });
-      const hub = new THREE.Mesh(hubGeo, hubMat);
-      hub.position.set(pos[0], pos[1], pos[2]);
-      group.add(hub);
+      const mx = sx * armLength * 0.70;
+      const mz = sz * armLength * 0.70;
+
+      const motor = new THREE.Mesh(
+        new THREE.CylinderGeometry(motorRadius, motorRadius, motorHeight, 24),
+        motorMat
+      );
+      motor.position.set(mx, motorHeight * 0.5, mz);
+      motor.castShadow = true;
+      group.add(motor);
+
+      const prop = new THREE.Mesh(
+        new THREE.CylinderGeometry(propRadius, propRadius, 0.0032, 36),
+        propMat
+      );
+      prop.position.set(mx, motorHeight + 0.004, mz);
+      prop.castShadow = true;
+      group.add(prop);
+
+      const propEdge = new THREE.Mesh(
+        new THREE.TorusGeometry(propRadius * 0.9, 0.0014, 8, 48),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.2, roughness: 0.4, transparent: true, opacity: 0.18 })
+      );
+      propEdge.rotation.x = Math.PI / 2;
+      propEdge.position.copy(prop.position);
+      group.add(propEdge);
     }
 
-    // Envelope wireframe (shows max bounding box)
+    const tail = new THREE.Mesh(
+      new THREE.BoxGeometry(hubRadius * 0.55, hubHeight * 0.24, hubRadius * 0.35),
+      new THREE.MeshStandardMaterial({
+        color: 0x191c22,
+        metalness: 0.3,
+        roughness: 0.62,
+      })
+    );
+    tail.position.set(0, -hubHeight * 0.06, hubRadius * 0.5);
+    group.add(tail);
+
+    const droneWire = new THREE.EdgesGeometry(new THREE.BoxGeometry(armLength * 1.55, armLength * 0.35, armLength * 1.55));
+    wireframeGroup.add(new THREE.LineSegments(droneWire, new THREE.LineBasicMaterial({ color: 0xe7e9ef, transparent: true, opacity: 0.26 })));
+
     const envSize = params.envelope;
-    const envGeo = new THREE.BoxGeometry(envSize, envSize, envSize);
-    const envEdges = new THREE.EdgesGeometry(envGeo);
-    const envMat = new THREE.LineBasicMaterial({
-      color: constraintViolated ? 0xff4d6a : 0x7c5cff,
-      transparent: true,
-      opacity: 0.2,
-    });
-    wireframeGroup.add(new THREE.LineSegments(envEdges, envMat));
+    const envEdges = new THREE.EdgesGeometry(new THREE.BoxGeometry(envSize, envSize, envSize));
+    wireframeGroup.add(new THREE.LineSegments(envEdges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16 })));
 
     droneMesh = group;
     scene.add(droneMesh);
     scene.add(wireframeGroup);
+    applyCadRenderMode();
+  }
+
+  function applyCadRenderMode() {
+    if (!droneMesh || !wireframeGroup) {
+      return;
+    }
+
+    const showWire = cadRenderMode === "wireframe" || cadRenderMode === "xray";
+    wireframeGroup.visible = showWire;
+
+    droneMesh.traverse((node) => {
+      if (!node.isMesh || !node.material) {
+        return;
+      }
+      if (cadRenderMode === "wireframe") {
+        node.visible = false;
+      } else if (cadRenderMode === "xray") {
+        node.visible = true;
+        node.material.transparent = true;
+        node.material.opacity = Math.min(node.material.opacity ?? 1.0, 0.35);
+      } else {
+        node.visible = true;
+        if (node.material.opacity !== undefined) {
+          node.material.opacity = node.material.opacity < 0.4 ? 0.36 : 1.0;
+        }
+        node.material.transparent = (node.material.opacity ?? 1.0) < 0.99;
+      }
+      node.material.needsUpdate = true;
+    });
+  }
+
+  function attachCadTypeControls() {
+    const wrap = $("cadTypeControls");
+    if (!wrap) {
+      return;
+    }
+    const buttons = Array.from(wrap.querySelectorAll(".cad-type-btn"));
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        cadRenderMode = button.dataset.mode || "solid";
+        for (const b of buttons) {
+          b.classList.toggle("active", b === button);
+        }
+        applyCadRenderMode();
+        setStatus("CAD MODE: " + cadRenderMode.toUpperCase());
+      });
+    }
   }
 
   // --- Constraint Validation ---
@@ -548,6 +588,100 @@
     if (btnExport) {
       btnExport.addEventListener("click", exportSTL);
     }
+  }
+
+
+  function attachChromeMenu() {
+    const menuBar = $("chromeMenuBar");
+    const bento = $("chromeBento");
+    if (!menuBar || !bento) {
+      return;
+    }
+
+    const menuData = {
+      File: [
+        ["Load Payload", "Import engineering payload JSON into viewer state."],
+        ["Export STL", "Generate manufacturing STL from current geometry."],
+        ["Reset Session", "Reset camera and mesh transforms to default state."],
+        ["Snapshot", "Capture viewport snapshot with overlay diagnostics."],
+      ],
+      Edit: [
+        ["Diameter", "Adjust actuator diameter and update constraints."],
+        ["Wall Thickness", "Tune wall thickness and validate manufacturability."],
+        ["Length", "Set actuator length against envelope rules."],
+        ["Envelope", "Update global envelope budget in real-time."],
+      ],
+      View: [
+        ["Camera", "Reset, orbit, and inspect assembly with precision."],
+        ["Section", "Toggle clipping section for internal inspection."],
+        ["Edges", "Enable hidden-line, silhouette, and curvature overlays."],
+        ["AO / TAA", "Switch fidelity options for clarity and stability."],
+      ],
+      Tools: [
+        ["Mesh3D+", "Enable enhanced noir shading workflow."],
+        ["Topology", "Preview topology optimization variants."],
+        ["Constraint Check", "Run geometry sanity checks instantly."],
+        ["Debug", "Show normals, BVH bounds, and perf instrumentation."],
+      ],
+      Render: [
+        ["Glass", "Apply liquid-obsidian glass compositing style."],
+        ["MatCap", "Switch to studio MatCap shading set."],
+        ["Quality", "Toggle low/high quality processing passes."],
+        ["Export View", "Prepare render-ready viewport framing."],
+      ],
+    };
+
+    const words = Array.from(menuBar.querySelectorAll(".chrome-menu-word"));
+
+    function closeMenu() {
+      bento.hidden = true;
+      for (const btn of words) {
+        btn.classList.remove("active");
+      }
+    }
+
+    function openMenu(button, menuName) {
+      const rows = menuData[menuName] || [];
+      bento.innerHTML =
+        '<div class="chrome-bento-title">' + menuName + ' Menu</div>' +
+        '<div class="chrome-bento-grid">' +
+        rows
+          .map(([label, desc]) => (
+            '<div class="chrome-bento-item"><span class="label">' + label + '</span>' + desc + '</div>'
+          ))
+          .join("") +
+        '</div>';
+
+      const header = $("cadHeader");
+      const headerRect = header.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      bento.hidden = false;
+      const left = Math.max(10, Math.min(buttonRect.left - headerRect.left - 14, headerRect.width - bento.offsetWidth - 10));
+      bento.style.left = left + "px";
+      bento.style.top = (headerRect.height - 2) + "px";
+
+      for (const btn of words) {
+        btn.classList.toggle("active", btn === button);
+      }
+    }
+
+    for (const word of words) {
+      word.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const menuName = word.dataset.menu || "Menu";
+        if (!bento.hidden && word.classList.contains("active")) {
+          closeMenu();
+          return;
+        }
+        openMenu(word, menuName);
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#cadHeader")) {
+        closeMenu();
+      }
+    });
   }
 
   function applyPayload(payload) {

@@ -462,6 +462,10 @@ class LearningRuntime:
         # Buffer for linear model
         self._buffer_x.append(list(record.features))
         self._buffer_y.append(list(record.targets))
+        if len(self._buffer_x) > self._buffer_limit:
+            overflow = len(self._buffer_x) - self._buffer_limit
+            del self._buffer_x[:overflow]
+            del self._buffer_y[:overflow]
 
         # Online step
         loss = self.online_model.partial_fit(record.features, record.targets)

@@ -1,0 +1,26 @@
+mesh:
+  nelx: 120
+  nely: 40
+
+material:
+  E0: 1.0
+  Emin: 1.0e-9
+  nu: 0.3
+
+solver:
+  solver: auto
+  cg_tol: 1.0e-10
+  cg_maxiter: 2000
+  ilu_drop_tol: 1.0e-4
+  ilu_fill_factor: 20.0
+  compute_residual: true
+
+problem:
+  type: mbb
+
+topopt:
+  volfrac: 0.40
+  penal: 3.0
+  rmin: 2.0
+  max_iter: 80
+  change_tol: 1.0e-3
