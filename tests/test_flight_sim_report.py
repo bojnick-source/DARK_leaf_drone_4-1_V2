@@ -127,6 +127,7 @@ def test_flight_sim_html_exists() -> None:
 
 
 def test_dashboard_links_to_flight_sim() -> None:
+    """dashboard.html is now a redirect placeholder linking to launcher.html."""
     root = Path(__file__).resolve().parents[1]
     # dashboard.html is now a placeholder, check launcher.html instead
     html = (root / "ui" / "launcher.html").read_text(encoding="utf-8")
