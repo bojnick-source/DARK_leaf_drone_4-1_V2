@@ -1,8 +1,8 @@
-"""Tests for reidce.engineering_ai — local engineering knowledge engine."""
+"""Tests for reidce.knowledge_retrieval — local engineering knowledge retrieval."""
 
 from pathlib import Path
 
-from reidce.engineering_ai import (
+from reidce.knowledge_retrieval import (
     ConversationContext,
     ConversationTurn,
     EngineeringKnowledgeBase,
@@ -182,7 +182,7 @@ def test_query_engine_to_dict() -> None:
     kb = EngineeringKnowledgeBase.from_texts(["x", "y"], domain="aero")
     engine = EngineeringQueryEngine(knowledge_base=kb)
     d = engine.to_dict()
-    assert d["schema"] == "dark/engineering_ai/1.0"
+    assert d["schema"] == "dark/knowledge_retrieval/1.0"
     assert d["n_chunks"] == 2
     assert "aero" in d["domains"]
     assert d["has_memory"] is False
