@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
-
 from sfcs_mdp.v2_run_manifest import (
     FailLabel,
-    IngestOptions,
     LoadError,
     SummaryOptions,
     aggregate_runs,
     canonicalize_inputs,
-    ingest_runs,
     load_run_output,
     run_id_from_inputs,
     write_run_output,
@@ -40,7 +36,9 @@ def test_end_to_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert lr.output.artifact_paths == ["extra.dat"]
 
 
-def test_strict_path_portable_rejects_windowsy(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_strict_path_portable_rejects_windowsy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.chdir(tmp_path)
     rid = "1234567890abcdef"
     inputs_json = "{}"
@@ -106,7 +104,10 @@ def test_cpp_parity_if_available(tmp_path: Path) -> None:
 
     compiler = None
     for c in ("c++", "g++", "clang++"):
-        if subprocess.call([c, "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+        result = subprocess.call(
+            [c, "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        if result == 0:
             compiler = c
             break
     if compiler is None:
@@ -172,10 +173,14 @@ int main() {
     assert len(cpp_lines) == 3
 
     # Compare Python and C++ outputs
-    from sfcs_mdp.v2_run_manifest import run_id_from_inputs, canonicalize_inputs, format_scalar
+    from sfcs_mdp.v2_run_manifest import canonicalize_inputs, format_scalar, run_id_from_inputs
 
-    py_rid = run_id_from_inputs({"mass": 1.0, "area": 0.5}, {}, {"vec": [1.0, 2.0]}, {"length": (1.0, "m")})
-    py_inputs = canonicalize_inputs({"mass": 1.0, "area": 0.5}, {}, {"vec": [1.0, 2.0]}, {"length": (1.0, "m")})
+    scalars = {"mass": 1.0, "area": 0.5}
+    arrays = {"vec": [1.0, 2.0]}
+    units = {"length": (1.0, "m")}
+
+    py_rid = run_id_from_inputs(scalars, {}, arrays, units)
+    py_inputs = canonicalize_inputs(scalars, {}, arrays, units)
     py_scalar = format_scalar(42.5)
 
     assert cpp_lines[0] == py_rid, f"run_id mismatch: C++={cpp_lines[0]}, Python={py_rid}"

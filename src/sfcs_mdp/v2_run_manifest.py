@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import math
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, Optional, Sequence, Tuple
@@ -87,7 +87,8 @@ def _dump_json(obj: Any, *, sort_keys: bool = False, precision: int = 12) -> str
     if isinstance(obj, str):
         return '"' + _json_escape(obj) + '"'
     if isinstance(obj, list):
-        return "[" + ",".join(_dump_json(x, sort_keys=sort_keys, precision=precision) for x in obj) + "]"
+        items_str = ",".join(_dump_json(x, sort_keys=sort_keys, precision=precision) for x in obj)
+        return "[" + items_str + "]"
     if isinstance(obj, dict):
         items = list(obj.items())
         if sort_keys:
@@ -100,7 +101,8 @@ def _dump_json(obj: Any, *, sort_keys: bool = False, precision: int = 12) -> str
             if not first:
                 parts.append(",")
             first = False
-            parts.append('"' + _json_escape(k) + '":' + _dump_json(v, sort_keys=sort_keys, precision=precision))
+            val_str = _dump_json(v, sort_keys=sort_keys, precision=precision)
+            parts.append('"' + _json_escape(k) + '":' + val_str)
         parts.append("}")
         return "".join(parts)
     raise TypeError(f"unsupported json type: {type(obj).__name__}")
@@ -148,7 +150,7 @@ def canonicalize_inputs(
         mag, unit = units[k]
         payload[f"u:{k}"] = f"{format_scalar(float(mag), precision)} {str(unit)}"
 
-    return _dump_json(payload, sort_keys=True, precision=precision)
+    return _dump_json(payload, sort_keys=False, precision=precision)
 
 
 def run_id_from_inputs(
@@ -280,7 +282,7 @@ def write_run_output(
     out: dict[str, Any] = {}
     out["run_id"] = run_id
     out["ok"] = bool(ok)
-    out["label"] = (None if ok else label.value)
+    out["label"] = (None if ok else (label.value if label else None))
     out["inputs"] = inputs_obj
     out["metrics"] = metrics_obj
     out["artifacts"] = {"root": artifact_root, "paths": paths_out}
@@ -394,17 +396,25 @@ def load_run_output(
             return LoadResult(False, LoadError.SCHEMA_VIOLATION, "artifacts must be object")
         if "root" in artifacts:
             if not isinstance(artifacts["root"], str):
-                return LoadResult(False, LoadError.SCHEMA_VIOLATION, "artifacts.root must be string")
+                return LoadResult(
+                    False, LoadError.SCHEMA_VIOLATION, "artifacts.root must be string"
+                )
             artifact_root_out = artifacts["root"]
         if "paths" in artifacts:
             paths = artifacts["paths"]
             if not isinstance(paths, list):
-                return LoadResult(False, LoadError.SCHEMA_VIOLATION, "artifacts.paths must be array")
+                return LoadResult(
+                    False, LoadError.SCHEMA_VIOLATION, "artifacts.paths must be array"
+                )
             for e in paths:
                 if not isinstance(e, str):
-                    return LoadResult(False, LoadError.SCHEMA_VIOLATION, "artifact path must be string")
+                    return LoadResult(
+                        False, LoadError.SCHEMA_VIOLATION, "artifact path must be string"
+                    )
                 if strict_paths and (not _is_portable_relative_clean_path(e)):
-                    return LoadResult(False, LoadError.INVALID_ARTIFACT_PATH, "artifact path invalid")
+                    return LoadResult(
+                        False, LoadError.INVALID_ARTIFACT_PATH, "artifact path invalid"
+                    )
                 artifact_paths_out.append(e)
 
     return LoadResult(
@@ -452,7 +462,9 @@ class IngestResult:
     errors: list[IngestError]
 
 
-def ingest_runs(opts: IngestOptions = IngestOptions()) -> IngestResult:
+def ingest_runs(opts: IngestOptions | None = None) -> IngestResult:
+    if opts is None:
+        opts = IngestOptions()
     root = Path(opts.artifact_root)
     errors: list[IngestError] = []
     runs: list[IngestedRun] = []
@@ -469,7 +481,11 @@ def ingest_runs(opts: IngestOptions = IngestOptions()) -> IngestResult:
             if allow is not None and name not in allow:
                 continue
             if not is_lower_hex_run_id(name):
-                errors.append(IngestError(name, "INVALID_RUN_ID_DIR", "run_id directory invalid", entry.as_posix()))
+                errors.append(
+                    IngestError(
+                        name, "INVALID_RUN_ID_DIR", "run_id directory invalid", entry.as_posix()
+                    )
+                )
                 continue
             candidates.append(name)
 
@@ -481,7 +497,9 @@ def ingest_runs(opts: IngestOptions = IngestOptions()) -> IngestResult:
         run_dir = root / rid
         p = run_dir / kRunOutputFile
         if not p.exists():
-            errors.append(IngestError(rid, "MISSING_MANIFEST", "run_output.json missing", p.as_posix()))
+            errors.append(
+                IngestError(rid, "MISSING_MANIFEST", "run_output.json missing", p.as_posix())
+            )
             continue
         lr = load_run_output(rid, run_dir.as_posix(), strict_paths=opts.strict_paths)
         if not lr.success or lr.output is None:
@@ -525,7 +543,9 @@ class SummaryOptions:
     generated_at: str = "1970-01-01T00:00:00Z"
 
 
-def aggregate_runs(opts: SummaryOptions = SummaryOptions()) -> SummaryResult:
+def aggregate_runs(opts: SummaryOptions | None = None) -> SummaryResult:
+    if opts is None:
+        opts = SummaryOptions()
     ingest = ingest_runs(opts.ingest_opts)
     total = 0
     passed = 0
@@ -564,9 +584,9 @@ def aggregate_runs(opts: SummaryOptions = SummaryOptions()) -> SummaryResult:
     total += invalid
 
     label_tally: dict[str, int] = {}
-    for r in summary_runs:
-        if (not r.ok) and r.label:
-            label_tally[r.label] = label_tally.get(r.label, 0) + 1
+    for sr in summary_runs:
+        if (not sr.ok) and sr.label:
+            label_tally[sr.label] = label_tally.get(sr.label, 0) + 1
 
     summary_runs.sort(key=lambda x: x.run_id)
     errors = sorted(ingest.errors, key=lambda e: (e.run_id, e.code, e.message))
@@ -577,10 +597,20 @@ def aggregate_runs(opts: SummaryOptions = SummaryOptions()) -> SummaryResult:
         "generated_at": opts.generated_at,
         "runs": [
             {
-                **({"run_id": r.run_id, "ok": r.ok, "source_path": r.source_path}),
+                "run_id": r.run_id,
+                "ok": r.ok,
+                "source_path": r.source_path,
                 **({} if r.label is None else {"label": r.label}),
-                **({} if (not r.ok) or (not r.metrics) else {"metrics": dict(sorted(r.metrics.items()))}),
-                **({} if r.error is None else {"error": {"code": r.error.code, "message": r.error.message}}),
+                **(
+                    {}
+                    if (not r.ok) or (not r.metrics)
+                    else {"metrics": dict(sorted(r.metrics.items()))}
+                ),
+                **(
+                    {}
+                    if r.error is None
+                    else {"error": {"code": r.error.code, "message": r.error.message}}
+                ),
             }
             for r in summary_runs
         ],
