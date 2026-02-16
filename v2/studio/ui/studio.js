@@ -84,6 +84,34 @@
 
   const Validator = {
     /**
+     * Validate that a value is a non-negative number
+     * @private
+     * @param {*} value
+     * @param {string} fieldName
+     * @param {Array<string>} errors
+     */
+    _validateNonNegativeNumber: function(value, fieldName, errors) {
+      if (value !== undefined && (typeof value !== 'number' || value < 0)) {
+        errors.push(`${fieldName} must be a non-negative number`);
+      }
+    },
+
+    /**
+     * Validate that a value is a number in a specific range
+     * @private
+     * @param {*} value
+     * @param {string} fieldName
+     * @param {number} min
+     * @param {number} max
+     * @param {Array<string>} errors
+     */
+    _validateNumberInRange: function(value, fieldName, min, max, errors) {
+      if (value !== undefined && (typeof value !== 'number' || value < min || value > max)) {
+        errors.push(`${fieldName} must be a number between ${min} and ${max}`);
+      }
+    },
+
+    /**
      * Validate payload structure
      * @param {Object} payload
      * @returns {{valid: boolean, errors: string[]}}
@@ -106,11 +134,7 @@
         if (typeof payload.ai !== 'object') {
           errors.push('AI section must be an object');
         } else {
-          if (payload.ai.confidence !== undefined) {
-            if (typeof payload.ai.confidence !== 'number' || payload.ai.confidence < 0 || payload.ai.confidence > 1) {
-              errors.push('AI confidence must be a number between 0 and 1');
-            }
-          }
+          this._validateNumberInRange(payload.ai.confidence, 'AI confidence', 0, 1, errors);
         }
       }
 
@@ -119,12 +143,8 @@
         if (typeof payload.cad !== 'object') {
           errors.push('CAD section must be an object');
         } else {
-          if (payload.cad.triangle_count !== undefined && (typeof payload.cad.triangle_count !== 'number' || payload.cad.triangle_count < 0)) {
-            errors.push('CAD triangle_count must be a non-negative number');
-          }
-          if (payload.cad.mesh_score !== undefined && (typeof payload.cad.mesh_score !== 'number' || payload.cad.mesh_score < 0 || payload.cad.mesh_score > 1)) {
-            errors.push('CAD mesh_score must be a number between 0 and 1');
-          }
+          this._validateNonNegativeNumber(payload.cad.triangle_count, 'CAD triangle_count', errors);
+          this._validateNumberInRange(payload.cad.mesh_score, 'CAD mesh_score', 0, 1, errors);
           if (payload.cad.wireframe !== undefined && !Array.isArray(payload.cad.wireframe)) {
             errors.push('CAD wireframe must be an array');
           }
@@ -136,9 +156,7 @@
         if (typeof payload.fea !== 'object') {
           errors.push('FEA section must be an object');
         } else {
-          if (payload.fea.safety_factor !== undefined && (typeof payload.fea.safety_factor !== 'number' || payload.fea.safety_factor < 0)) {
-            errors.push('FEA safety_factor must be a non-negative number');
-          }
+          this._validateNonNegativeNumber(payload.fea.safety_factor, 'FEA safety_factor', errors);
         }
       }
 
@@ -357,7 +375,7 @@
     _getEmbeddedSample: function() {
       return {
         schema: 'topology_ai_output.v1',
-        timestamp_utc: new Date().toISOString(),
+        timestamp_utc: '2026-02-04T00:00:00Z',
         ai: { model: 'REIDCE v2', confidence: 0.91, status: 'Stable' },
         best: { name: 'baseline_topology_2', score: 0.82, tag: 'Stiffened' },
         system: { power_rails: 4, photonic_links: 3, thermal_nodes: 5 },
@@ -500,9 +518,9 @@
         this.setStatus('LOADED', 'ok');
 
         // System
-        DOMManager.setText('railCount', Validator.sanitizeString(payload.system?.power_rails, '4'));
-        DOMManager.setText('photonicLinks', Validator.sanitizeString(payload.system?.photonic_links, '3'));
-        DOMManager.setText('thermalNodes', Validator.sanitizeString(payload.system?.thermal_nodes, '5'));
+        DOMManager.setText('railCount', String(Validator.sanitizeNumber(payload.system?.power_rails, 4, 0)));
+        DOMManager.setText('photonicLinks', String(Validator.sanitizeNumber(payload.system?.photonic_links, 3, 0)));
+        DOMManager.setText('thermalNodes', String(Validator.sanitizeNumber(payload.system?.thermal_nodes, 5, 0)));
 
         // AI
         DOMManager.setText('aiBest', Validator.sanitizeString(payload.best?.name, 'baseline_topology_2'));
@@ -614,7 +632,8 @@
         const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `studio_snapshot_${Date.now()}.json`;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        link.download = `studio_snapshot_${timestamp}.json`;
         link.click();
         URL.revokeObjectURL(link.href);
 
