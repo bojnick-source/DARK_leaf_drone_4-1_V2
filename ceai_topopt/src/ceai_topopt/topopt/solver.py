@@ -51,7 +51,11 @@ def _direct_solve(K: sp.csr_matrix, f: np.ndarray) -> tuple[np.ndarray, SolveInf
             note="non-finite solution",
         )
     return u, SolveInfo(
-        solver_used="direct", converged=True, iterations=None, residual_l2=None, note=None
+        solver_used="direct",
+        converged=True,
+        iterations=None,
+        residual_l2=None,
+        note=None,
     )
 
 

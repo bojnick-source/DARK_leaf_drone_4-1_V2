@@ -26,7 +26,9 @@ def test_mbb_regression_envelope():
         mesh, apply_density_filter(H, x0), topo.penal, mat, bc.F, bc.fixed_dofs
     )
 
-    res = run_topopt(mesh=mesh, mat=mat, F=bc.F, fixed_dofs=bc.fixed_dofs, topo=topo, H=H, x0=None)
+    res = run_topopt(
+        mesh=mesh, mat=mat, F=bc.F, fixed_dofs=bc.fixed_dofs, topo=topo, H=H, x0=None
+    )
 
     c_final, _, _, _ = compliance_and_sensitivities(
         mesh, res["x_phys"], topo.penal, mat, bc.F, bc.fixed_dofs

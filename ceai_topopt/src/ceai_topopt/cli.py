@@ -60,11 +60,13 @@ def gradcheck(
     console.print(res)
     if res["rel_error_max"] > max_rel_error:
         console.print(
-            f"[red]FAIL[/red] rel_error_max={res['rel_error_max']:.3e} > {max_rel_error:.3e}"
+            f"[red]FAIL[/red] rel_error_max={res['rel_error_max']:.3e} "
+            f"> {max_rel_error:.3e}"
         )
         raise typer.Exit(code=1)
     console.print(
-        f"[green]PASS[/green] rel_error_max={res['rel_error_max']:.3e} <= {max_rel_error:.3e}"
+        f"[green]PASS[/green] rel_error_max={res['rel_error_max']:.3e} "
+        f"<= {max_rel_error:.3e}"
     )
 
 
@@ -120,7 +122,11 @@ def run(
     H = density_filter_matrix(nely=nely, nelx=nelx, rmin=rmin)
 
     topo = TopOptParams(
-        volfrac=volfrac, penal=penal, rmin=rmin, max_iter=max_iter, change_tol=change_tol
+        volfrac=volfrac,
+        penal=penal,
+        rmin=rmin,
+        max_iter=max_iter,
+        change_tol=change_tol,
     )
     res = run_topopt(
         mesh=mesh,

@@ -172,13 +172,25 @@ def _explicit(mesh: Mesh2D, cfg: dict[str, Any]) -> tuple[np.ndarray, np.ndarray
             dof = _dof_index(n, "ux")
             F[dof] += fx
             loads.append(
-                {"dof": int(dof), "value": fx, "node": [x, y], "selector": sel, "dof_name": "ux"}
+                {
+                    "dof": int(dof),
+                    "value": fx,
+                    "node": [x, y],
+                    "selector": sel,
+                    "dof_name": "ux",
+                }
             )
         if fy != 0.0:
             dof = _dof_index(n, "uy")
             F[dof] += fy
             loads.append(
-                {"dof": int(dof), "value": fy, "node": [x, y], "selector": sel, "dof_name": "uy"}
+                {
+                    "dof": int(dof),
+                    "value": fy,
+                    "node": [x, y],
+                    "selector": sel,
+                    "dof_name": "uy",
+                }
             )
 
     fixed = sorted(fixed_set)

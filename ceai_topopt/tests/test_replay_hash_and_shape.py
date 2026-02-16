@@ -90,9 +90,15 @@ def test_replay_shape_mismatch_fails(tmp_path):
     np.save(run_dir / "x_phys.npy", x_bad)
 
     man = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
-    sha256_file = __import__("ceai_topopt.manifest", fromlist=["sha256_file"]).sha256_file
-    man["outputs"]["x_phys.npy"]["sha256"] = sha256_file(str(run_dir / "x_phys.npy"))
-    (run_dir / "manifest.json").write_text(json.dumps(man, indent=2) + "\n", encoding="utf-8")
+    sha256_func = __import__(
+        "ceai_topopt.manifest", fromlist=["sha256_file"]
+    ).sha256_file
+    man["outputs"]["x_phys.npy"]["sha256"] = sha256_func(
+        str(run_dir / "x_phys.npy")
+    )
+    (run_dir / "manifest.json").write_text(
+        json.dumps(man, indent=2) + "\n", encoding="utf-8"
+    )
 
     with pytest.raises(ValueError):
         replay_compliance(str(run_dir))
