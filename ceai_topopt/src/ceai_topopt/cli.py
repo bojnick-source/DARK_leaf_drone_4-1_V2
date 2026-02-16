@@ -4,15 +4,22 @@ import json
 import os
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import typer
 import yaml
 from rich.console import Console
 from rich.table import Table
-import matplotlib.pyplot as plt
 
-from .manifest import RunManifest, basic_environment, run_id, utc_now_iso, write_manifest, hash_outputs
-from .topopt.elasticity2d import Mesh2D, Material, compliance_and_sensitivities
+from .manifest import (
+    RunManifest,
+    basic_environment,
+    hash_outputs,
+    run_id,
+    utc_now_iso,
+    write_manifest,
+)
+from .topopt.elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from .topopt.filters import density_filter_matrix
 from .topopt.gradcheck import gradcheck_compliance
 from .topopt.problem_spec import build_problem, save_problem_artifacts
@@ -52,9 +59,13 @@ def gradcheck(
     )
     console.print(res)
     if res["rel_error_max"] > max_rel_error:
-        console.print(f"[red]FAIL[/red] rel_error_max={res['rel_error_max']:.3e} > {max_rel_error:.3e}")
+        console.print(
+            f"[red]FAIL[/red] rel_error_max={res['rel_error_max']:.3e} > {max_rel_error:.3e}"
+        )
         raise typer.Exit(code=1)
-    console.print(f"[green]PASS[/green] rel_error_max={res['rel_error_max']:.3e} <= {max_rel_error:.3e}")
+    console.print(
+        f"[green]PASS[/green] rel_error_max={res['rel_error_max']:.3e} <= {max_rel_error:.3e}"
+    )
 
 
 @app.command()
@@ -108,8 +119,19 @@ def run(
     F, fixed_dofs, resolved = build_problem(mesh, prob_cfg)
     H = density_filter_matrix(nely=nely, nelx=nelx, rmin=rmin)
 
-    topo = TopOptParams(volfrac=volfrac, penal=penal, rmin=rmin, max_iter=max_iter, change_tol=change_tol)
-    res = run_topopt(mesh=mesh, mat=mat, F=F, fixed_dofs=fixed_dofs, topo=topo, H=H, x0=None, solver_cfg=solver_cfg)
+    topo = TopOptParams(
+        volfrac=volfrac, penal=penal, rmin=rmin, max_iter=max_iter, change_tol=change_tol
+    )
+    res = run_topopt(
+        mesh=mesh,
+        mat=mat,
+        F=F,
+        fixed_dofs=fixed_dofs,
+        topo=topo,
+        H=H,
+        x0=None,
+        solver_cfg=solver_cfg,
+    )
 
     # artifacts
     np.save(run_path / "x.npy", res["x"])
@@ -121,7 +143,9 @@ def run(
 
     prob_paths = save_problem_artifacts(str(run_path), F, fixed_dofs, resolved)
 
-    c_final, _, _, solve_diag = compliance_and_sensitivities(mesh, res["x_phys"], penal, mat, F, fixed_dofs, solver_cfg=solver_cfg)
+    c_final, _, _, solve_diag = compliance_and_sensitivities(
+        mesh, res["x_phys"], penal, mat, F, fixed_dofs, solver_cfg=solver_cfg
+    )
 
     t = Table(title="TopOpt Summary (last 10 iters)")
     t.add_column("iter")

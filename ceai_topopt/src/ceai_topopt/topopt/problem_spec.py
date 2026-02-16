@@ -8,7 +8,6 @@ import numpy as np
 
 from .elasticity2d import Mesh2D
 
-
 DOF = Literal["ux", "uy"]
 
 
@@ -172,11 +171,15 @@ def _explicit(mesh: Mesh2D, cfg: dict[str, Any]) -> tuple[np.ndarray, np.ndarray
         if fx != 0.0:
             dof = _dof_index(n, "ux")
             F[dof] += fx
-            loads.append({"dof": int(dof), "value": fx, "node": [x, y], "selector": sel, "dof_name": "ux"})
+            loads.append(
+                {"dof": int(dof), "value": fx, "node": [x, y], "selector": sel, "dof_name": "ux"}
+            )
         if fy != 0.0:
             dof = _dof_index(n, "uy")
             F[dof] += fy
-            loads.append({"dof": int(dof), "value": fy, "node": [x, y], "selector": sel, "dof_name": "uy"})
+            loads.append(
+                {"dof": int(dof), "value": fy, "node": [x, y], "selector": sel, "dof_name": "uy"}
+            )
 
     fixed = sorted(fixed_set)
     if not fixed:
@@ -191,7 +194,9 @@ def _explicit(mesh: Mesh2D, cfg: dict[str, Any]) -> tuple[np.ndarray, np.ndarray
     }
 
 
-def build_problem(mesh: Mesh2D, cfg_any: dict[str, Any] | None) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+def build_problem(
+    mesh: Mesh2D, cfg_any: dict[str, Any] | None
+) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
     cfg = cfg_any or {"type": "mbb"}
     if not isinstance(cfg, dict):
         raise ValueError("problem must be a dict")
@@ -203,7 +208,9 @@ def build_problem(mesh: Mesh2D, cfg_any: dict[str, Any] | None) -> tuple[np.ndar
     raise ValueError(f"unknown problem type: {t}")
 
 
-def save_problem_artifacts(run_dir: str, F: np.ndarray, fixed_dofs: np.ndarray, resolved: dict[str, Any]) -> dict[str, str]:
+def save_problem_artifacts(
+    run_dir: str, F: np.ndarray, fixed_dofs: np.ndarray, resolved: dict[str, Any]
+) -> dict[str, str]:
     import os
     os.makedirs(run_dir, exist_ok=True)
     fF = f"{run_dir}/F.npy"

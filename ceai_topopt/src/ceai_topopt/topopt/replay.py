@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 
 from ..manifest import sha256_file
-from .elasticity2d import Mesh2D, Material, compliance_and_sensitivities
+from .elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from .solver import SolverConfig
 
 

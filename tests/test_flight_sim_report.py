@@ -127,9 +127,13 @@ def test_flight_sim_html_exists() -> None:
 
 
 def test_dashboard_links_to_flight_sim() -> None:
+    """dashboard.html is now a redirect placeholder linking to launcher.html."""
     root = Path(__file__).resolve().parents[1]
     html = (root / "ui" / "dashboard.html").read_text(encoding="utf-8")
-    assert "flight_sim.html" in html
+    
+    # Verify it's a redirect page to launcher
+    assert "launcher.html" in html
+    assert "UI moved" in html or "Moved to" in html
 
 
 def test_load_report_roundtrip(tmp_path: Path) -> None:

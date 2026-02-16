@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import pytest
+
 pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
 import numpy as np
 
-from ceai_topopt.topopt.elasticity2d import Mesh2D, Material, compliance_and_sensitivities
+from ceai_topopt.topopt.elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from ceai_topopt.topopt.examples import mbb_beam
 from ceai_topopt.topopt.filters import density_filter_matrix
 from ceai_topopt.topopt.simp_oc import TopOptParams, run_topopt
@@ -22,7 +23,9 @@ def _run_once():
 
     res = run_topopt(mesh=mesh, mat=mat, F=bc.F, fixed_dofs=bc.fixed_dofs, topo=topo, H=H, x0=None)
 
-    c_final, _, _, _ = compliance_and_sensitivities(mesh, res["x_phys"], topo.penal, mat, bc.F, bc.fixed_dofs)
+    c_final, _, _, _ = compliance_and_sensitivities(
+        mesh, res["x_phys"], topo.penal, mat, bc.F, bc.fixed_dofs
+    )
     return res["x"], res["x_phys"], float(c_final), res["history"]
 
 

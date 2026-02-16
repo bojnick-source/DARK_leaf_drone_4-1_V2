@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from .elasticity2d import Mesh2D, Material, compliance_and_sensitivities
-from .filters import density_filter_matrix, apply_density_filter, chain_rule_grad_through_density_filter
+from .elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from .examples import mbb_beam
+from .filters import (
+    apply_density_filter,
+    chain_rule_grad_through_density_filter,
+    density_filter_matrix,
+)
 
 
 def gradcheck_compliance(
@@ -26,7 +30,9 @@ def gradcheck_compliance(
     H = density_filter_matrix(nely=nely, nelx=nelx, rmin=rmin)
 
     x_phys = apply_density_filter(H, x)
-    c0, dc_dphys, _, _solve = compliance_and_sensitivities(mesh, x_phys, penal, mat, bc.F, bc.fixed_dofs)
+    c0, dc_dphys, _, _solve = compliance_and_sensitivities(
+        mesh, x_phys, penal, mat, bc.F, bc.fixed_dofs
+    )
     dc_dx = chain_rule_grad_through_density_filter(H, dc_dphys)
 
     idxs = [(int(rng.integers(0, nely)), int(rng.integers(0, nelx))) for _ in range(samples)]
@@ -40,8 +46,12 @@ def gradcheck_compliance(
         x_p[iy, ix] = np.clip(x_p[iy, ix] + eps, 0.0, 1.0)
         x_m[iy, ix] = np.clip(x_m[iy, ix] - eps, 0.0, 1.0)
 
-        c_p, _, _, _ = compliance_and_sensitivities(mesh, apply_density_filter(H, x_p), penal, mat, bc.F, bc.fixed_dofs)
-        c_m, _, _, _ = compliance_and_sensitivities(mesh, apply_density_filter(H, x_m), penal, mat, bc.F, bc.fixed_dofs)
+        c_p, _, _, _ = compliance_and_sensitivities(
+            mesh, apply_density_filter(H, x_p), penal, mat, bc.F, bc.fixed_dofs
+        )
+        c_m, _, _, _ = compliance_and_sensitivities(
+            mesh, apply_density_filter(H, x_m), penal, mat, bc.F, bc.fixed_dofs
+        )
 
         fd = (c_p - c_m) / (2.0 * eps)
         an = dc_dx[iy, ix]
@@ -51,7 +61,13 @@ def gradcheck_compliance(
         rel_errors.append(rel)
 
         if worst is None or rel > worst["rel_error"]:
-            worst = {"iy": iy, "ix": ix, "fd": float(fd), "analytic": float(an), "rel_error": float(rel)}
+            worst = {
+                "iy": iy,
+                "ix": ix,
+                "fd": float(fd),
+                "analytic": float(an),
+                "rel_error": float(rel),
+            }
 
     rel_errors = np.array(rel_errors, dtype=float)
     return {
