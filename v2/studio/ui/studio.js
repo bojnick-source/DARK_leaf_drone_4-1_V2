@@ -733,7 +733,8 @@
 
         nodes.forEach((node, idx) => {
           const barWidth = (canvas.width - 30) / nodes.length;
-          const height = maxTemp > 0 ? ((node.temp / maxTemp) * (canvas.height - 30)) : 0;
+          const temp = node.temp || 0;
+          const height = maxTemp > 0 ? ((temp / maxTemp) * (canvas.height - 30)) : 0;
           const x = 10 + idx * barWidth;
           const y = canvas.height - height - 10;
           ctx.fillStyle = 'rgba(124, 92, 255, 0.7)';
