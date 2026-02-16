@@ -59,9 +59,15 @@ def gradcheck(
     )
     console.print(res)
     if res["rel_error_max"] > max_rel_error:
-        console.print(f"[red]FAIL[/red] rel_error_max={res['rel_error_max']:.3e} > {max_rel_error:.3e}")
+        console.print(
+            f"[red]FAIL[/red] rel_error_max={res['rel_error_max']:.3e} "
+            f"> {max_rel_error:.3e}"
+        )
         raise typer.Exit(code=1)
-    console.print(f"[green]PASS[/green] rel_error_max={res['rel_error_max']:.3e} <= {max_rel_error:.3e}")
+    console.print(
+        f"[green]PASS[/green] rel_error_max={res['rel_error_max']:.3e} "
+        f"<= {max_rel_error:.3e}"
+    )
 
 
 @app.command()
@@ -115,8 +121,23 @@ def run(
     F, fixed_dofs, resolved = build_problem(mesh, prob_cfg)
     H = density_filter_matrix(nely=nely, nelx=nelx, rmin=rmin)
 
-    topo = TopOptParams(volfrac=volfrac, penal=penal, rmin=rmin, max_iter=max_iter, change_tol=change_tol)
-    res = run_topopt(mesh=mesh, mat=mat, F=F, fixed_dofs=fixed_dofs, topo=topo, H=H, x0=None, solver_cfg=solver_cfg)
+    topo = TopOptParams(
+        volfrac=volfrac,
+        penal=penal,
+        rmin=rmin,
+        max_iter=max_iter,
+        change_tol=change_tol,
+    )
+    res = run_topopt(
+        mesh=mesh,
+        mat=mat,
+        F=F,
+        fixed_dofs=fixed_dofs,
+        topo=topo,
+        H=H,
+        x0=None,
+        solver_cfg=solver_cfg,
+    )
 
     # artifacts
     np.save(run_path / "x.npy", res["x"])
@@ -128,7 +149,9 @@ def run(
 
     prob_paths = save_problem_artifacts(str(run_path), F, fixed_dofs, resolved)
 
-    c_final, _, _, solve_diag = compliance_and_sensitivities(mesh, res["x_phys"], penal, mat, F, fixed_dofs, solver_cfg=solver_cfg)
+    c_final, _, _, solve_diag = compliance_and_sensitivities(
+        mesh, res["x_phys"], penal, mat, F, fixed_dofs, solver_cfg=solver_cfg
+    )
 
     t = Table(title="TopOpt Summary (last 10 iters)")
     t.add_column("iter")

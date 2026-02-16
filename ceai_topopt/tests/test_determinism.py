@@ -22,7 +22,9 @@ def _run_once():
 
     res = run_topopt(mesh=mesh, mat=mat, F=bc.F, fixed_dofs=bc.fixed_dofs, topo=topo, H=H, x0=None)
 
-    c_final, _, _, _ = compliance_and_sensitivities(mesh, res["x_phys"], topo.penal, mat, bc.F, bc.fixed_dofs)
+    c_final, _, _, _ = compliance_and_sensitivities(
+        mesh, res["x_phys"], topo.penal, mat, bc.F, bc.fixed_dofs
+    )
     return res["x"], res["x_phys"], float(c_final), res["history"]
 
 
