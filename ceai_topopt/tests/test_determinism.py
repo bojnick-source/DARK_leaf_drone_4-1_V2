@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import pytest
+
 pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
 import numpy as np
-
-from ceai_topopt.topopt.elasticity2d import Mesh2D, Material, compliance_and_sensitivities
+from ceai_topopt.topopt.elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from ceai_topopt.topopt.examples import mbb_beam
 from ceai_topopt.topopt.filters import density_filter_matrix
 from ceai_topopt.topopt.simp_oc import TopOptParams, run_topopt

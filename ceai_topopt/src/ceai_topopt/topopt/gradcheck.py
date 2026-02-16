@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from .elasticity2d import Mesh2D, Material, compliance_and_sensitivities
-from .filters import density_filter_matrix, apply_density_filter, chain_rule_grad_through_density_filter
+from .elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from .examples import mbb_beam
+from .filters import (
+    apply_density_filter,
+    chain_rule_grad_through_density_filter,
+    density_filter_matrix,
+)
 
 
 def gradcheck_compliance(

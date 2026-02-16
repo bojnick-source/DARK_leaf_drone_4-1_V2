@@ -8,7 +8,6 @@ import numpy as np
 
 from .elasticity2d import Mesh2D
 
-
 DOF = Literal["ux", "uy"]
 
 

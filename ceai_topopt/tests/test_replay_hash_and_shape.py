@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import pytest
+
 pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
 import json
+
 import numpy as np
 import pytest
-
-from ceai_topopt.manifest import RunManifest, write_manifest, utc_now_iso, hash_outputs
-from ceai_topopt.topopt.elasticity2d import Mesh2D, Material, compliance_and_sensitivities
+from ceai_topopt.manifest import RunManifest, hash_outputs, utc_now_iso, write_manifest
+from ceai_topopt.topopt.elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from ceai_topopt.topopt.filters import density_filter_matrix
 from ceai_topopt.topopt.problem_spec import build_problem, save_problem_artifacts
 from ceai_topopt.topopt.replay import replay_compliance

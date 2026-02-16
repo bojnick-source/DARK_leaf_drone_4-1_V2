@@ -9,8 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Tuple
 
-from sfcs_mdp.hashutil import sha256_bytes, sha256_file
-
 from reidce.memory import MemoryStore
 from reidce.pico_gk import apply_pico_gk
 from reidce.schemas import (
@@ -46,6 +44,7 @@ from reidce.schemas import (
     now_utc_iso,
 )
 from reidce.topology import recommend_topology
+from sfcs_mdp.hashutil import sha256_bytes, sha256_file
 
 _GRAVITY_M_S2 = 9.80665
 
