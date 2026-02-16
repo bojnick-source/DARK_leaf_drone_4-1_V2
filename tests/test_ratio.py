@@ -1,7 +1,6 @@
 """Tests for ratio parsing, validation, and normalisation."""
 
 import pytest
-
 from reidce.ratio import RatioResult, parse_ratio
 
 

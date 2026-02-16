@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 import yaml
-
 from sfcs_mdp.artifacts import expand_placeholders
 from sfcs_mdp.model import Spec
 from sfcs_mdp.validate import SpecValidationError, load_spec, validate_spec

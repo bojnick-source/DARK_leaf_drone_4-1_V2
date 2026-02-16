@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from sfcs_mdp.v2_engine import find_engine_cli, run_engine
 
 

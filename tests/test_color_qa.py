@@ -1,5 +1,4 @@
 import pytest
-
 from sfcs_mdp.color_qa import (
     ColorPatch,
     ColorProfileInfo,

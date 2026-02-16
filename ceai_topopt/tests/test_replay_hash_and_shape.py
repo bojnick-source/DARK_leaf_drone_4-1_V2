@@ -9,6 +9,7 @@ import json
 
 import numpy as np
 import pytest
+
 from ceai_topopt.manifest import RunManifest, hash_outputs, utc_now_iso, write_manifest
 from ceai_topopt.topopt.elasticity2d import Material, Mesh2D, compliance_and_sensitivities
 from ceai_topopt.topopt.filters import density_filter_matrix
