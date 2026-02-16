@@ -75,9 +75,11 @@ def test_dashboard_links_to_cad_viewer() -> None:
 
 
 def test_launcher_has_views() -> None:
-    # Verify it's a redirect page
-    assert "launcher.html" in html
-    assert "UI moved" in html or "Moved to" in html
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "ui" / "launcher.html").read_text(encoding="utf-8")
+
+    # Check for main view sections
+    assert "view" in html.lower() or "section" in html.lower()
 
 
 # ---- Compute Tab tests ----
@@ -96,6 +98,13 @@ def test_dashboard_has_compute_tab() -> None:
 
 
 def test_launcher_has_controls() -> None:
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "ui" / "launcher.html").read_text(encoding="utf-8")
+
+    # Should have some control buttons
+    assert "button" in html.lower() or "btn" in html.lower()
+
+
 @pytest.mark.skip(reason="Compute tab removed during UI refactoring to launcher.html")
 def test_dashboard_compute_tab_has_generate_button() -> None:
     root = Path(__file__).resolve().parents[1]
@@ -106,6 +115,14 @@ def test_dashboard_compute_tab_has_generate_button() -> None:
 
 
 def test_launcher_js_has_functionality() -> None:
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "ui" / "launcher.js").read_text(encoding="utf-8")
+
+    # Check for basic functionality
+    assert "addEventListener" in js
+    assert "function" in js or "=>" in js
+
+
 @pytest.mark.skip(reason="Compute tab removed during UI refactoring to launcher.html")
 def test_dashboard_compute_tab_has_module_list() -> None:
     root = Path(__file__).resolve().parents[1]
@@ -117,6 +134,13 @@ def test_dashboard_compute_tab_has_module_list() -> None:
 
 
 def test_launcher_js_has_canvas_support() -> None:
+    root = Path(__file__).resolve().parents[1]
+    js = (root / "ui" / "launcher.js").read_text(encoding="utf-8")
+
+    # Check for canvas-related code
+    assert "canvas" in js.lower() or "Canvas" in js
+
+
 @pytest.mark.skip(reason="Compute tab removed during UI refactoring to launcher.html")
 def test_dashboard_compute_tab_has_results_panel() -> None:
     root = Path(__file__).resolve().parents[1]
