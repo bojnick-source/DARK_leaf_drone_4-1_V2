@@ -3,7 +3,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from sfcs_mdp.v2_engine import find_engine_cli, run_engine
+
+from v2.python.engine import find_engine_cli, run_engine
 
 
 def test_find_engine_cli_with_explicit_path(tmp_path: Path) -> None:

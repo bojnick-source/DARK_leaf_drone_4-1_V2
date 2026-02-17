@@ -1,17 +1,19 @@
-"""Tests for reidce.engineering_ai — local engineering knowledge engine."""
+"""Tests for v2.python.ai.engineering_ai — local engineering knowledge engine."""
 
 from pathlib import Path
 
-from reidce.engineering_ai import (
-    ConversationContext,
-    ConversationTurn,
+from v2.python.ai import (
     EngineeringKnowledgeBase,
     EngineeringQueryEngine,
     KnowledgeChunk,
     QueryResult,
+)
+from v2.python.ai.engineering_ai import (
+    ConversationContext,
+    ConversationTurn,
     classify_intent,
 )
-from reidce.memory import MemoryStore
+from v2.python.ai.memory import MemoryStore
 
 # ── KnowledgeChunk ───────────────────────────────────────────────────────
 

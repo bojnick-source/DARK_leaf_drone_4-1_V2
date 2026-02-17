@@ -49,7 +49,7 @@ jobs:
 
       - name: Verify compile_commands isolation
         run: |
-          python python/tools/v2/verify_compile_db_isolation.py \
+          python v2/python/tools/verify_compile_db_isolation.py \
             --compile-db build-${{ matrix.enable_v2 }}/compile_commands.json \
             ${{ matrix.enable_v2 == 'OFF' && '--require-absent v2/engine --require-absent cpp/engine/analysis --require-absent v2/studio' || '--require-present v2/engine --require-present cpp/engine/analysis' }}
 

@@ -27,8 +27,8 @@ from sfcs_mdp.model import (
     StepDisposition,
     StepType,
 )
-from sfcs_mdp.v2_engine import find_engine_cli, run_engine
 from sfcs_mdp.validate import load_spec, topological_sort, validate_spec
+from v2.python.engine import find_engine_cli, run_engine
 
 
 @dataclass(frozen=True)

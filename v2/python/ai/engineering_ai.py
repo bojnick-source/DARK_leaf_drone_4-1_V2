@@ -30,7 +30,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-from reidce.memory import MemoryStore
+from v2.python.ai.memory import MemoryStore  # noqa: F401
 
 # ── Tokenisation helpers (consistent with memory.py) ─────────────────────
 
