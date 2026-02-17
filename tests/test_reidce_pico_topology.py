@@ -1,4 +1,4 @@
-from reidce.design_prep import apply_pico_gk
+from reidce.pico_gk import apply_pico_gk
 from reidce.schemas import (
     ActuatorSpec,
     BudgetLine,
