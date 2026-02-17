@@ -1,3 +1,4 @@
+from reidce.design_prep import apply_pico_gk
 from reidce.schemas import (
     ActuatorSpec,
     BudgetLine,
@@ -97,6 +98,29 @@ def _make_design() -> DesignSpec:
             ),
         ),
     )
+
+
+def test_apply_pico_gk_adds_cad_ref() -> None:
+    design = _make_design()
+    updated = apply_pico_gk(design)
+    assert updated.geometry.cad_ref.type == "implicit"
+    assert updated.geometry.cad_ref.sha256
+    assert updated.geometry.cad_ref.uri is not None
+    assert updated.geometry.cad_ref.uri.startswith("pico_gk://")
+
+
+def test_apply_pico_gk_skips_existing_cad_ref() -> None:
+    base_design = _make_design()
+    design = base_design.model_copy(
+        update={
+            "geometry": base_design.geometry.model_copy(
+                update={"cad_ref": CadRef(type="step", uri="file.step", sha256="abc")}
+            )
+        }
+    )
+    updated = apply_pico_gk(design)
+    assert updated.geometry.cad_ref.type == "step"
+    assert updated.geometry.cad_ref.uri == "file.step"
 
 
 def test_generate_topology_candidates() -> None:

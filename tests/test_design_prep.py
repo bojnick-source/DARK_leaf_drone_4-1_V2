@@ -102,16 +102,14 @@ def _make_design() -> DesignSpec:
     )
 
 
-def test_prepare_design_for_pipeline_applies_topology() -> None:
-    """Test that prepare_design_for_pipeline applies topology optimization."""
+def test_prepare_design_for_pipeline_adds_cad_ref() -> None:
+    """Test that prepare_design_for_pipeline applies PicoGK CAD ref."""
     design = _make_design()
     updated = prepare_design_for_pipeline(design)
-    # Design should be updated with topology optimization
-    assert (
-        updated.name.endswith("_topology_1")
-        or updated.name.endswith("_topology_2")
-        or updated.name.endswith("_topology_3")
-    )
+    assert updated.geometry.cad_ref.type == "implicit"
+    assert updated.geometry.cad_ref.sha256
+    assert updated.geometry.cad_ref.uri is not None
+    assert updated.geometry.cad_ref.uri.startswith("pico_gk://")
 
 
 def test_prepare_design_for_pipeline_with_memory_store() -> None:
@@ -119,6 +117,11 @@ def test_prepare_design_for_pipeline_with_memory_store() -> None:
     design = _make_design()
     memory_store = MemoryStore()
     updated = prepare_design_for_pipeline(design, memory_store)
+    
+    # Check that PicoGK event was logged
+    events = [record for record in memory_store.records if "pico_gk" in record.tags]
+    assert len(events) == 1
+    assert events[0].text == "Applied Pico GK CAD ref"
     
     # Check that topology event was logged
     events = [
@@ -128,6 +131,7 @@ def test_prepare_design_for_pipeline_with_memory_store() -> None:
     assert events[0].text == "Selected topology candidate"
     
     # Check that design was updated
+    assert updated.geometry.cad_ref.type == "implicit"
     assert (
         updated.name.endswith("_topology_1")
         or updated.name.endswith("_topology_2")

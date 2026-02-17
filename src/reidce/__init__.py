@@ -96,7 +96,12 @@ from reidce.design_catalog import (
     validate_catalog,
     validate_design,
 )
-from reidce.design_prep import prepare_design_for_pipeline
+from reidce.design_prep import (
+    PicoGKResult,
+    apply_pico_gk,
+    generate_cad_ref,
+    prepare_design_for_pipeline,
+)
 from reidce.drivetrain import (
     Backlash,
     BeltDrive,
@@ -375,6 +380,7 @@ __all__ = [
     "RunManifest",
     "SensitivityReport",
     "UQSummary",
+    "PicoGKResult",
     "MemoryRecord",
     "MemorySearchResult",
     "MemoryStore",
@@ -466,11 +472,13 @@ __all__ = [
     "TopologyPreference",
     "TopologyRecommendation",
     "TopologyScorecard",
+    "apply_pico_gk",
     "compile_inputs",
     "evaluate_nominal",
     "evaluate_uq",
     "export_build_packet",
     "export_evidence_pack",
+    "generate_cad_ref",
     "generate_topology_candidates",
     "optimize_topology_divergent",
     "optimize_topology_freeform",
