@@ -121,12 +121,20 @@ fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
   // revealage = 1.0 → fully transparent (no glass), 0.0 → fully opaque glass
   let composited = oitColor * (1.0 - revealage) + absorbedBg * revealage;
 
-  // --- Subtle Fresnel-like rim (screen-space approximation) ---
-  // Uses edge luminance gradient as a proxy for surface angle.
-  // Full implementation would use view-space normals; this is a fast approx.
-  let luma = dot(composited, vec3<f32>(0.2126, 0.7152, 0.0722));
-  let edgeGrad = fwidth(luma);
-  let fresnelRim = pow(saturate(edgeGrad * 8.0), params.fresnelPower) * params.fresnelIntensity;
+  // --- Subtle Fresnel-like rim (compute-safe screen-space approximation) ---
+  // Use local revealage differences as a proxy for an edge metric.
+  let leftCoord = vec2<i32>(max(coord.x - 1, 0), coord.y);
+  let rightCoord = vec2<i32>(min(coord.x + 1, res.x - 1), coord.y);
+  let upCoord = vec2<i32>(coord.x, max(coord.y - 1, 0));
+  let downCoord = vec2<i32>(coord.x, min(coord.y + 1, res.y - 1));
+
+  let revealL = textureLoad(oitReveal, leftCoord, 0).r;
+  let revealR = textureLoad(oitReveal, rightCoord, 0).r;
+  let revealU = textureLoad(oitReveal, upCoord, 0).r;
+  let revealD = textureLoad(oitReveal, downCoord, 0).r;
+
+  let edgeGrad = abs(revealR - revealL) + abs(revealD - revealU);
+  let fresnelRim = pow(saturate(edgeGrad * 2.0), params.fresnelPower) * params.fresnelIntensity;
 
   let finalColor = composited + vec3<f32>(fresnelRim);
 

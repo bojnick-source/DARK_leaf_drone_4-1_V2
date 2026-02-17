@@ -485,7 +485,7 @@
           child.userData._origMaterial = child.material.clone();
         }
         // Restore from original before applying noir to prevent compounding
-        child.material.copy(child.userData._origMaterial);
+        child.material = child.userData._origMaterial.clone();
         // Apply noir metallic look
         if (child.material.isMeshStandardMaterial) {
           child.material.metalness = Math.min(child.material.metalness + 0.2, 1.0);
@@ -505,7 +505,7 @@
 
     drone.traverse((child) => {
       if (child.isMesh && child.userData._origMaterial) {
-        child.material.copy(child.userData._origMaterial);
+        child.material = child.userData._origMaterial.clone();
         child.material.needsUpdate = true;
       }
     });
@@ -553,7 +553,7 @@
     if (drone) {
       drone.traverse((child) => {
         if (child.isMesh && child.userData._origMaterial) {
-          child.material.copy(child.userData._origMaterial);
+          child.material = child.userData._origMaterial.clone();
           child.material.needsUpdate = true;
         }
       });
