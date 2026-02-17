@@ -1,4 +1,4 @@
-"""Tests for v2.python.ai.engineering_ai — local engineering knowledge engine."""
+"""Tests for v2.python.ai (engineering_ai module) — local engineering knowledge engine."""
 
 from pathlib import Path
 
