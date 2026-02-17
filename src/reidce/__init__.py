@@ -96,7 +96,12 @@ from reidce.design_catalog import (
     validate_catalog,
     validate_design,
 )
-from reidce.design_prep import prepare_design_for_pipeline
+from reidce.design_prep import (
+    PicoGKResult,
+    apply_pico_gk,
+    generate_cad_ref,
+    prepare_design_for_pipeline,
+)
 from reidce.drivetrain import (
     Backlash,
     BeltDrive,
@@ -246,7 +251,6 @@ from reidce.open_claw_agent import (
     run_open_claw_agent,
     run_safety_checks,
 )
-from reidce.pico_gk import PicoGKResult, apply_pico_gk, generate_cad_ref
 from reidce.pipeline import (
     compile_inputs,
     evaluate_nominal,
