@@ -1,11 +1,20 @@
 ﻿//
-// SPDX-License-Identifier: CC0-1.0
+// SPDX-License-Identifier: MIT
 //
-// This example code file is released to the public under Creative Commons CC0.
-// See https://creativecommons.org/publicdomain/zero/1.0/legalcode
+// This example code file is licensed under the MIT License.
+// See https://opensource.org/licenses/MIT
 //
-// To the extent possible under law, the author has waived all copyright and
-// related or neighboring rights to this example code file.
+// Copyright (c) 2025 by LEAP 71
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
 // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -16,13 +25,4 @@
 // THE SOFTWARE.
 //
 
-using PicoGK;
-using PicoGKExamples;
-
-// This simple call runs PicoGK with the specified task and shows the PicoGK viewer
-
-Library.Go( 0.5f,                   // size of each voxel in millimeters
-            BooleanShowCase.Task);       // the task you want to execute
-
-// After you close the viewer, the application exits.
-
+Console.WriteLine("PicoGK Unit Tests");
