@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 from reidce.memory import MemoryStore
-from reidce.pico_gk import apply_pico_gk
 from reidce.topology import recommend_topology
 
 
@@ -11,31 +10,19 @@ def prepare_design_for_pipeline(design: Any, memory_store: MemoryStore | None = 
     """
     Prepare a design for pipeline processing.
 
-    Applies PicoGK CAD reference generation and topology optimization
-    if applicable to the design domain.
+    Applies topology optimization if applicable to the design domain.
 
     Args:
         design: The design specification to prepare
         memory_store: Optional memory store for logging events
 
     Returns:
-        Updated design specification with CAD reference and optimized topology
+        Updated design specification with optimized topology
     """
-    if not hasattr(design, "geometry") or not hasattr(design, "model_copy"):
+    if not hasattr(design, "model_copy"):
         return design
 
-    updated = apply_pico_gk(design)
-    if memory_store is not None and updated is not design:
-        cad_ref = getattr(updated.geometry, "cad_ref", None)
-        cad_payload = cad_ref.model_dump(mode="json") if cad_ref is not None else None
-        memory_store.log_event(
-            "pico_gk",
-            "Applied Pico GK CAD ref",
-            {
-                "design_id": getattr(updated, "design_id", None),
-                "cad_ref": cad_payload,
-            },
-        )
+    updated = design
 
     if getattr(updated, "domain", None) == "actuated_compliant_subsystem":
         recommendation = recommend_topology(updated, memory_store=memory_store)

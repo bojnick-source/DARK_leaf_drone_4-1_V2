@@ -246,7 +246,6 @@ from reidce.open_claw_agent import (
     run_open_claw_agent,
     run_safety_checks,
 )
-from reidce.pico_gk import PicoGKResult, apply_pico_gk, generate_cad_ref
 from reidce.pipeline import (
     compile_inputs,
     evaluate_nominal,
@@ -376,7 +375,6 @@ __all__ = [
     "RunManifest",
     "SensitivityReport",
     "UQSummary",
-    "PicoGKResult",
     "MemoryRecord",
     "MemorySearchResult",
     "MemoryStore",
@@ -468,13 +466,11 @@ __all__ = [
     "TopologyPreference",
     "TopologyRecommendation",
     "TopologyScorecard",
-    "apply_pico_gk",
     "compile_inputs",
     "evaluate_nominal",
     "evaluate_uq",
     "export_build_packet",
     "export_evidence_pack",
-    "generate_cad_ref",
     "generate_topology_candidates",
     "optimize_topology_divergent",
     "optimize_topology_freeform",
