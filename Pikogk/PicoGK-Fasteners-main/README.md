@@ -1,0 +1,103 @@
+# PicoGK-Fasteners 
+
+### PicoGK-Fasteners is a fastener and fastener utility library for your PicoGK project.
+
+With this library, you can generate fasteners or their respective holes as voxel bodies. By defining a fastener (size, length, etc.), and then calling that fastener's methods you can generate the type of voxel body you want. More in the How to Use section below.
+
+PicoGK-Fasteners can currently generate the following types of voxel objects:
+ 
+#### Fasteners
+- Hex Heads 
+- Countersunk 
+- Button Head 
+- Socket Head Cap Screw (SHCS)
+
+All with the following driver options:
+- Hex
+- Philips
+- Robinson
+- None
+
+#### Holes 
+- Clearance Holes 
+- Countersunk Holes
+- Counterbored Holes
+- Tapped holes
+- Tap Drill Holes
+
+#### Other Fasteners 
+- Washers 
+- Nuts 
+- Fastener Stacks (Fastener/Washer/Gap/Washer/Nut)
+
+Most methods take a LocalFrame for its position, and possibly some other info specific to that method. 
+
+You can run the example file by running the following:
+```
+try
+{
+   PicoGK.Library.Go(0.05f, CarinaLabs.FastenerExample.Task);
+}
+catch (Exception e)
+{
+    // Apparently something went wrong, output here
+    Console.WriteLine(e);
+}
+```
+
+## Dependencies
+ - PicoGK
+ - ShapeKernel
+
+## How to Use 
+
+Start by adding PicoGK-Fasteners to your project
+ 
+> git submodule add https://github.com/joshmelnykcroft/PicoGK-Fasteners
+
+Include fasteners to your project by adding 
+> using PicoGK-Fasteners;
+
+To create your first fastener object, choose one of two constructors:
+
+The first constructor creates generic fastener given a few inputs.
+
+> Fastener oMyBasicFastener = new(Fastener.EHeadType.Button, Fastener.EDriver.Hex, fSize, fLength, fThreadPitch, sDescription)
+
+This is not a accurate representation of a fastener you'd buy off the shelf, but should be close enough for you to carry on with your  project.
+
+The second constructor creates a more accurate representation of your fastener based on measurements you provide.
+
+> Fastener oMyDefinedFastener = new(); //Leave blank to default to M5x10 SHCS, or change individual properties (as described by the constructor) to what you need.
+
+Once you have your fastener defined, you can call one of the following methods to create a variety of voxel objects that you can add or subtract to your project.
+
+#### Fasteners
+
+- .ScrewBasic
+- .ScrewThreaded
+- .Nut
+- .Washer
+- .Stack 
+
+#### Holes
+
+- .HoleThreaded
+- .HoleClearance
+- .HoleBasic
+- .HoleCounterbored
+- .HoleCountersunk
+- .Tapdrill
+
+
+## Roadmap to release 1.0
+
+- [ ] Impliment some sort of BOM export
+- [x] Add an offset to countersunk holes so that screw heads can sit below the surface
+- [ ] Tidy up code 
+
+
+## Credits
+Thanks to Leap71 for creating and sharing PicoGK , as well as writing the Coding for Engineers book.
+Also thanks to you, if you decide to try this out and use it. PR's are welcome if you have an fix/idea/feature that you want to contribute!
+
