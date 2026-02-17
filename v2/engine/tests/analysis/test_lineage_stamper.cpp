@@ -3,14 +3,14 @@
 #include <string>
 #include <vector>
 
-#include "analysis/lineage_stamper.hpp"
+#include "v2/analysis/lineage_stamper.hpp"
 #include "v2/io/artifacts.hpp"
 #include "v2/io/run_id.hpp"
 
-using engine::analysis::LineageInput;
-using engine::analysis::LineageResult;
-using engine::analysis::RunContext;
-using engine::analysis::stamp_lineage;
+using v2::analysis::LineageInput;
+using v2::analysis::LineageResult;
+using v2::analysis::RunContext;
+using v2::analysis::stamp_lineage;
 
 std::string canonical_inputs() {
     return v2::io::canonicalize_kv({{"alpha", 1.0}, {"beta", 2.0}});

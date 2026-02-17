@@ -3,9 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "analysis/accuracy_gate.hpp"
+#include "v2/analysis/accuracy_gate.hpp"
 
-namespace engine::analysis {
+namespace v2::analysis {
 
 struct LineageInput {
     std::string run_id;
@@ -23,4 +23,4 @@ struct LineageResult {
 
 LineageResult stamp_lineage(const RunContext& ctx, const LineageInput& input);
 
-}  // namespace engine::analysis
+}  // namespace v2::analysis

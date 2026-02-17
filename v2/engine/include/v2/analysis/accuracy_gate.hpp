@@ -4,7 +4,7 @@
 #include <string_view>
 #include <vector>
 
-namespace engine::analysis {
+namespace v2::analysis {
 
 struct RunContext {
     std::string expected_run_id;
@@ -33,4 +33,4 @@ struct GateDecision {
 GateDecision accuracy_gate_evaluate(std::string_view evidence_json, const RunContext& ctx);
 std::string evidence_payload_digest(std::string_view evidence_json);
 
-}  // namespace engine::analysis
+}  // namespace v2::analysis

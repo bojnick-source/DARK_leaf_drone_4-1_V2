@@ -1,4 +1,4 @@
-"""2D engineering blueprint/schematic generator for drone designs.
+"""2D engineering schematic generator for drone designs.
 
 Produces highly detailed, dimensioned technical drawings in SVG format
 on a flat sheet.  Implements standard engineering drawing conventions:
@@ -14,7 +14,7 @@ Key components
   arrowheads, and measurement text.
 * ``ViewPort`` — one orthographic projection (top, front, or side) with
   its own coordinate transform and clipping rect.
-* ``Annotation`` — text callout attached to a blueprint element.
+* ``Annotation`` — text callout attached to a schematic element.
 * ``TitleBlock`` — ISO 7200-style title block with project metadata.
 * ``BlueprintResult`` — complete output with SVG content, view count,
   dimension count, and validation status.

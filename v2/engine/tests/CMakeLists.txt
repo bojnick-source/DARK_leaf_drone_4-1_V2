@@ -79,3 +79,33 @@ target_link_libraries(validity_test PRIVATE v2_engine)
 
 # Register the test with CTest
 add_test(NAME validity_test COMMAND validity_test)
+
+# ---- Test: accuracy_gate_test ----
+add_executable(accuracy_gate_test
+  analysis/test_accuracy_gate.cpp
+)
+
+target_link_libraries(accuracy_gate_test PRIVATE v2_engine)
+
+# Register the test with CTest
+add_test(NAME accuracy_gate_test COMMAND accuracy_gate_test)
+
+# ---- Test: commit_gate_test ----
+add_executable(commit_gate_test
+  analysis/test_commit_gate.cpp
+)
+
+target_link_libraries(commit_gate_test PRIVATE v2_engine)
+
+# Register the test with CTest
+add_test(NAME commit_gate_test COMMAND commit_gate_test)
+
+# ---- Test: lineage_stamper_test ----
+add_executable(lineage_stamper_test
+  analysis/test_lineage_stamper.cpp
+)
+
+target_link_libraries(lineage_stamper_test PRIVATE v2_engine)
+
+# Register the test with CTest
+add_test(NAME lineage_stamper_test COMMAND lineage_stamper_test)

@@ -9,9 +9,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 enable_testing()
 
 # Optional v2 engine/tooling
-option(ENABLE_V2_ENGINE "Build v2 engine/tooling" OFF)
+option(ENABLE_V2_ENGINE "Build v2 engine/tooling" ON)
 if(ENABLE_V2_ENGINE)
   add_subdirectory(v2/engine)
   add_subdirectory(v2/studio)
-  add_subdirectory(cpp/engine)
 endif()

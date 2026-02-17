@@ -171,7 +171,7 @@ _ANALYSIS_SCRIPT_TEMPLATE = textwrap.dedent("""\
 _BLUEPRINT_SCRIPT_TEMPLATE = textwrap.dedent("""\
     \"\"\"Auto-generated blueprint generation script.\"\"\"
 
-    from reidce.blueprint_engine import (
+    from reidce.schematic_generator import (
         BlueprintSpec,
         generate_drone_blueprint,
     )
@@ -265,7 +265,7 @@ class CodeGenEngine:
                     "arm_count", "arm_length_m", "hub_radius_m",
                     "prop_radius_m", "scale",
                 ],
-                imports=["reidce.blueprint_engine"],
+                imports=["reidce.schematic_generator"],
             ),
         ]
         for tmpl in builtins:

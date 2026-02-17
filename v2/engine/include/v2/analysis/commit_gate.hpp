@@ -4,9 +4,9 @@
 #include <string_view>
 #include <vector>
 
-#include "analysis/accuracy_gate.hpp"
+#include "v2/analysis/accuracy_gate.hpp"
 
-namespace engine::analysis {
+namespace v2::analysis {
 
 struct EvidenceSummary {
     std::string run_id;
@@ -24,4 +24,4 @@ struct CommitDecision {
 
 CommitDecision commit_gate_evaluate(const RunContext& ctx, const EvidenceSummary& evidence);
 
-}  // namespace engine::analysis
+}  // namespace v2::analysis

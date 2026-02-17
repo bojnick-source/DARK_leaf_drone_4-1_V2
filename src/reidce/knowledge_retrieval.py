@@ -1,10 +1,10 @@
-"""Local engineering AI knowledge engine.
+"""Local engineering knowledge retrieval system.
 
 Provides a retrieval-augmented inference system that loads the
 ``docs/ai_knowledge/`` corpus and answers engineering questions by
 retrieving the most relevant knowledge passages, scoring them, and
 composing a structured response.  No external API calls are made —
-the engine runs entirely locally.
+the system runs entirely locally.
 
 Key components
 --------------
@@ -19,7 +19,7 @@ Key components
 
 The knowledge base is intentionally trained on the engineering data
 shipped with this repository (aerospace, controls, circuits, thermal,
-structural, etc.) so the AI is domain-specific.
+structural, etc.) so the retrieval is domain-specific.
 """
 
 from __future__ import annotations
@@ -372,7 +372,7 @@ class EngineeringQueryEngine:
     def to_dict(self) -> Dict[str, Any]:
         """Summary of engine state."""
         return {
-            "schema": "dark/engineering_ai/1.0",
+            "schema": "dark/knowledge_retrieval/1.0",
             "n_chunks": len(self.knowledge_base.chunks),
             "domains": self.list_domains(),
             "has_memory": self.memory_store is not None,

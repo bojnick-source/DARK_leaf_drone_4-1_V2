@@ -1,4 +1,4 @@
-#include "commit_gate.hpp"
+#include "v2/analysis/commit_gate.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -7,7 +7,7 @@
 #include "v2/io/artifacts.hpp"
 #include "v2/io/run_id.hpp"
 
-namespace engine::analysis {
+namespace v2::analysis {
 
 namespace {
 constexpr const char* kCommitMarkerFile = "commit.marker";
@@ -113,4 +113,4 @@ CommitDecision commit_gate_evaluate(const RunContext& ctx, const EvidenceSummary
     return decision;
 }
 
-}  // namespace engine::analysis
+}  // namespace v2::analysis

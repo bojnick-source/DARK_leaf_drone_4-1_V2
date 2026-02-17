@@ -1,4 +1,4 @@
-#include "accuracy_gate.hpp"
+#include "v2/analysis/accuracy_gate.hpp"
 
 #include <charconv>
 #include <cctype>
@@ -9,7 +9,7 @@
 
 #include "v2/io/run_id.hpp"
 
-namespace engine::analysis {
+namespace v2::analysis {
 
 namespace {
 
@@ -414,4 +414,4 @@ GateDecision accuracy_gate_evaluate(std::string_view evidence_json, const RunCon
     return decision;
 }
 
-}  // namespace engine::analysis
+}  // namespace v2::analysis

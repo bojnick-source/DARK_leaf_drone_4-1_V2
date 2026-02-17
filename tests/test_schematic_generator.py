@@ -1,6 +1,6 @@
-"""Tests for reidce.blueprint_engine — 2D engineering blueprint generator."""
+"""Tests for reidce.schematic_generator — 2D engineering schematic generator."""
 
-from reidce.blueprint_engine import (
+from reidce.schematic_generator import (
     Annotation,
     BlueprintResult,
     BlueprintSpec,

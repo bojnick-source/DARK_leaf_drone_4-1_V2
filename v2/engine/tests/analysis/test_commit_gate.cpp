@@ -2,15 +2,15 @@
 #include <filesystem>
 #include <string>
 
-#include "analysis/commit_gate.hpp"
+#include "v2/analysis/commit_gate.hpp"
 #include "v2/io/artifacts.hpp"
 #include "v2/io/run_id.hpp"
 
-using engine::analysis::CommitDecision;
-using engine::analysis::CommitFailCode;
-using engine::analysis::EvidenceSummary;
-using engine::analysis::RunContext;
-using engine::analysis::commit_gate_evaluate;
+using v2::analysis::CommitDecision;
+using v2::analysis::CommitFailCode;
+using v2::analysis::EvidenceSummary;
+using v2::analysis::RunContext;
+using v2::analysis::commit_gate_evaluate;
 
 bool has_reason(const CommitDecision& decision, CommitFailCode code) {
     for (auto r : decision.reasons) {

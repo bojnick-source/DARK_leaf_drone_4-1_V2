@@ -20,17 +20,6 @@ from reidce.bemt import (
     hover_thrust,
     solve_bemt,
 )
-from reidce.blueprint_engine import (
-    Annotation,
-    BlueprintResult,
-    BlueprintSpec,
-    BOMEntry,
-    DimensionLine,
-    Point2D,
-    TitleBlock,
-    ViewPort,
-    generate_drone_blueprint,
-)
 from reidce.cad_agent import (
     CadAgentResult,
     CompetitionDroneSpec,
@@ -131,16 +120,6 @@ from reidce.electromagnetic import (
     evaluate_motor,
     saturation_curve,
 )
-from reidce.engineering_ai import (
-    ConversationContext,
-    ConversationTurn,
-    EngineeringKnowledgeBase,
-    EngineeringQueryEngine,
-    KnowledgeChunk,
-    QueryResult,
-    RetrievedPassage,
-    classify_intent,
-)
 from reidce.fea import (
     BeamElement,
     BoundaryCondition,
@@ -201,6 +180,16 @@ from reidce.kite_power import (
     kite_aero_forces,
     kite_power,
     optimal_reeling_speed,
+)
+from reidce.knowledge_retrieval import (
+    ConversationContext,
+    ConversationTurn,
+    EngineeringKnowledgeBase,
+    EngineeringQueryEngine,
+    KnowledgeChunk,
+    QueryResult,
+    RetrievedPassage,
+    classify_intent,
 )
 from reidce.lift_challenge import (
     ALADDIN_3B,
@@ -301,6 +290,17 @@ from reidce.schemas import (
     RunManifest,
     SensitivityReport,
     UQSummary,
+)
+from reidce.schematic_generator import (
+    Annotation,
+    BlueprintResult,
+    BlueprintSpec,
+    BOMEntry,
+    DimensionLine,
+    Point2D,
+    TitleBlock,
+    ViewPort,
+    generate_drone_blueprint,
 )
 from reidce.topology import (
     TopologyCandidate,

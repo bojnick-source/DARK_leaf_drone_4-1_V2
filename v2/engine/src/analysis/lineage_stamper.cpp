@@ -1,4 +1,4 @@
-#include "lineage_stamper.hpp"
+#include "v2/analysis/lineage_stamper.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -10,7 +10,7 @@
 #include "v2/io/artifacts.hpp"
 #include "v2/io/run_id.hpp"
 
-namespace engine::analysis {
+namespace v2::analysis {
 
 namespace {
 
@@ -156,4 +156,4 @@ LineageResult stamp_lineage(const RunContext& ctx, const LineageInput& raw_input
     return result;
 }
 
-}  // namespace engine::analysis
+}  // namespace v2::analysis

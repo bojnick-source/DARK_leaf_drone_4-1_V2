@@ -2,13 +2,13 @@
 #include <sstream>
 #include <string>
 
-#include "analysis/accuracy_gate.hpp"
+#include "v2/analysis/accuracy_gate.hpp"
 #include "v2/io/run_id.hpp"
 
-using engine::analysis::GateDecision;
-using engine::analysis::RunContext;
-using engine::analysis::accuracy_gate_evaluate;
-using engine::analysis::evidence_payload_digest;
+using v2::analysis::GateDecision;
+using v2::analysis::RunContext;
+using v2::analysis::accuracy_gate_evaluate;
+using v2::analysis::evidence_payload_digest;
 
 std::string build_base_evidence(const std::string& run_id) {
     std::ostringstream oss;
