@@ -132,7 +132,11 @@ def test_prepare_design_for_pipeline_with_memory_store() -> None:
     
     # Check that design was updated
     assert updated.geometry.cad_ref.type == "implicit"
-    assert updated.name.endswith("_topology_1") or updated.name.endswith("_topology_2") or updated.name.endswith("_topology_3")
+    assert (
+        updated.name.endswith("_topology_1")
+        or updated.name.endswith("_topology_2")
+        or updated.name.endswith("_topology_3")
+    )
 
 
 def test_prepare_design_for_pipeline_skips_non_design_objects() -> None:
