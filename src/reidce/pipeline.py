@@ -11,8 +11,8 @@ from typing import Any, Dict, List, Literal, Tuple
 
 from sfcs_mdp.hashutil import sha256_bytes, sha256_file
 
+from reidce.design_prep import prepare_design_for_pipeline
 from reidce.memory import MemoryStore
-from reidce.pico_gk import apply_pico_gk
 from reidce.schemas import (
     BudgetTotals,
     BuildPacket,
@@ -45,7 +45,6 @@ from reidce.schemas import (
     WilsonCI,
     now_utc_iso,
 )
-from reidce.topology import recommend_topology
 
 _GRAVITY_M_S2 = 9.80665
 
@@ -76,40 +75,6 @@ class PipelineArtifacts:
     build_packet: BuildPacket
     manifest: RunManifest
     evidence_pack: EvidencePack
-
-
-def _prepare_design_for_ai(design: Any, memory_store: MemoryStore | None) -> Any:
-    if not hasattr(design, "geometry") or not hasattr(design, "model_copy"):
-        return design
-
-    updated = apply_pico_gk(design)
-    if memory_store is not None and updated is not design:
-        cad_ref = getattr(updated.geometry, "cad_ref", None)
-        cad_payload = cad_ref.model_dump(mode="json") if cad_ref is not None else None
-        memory_store.log_event(
-            "pico_gk",
-            "Applied Pico GK CAD ref",
-            {
-                "design_id": getattr(updated, "design_id", None),
-                "cad_ref": cad_payload,
-            },
-        )
-
-    if getattr(updated, "domain", None) == "actuated_compliant_subsystem":
-        recommendation = recommend_topology(updated, memory_store=memory_store)
-        updated = recommendation.best.design
-        if memory_store is not None:
-            memory_store.log_event(
-                "topology_recommendation",
-                "Selected topology candidate",
-                {
-                    "design_id": getattr(updated, "design_id", None),
-                    "candidate": recommendation.best.name,
-                    "score": recommendation.scorecard.score,
-                },
-            )
-
-    return updated
 
 
 def _serialize_payload(payload: Any) -> str:
@@ -577,7 +542,7 @@ def build_pipeline(
     output_dir: Path,
     memory_store: MemoryStore | None = None,
 ) -> PipelineArtifacts:
-    design = _prepare_design_for_ai(design, memory_store)
+    design = prepare_design_for_pipeline(design, memory_store)
     state = compile_inputs(design, mission, environment, manufacturing_process, run_config)
     if memory_store is not None:
         memory_store.log_event(
